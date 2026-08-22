@@ -19,6 +19,8 @@ services.html         The seven service lines in detail
 privacy.html          Privacy Policy
 terms.html            Terms of Use
 accessibility.html    Accessibility Statement
+assets/logo.svg       Full lockup, vectorised from the supplied artwork
+assets/favicon.svg    The mark alone, cells clipped to the disc
 assets/js/main.js     Shared behaviour for every page
 README.md
 ```
@@ -57,8 +59,8 @@ Rules, which the scale enforces rather than leaving to judgement:
 - **`lime-500` never appears on a light surface** — 9.5:1 on navy, 1.9:1 on white.
 - **Navy carries authority, brand green carries action, lime marks data.**
 
-Every rendered text node on both pages was checked against WCAG AA. The only element
-below threshold is the "Global Epi" logotype itself, which WCAG 1.4.3 exempts.
+Every rendered text node on every page was checked against WCAG AA, and all of them
+pass. The logotype is artwork rather than text, so the one former exception is gone.
 
 Type: **Plus Jakarta Sans** (display) · **Inter** (body) · **Source Serif 4** (mission
 and vision statements only).
@@ -76,9 +78,9 @@ and the Essential Public Health Services it maps to) · engagement models · CTA
 
 ## Outstanding
 
-- [ ] Supply the logo as vector (SVG/AI/EPS). The mark is traced faithfully from the
-      supplied PNG, but the wordmark is set in Plus Jakarta Sans rather than the
-      logo's own typeface
+- [x] The real logo is in use. `assets/logo.svg` was vectorised from the 5000px
+      source: the mark measured and emitted as exact circles, the wordmark traced,
+      so the letterforms are the logo's own rather than a substitute typeface
 - [x] Email and phone are live: `global.epi.consulting@gmail.com` · (939) 401-4402
 - [x] Mailing address is live: Sierra Bayamón 81-37, Calle 68, Bayamón, Puerto Rico 00961
 - [x] The inquiry form posts to Formspree (`FORM_ENDPOINT` in `assets/js/main.js`).
