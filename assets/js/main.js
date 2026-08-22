@@ -162,7 +162,7 @@
      changes required.
   --------------------------------------------------------------------- */
   var FORM_ENDPOINT = null;
-  var CONTACT_EMAIL = 'info@globalepi.com';
+  var CONTACT_EMAIL = 'global.epi.consulting@gmail.com';
 
   var form   = document.getElementById('inquiry-form');
   var status = document.getElementById('form-status');

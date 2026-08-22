@@ -76,7 +76,9 @@ and the Essential Public Health Services it maps to) · engagement models · CTA
 - [ ] Supply the logo as vector (SVG/AI/EPS). The mark is traced faithfully from the
       supplied PNG, but the wordmark is set in Plus Jakarta Sans rather than the
       logo's own typeface
-- [ ] Confirm contact details — every placeholder is marked `[PLACEHOLDER]` in the markup
+- [x] Email and phone are live: `global.epi.consulting@gmail.com` · (939) 401-4402
+- [ ] Mailing address — still `[PLACEHOLDER]` in the markup (the Office block on the
+      contact section reads "United States")
 - [ ] Point the inquiry form at a real endpoint: set `FORM_ENDPOINT` in `index.html`
       (Formspree / Netlify Forms). Until then the form validates client-side and hands
       off to a `mailto:` draft.
