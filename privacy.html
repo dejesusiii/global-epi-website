@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Privacy Policy — GLOBAL EPI LLC</title>
+<meta name="description" content="How GLOBAL EPI LLC handles information submitted through this website. No cookies, no analytics, no tracking." />
+<meta name="author" content="GLOBAL EPI LLC" />
+<meta name="robots" content="index, follow" />
+<meta name="theme-color" content="#061A2E" />
+
+<!-- Open Graph / social sharing -->
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Privacy Policy — GLOBAL EPI LLC" />
+<meta property="og:description" content="How GLOBAL EPI LLC handles information submitted through this website. No cookies, no analytics, no tracking." />
+<meta property="og:locale" content="en_US" />
+
+<!-- Google Fonts: Plus Jakarta Sans (display) · Inter (body) · Source Serif 4 (mission/vision) -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700;800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;1,8..60,400&display=swap" rel="stylesheet" />
+
+<!-- Tailwind CSS via Play CDN — no build step required -->
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!--
+  Brand tokens, derived from the GLOBAL EPI logo. This single config block is
+  the source of truth for the identity and is copied verbatim into every page,
+  so a palette or type change is a one-place edit.
+
+    brand  #06BD95  the wordmark green — actions and accents
+    lime   #B4C908  the mark's chartreuse — dark surfaces only
+    navy            corporate / data ground
+    gray            neutrals, biased green so they sit with the accent
+
+  Contrast rules baked into the scale, not left to chance:
+    brand-500 is too light to carry text on white (2.4:1) — it is a FILL, and
+    anything on top of it is navy-900 (7.3:1). Text and links on light
+    surfaces use brand-700 (5.4:1). lime-500 is legible on navy (9.5:1) and
+    invisible on white (1.9:1), so it never appears on a light surface.
+-->
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          navy:  { 700: '#123A5C', 800: '#0A2540', 900: '#061A2E' },
+          brand: { 50: '#E8FBF5', 400: '#2FD3AF', 500: '#06BD95', 600: '#059B7B', 700: '#047963', 800: '#036452' },
+          lime:  { 500: '#B4C908' },
+          gray:  { 50: '#F6F8F7', 100: '#EDF1EF', 200: '#DEE5E2', 300: '#C5CFCB',
+                   400: '#87918D', 500: '#69736F', 600: '#4E5854', 700: '#39413E', 800: '#272D2B' },
+        },
+        fontFamily: {
+          display: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+          sans:    ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+          serif:   ['"Source Serif 4"', 'Georgia', 'serif'],
+        },
+        maxWidth: { content: '72ch' },
+      },
+    },
+  };
+</script>
+
+<style type="text/tailwindcss">
+  /* ---------------------------------------------------------------
+     Custom layer: only what utilities genuinely cannot express.
+     The site commits to a single light identity by design — every
+     surface and text colour is painted explicitly so the page holds
+     on any host background.
+  ----------------------------------------------------------------*/
+  @layer base {
+    html { scroll-behavior: smooth; }
+    /* Offset anchor targets so the sticky header never covers a heading */
+    section[id] { scroll-margin-top: 5.5rem; }
+    body { @apply bg-white text-gray-700 font-sans antialiased; }
+    ::selection { @apply bg-brand-500 text-white; }
+    :focus-visible { @apply outline-none ring-2 ring-brand-600 ring-offset-2 ring-offset-white rounded-sm; }
+    .on-dark :focus-visible { @apply ring-lime-500 ring-offset-navy-900; }
+  }
+
+  @layer components {
+    /* Scroll-triggered reveal, driven by IntersectionObserver in main.js */
+    .reveal { opacity: 0; transform: translateY(18px); transition: opacity .7s ease, transform .7s ease; }
+    .reveal.is-visible { opacity: 1; transform: none; }
+
+    /* Uppercase eyebrow label used above every section heading */
+    .eyebrow { @apply text-xs font-semibold uppercase tracking-[0.18em]; }
+
+    /* Hairline that separates a card's header from its body */
+    .rule-teal { @apply w-10 h-px bg-brand-500; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .reveal { opacity: 1; transform: none; transition: none; }
+    *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
+  }
+</style>
+</head>
+
+<body id="top">
+
+<!-- Scroll-reveal starts hidden and is un-hidden by main.js; without JS it must never stay invisible. -->
+<noscript><style>.reveal{opacity:1 !important;transform:none !important;}</style></noscript>
+
+<!-- Keyboard users land here first -->
+<a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:m-3 focus:rounded focus:bg-navy-900 focus:px-4 focus:py-2 focus:text-white">Skip to main content</a>
+
+<!-- ============================================================
+     01 · UTILITY BAR — corporate status line, hidden on mobile
+============================================================ -->
+<div class="hidden bg-navy-900 text-gray-300 md:block on-dark">
+  <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-2 text-xs">
+    <p class="tracking-wide">Public Health Corporation &middot; Founded 2023 &middot; Bayam&oacute;n, Puerto Rico</p>
+    <div class="flex items-center gap-5">
+      <a href="mailto:global.epi.consulting@gmail.com" class="transition-colors hover:text-lime-500">global.epi.consulting@gmail.com</a>
+      <a href="index.html#contact" class="transition-colors hover:text-lime-500">LinkedIn</a>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     02 · STICKY HEADER — logo, primary nav, consultation CTA
+============================================================ -->
+<header id="site-header" class="sticky top-0 z-40 border-b border-gray-200 bg-white/90 backdrop-blur-md transition-shadow">
+  <nav class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4" aria-label="Primary">
+
+    <!-- Wordmark: placeholder monogram, swap the SVG for the final logo file -->
+    <a href="index.html" class="flex items-center gap-3" aria-label="Global Epi — home">
+      <svg class="h-9 w-auto shrink-0" viewBox="0 0 27 29" role="img" aria-hidden="true">
+        <circle cx="16" cy="18" r="10" fill="#B4C908" />
+        <g fill="#A3A3A3">
+          <circle cx="13" cy="15.5" r="3.8" /><circle cx="22" cy="23" r="3" />
+          <circle cx="14.5" cy="3.5" r="2.5" /><circle cx="23.5" cy="11.5" r="2.5" />
+          <circle cx="3" cy="14" r="2" /><circle cx="5" cy="2.5" r="1.8" />
+          <circle cx="23" cy="17" r="1" /><circle cx="2" cy="20" r="1" />
+        </g>
+      </svg>
+      <span class="leading-tight">
+        <span class="block font-display text-xl font-bold tracking-tight text-brand-500">Global Epi</span>
+        <span class="block text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-500">Public Health Corporation</span>
+      </span>
+    </a>
+
+    <!-- Desktop navigation -->
+    <ul class="hidden items-center gap-8 lg:flex">
+      <li><a href="index.html#about" class="text-sm font-medium text-gray-600 transition-colors hover:text-brand-700">About</a></li>
+      <li><a href="index.html#approach" class="text-sm font-medium text-gray-600 transition-colors hover:text-brand-700">Approach</a></li>
+      <li><a href="index.html#values" class="text-sm font-medium text-gray-600 transition-colors hover:text-brand-700">Values</a></li>
+      <li><a href="services.html" class="text-sm font-medium text-gray-600 transition-colors hover:text-brand-700">Services</a></li>
+      <li><a href="index.html#determinants" class="text-sm font-medium text-gray-600 transition-colors hover:text-brand-700">Determinants</a></li>
+    </ul>
+
+    <div class="flex items-center gap-3">
+      <a href="index.html#contact" class="hidden rounded-md bg-brand-500 px-5 py-2.5 text-sm font-semibold text-navy-900 shadow-sm transition-colors hover:bg-brand-400 sm:inline-block">Request a Consultation</a>
+
+      <!-- Mobile menu trigger -->
+      <button id="nav-toggle" type="button" class="rounded-md p-2 text-navy-900 lg:hidden" aria-expanded="false" aria-controls="mobile-nav" aria-label="Open navigation menu">
+        <svg id="icon-open" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16" /></svg>
+        <svg id="icon-close" class="hidden h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" d="M6 6l12 12M18 6L6 18" /></svg>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Mobile navigation panel -->
+  <div id="mobile-nav" class="hidden border-t border-gray-200 bg-white lg:hidden">
+    <ul class="mx-auto max-w-7xl space-y-1 px-6 py-4">
+      <li><a href="index.html#about"        class="block rounded-md px-3 py-2.5 font-medium text-gray-700 hover:bg-gray-50 hover:text-brand-700">About</a></li>
+      <li><a href="index.html#approach"     class="block rounded-md px-3 py-2.5 font-medium text-gray-700 hover:bg-gray-50 hover:text-brand-700">Approach</a></li>
+      <li><a href="index.html#values"       class="block rounded-md px-3 py-2.5 font-medium text-gray-700 hover:bg-gray-50 hover:text-brand-700">Values</a></li>
+      <li><a href="services.html" class="block rounded-md px-3 py-2.5 font-medium text-gray-700 hover:bg-gray-50 hover:text-brand-700">Services</a></li>
+      <li><a href="index.html#determinants" class="block rounded-md px-3 py-2.5 font-medium text-gray-700 hover:bg-gray-50 hover:text-brand-700">Determinants</a></li>
+      <li class="pt-2"><a href="index.html#contact" class="block rounded-md bg-brand-500 px-3 py-3 text-center font-semibold text-navy-900">Request a Consultation</a></li>
+    </ul>
+  </div>
+</header>
+
+<main id="main">
+
+<!-- ============================================================
+     PAGE HERO
+============================================================ -->
+<section class="relative overflow-hidden bg-navy-900 on-dark" aria-labelledby="page-title">
+  <div class="pointer-events-none absolute inset-0 opacity-[0.35]" aria-hidden="true"
+       style="background-image:linear-gradient(to right,#123A5C 1px,transparent 1px),linear-gradient(to bottom,#123A5C 1px,transparent 1px);background-size:72px 72px;">
+  </div>
+
+  <div class="relative mx-auto max-w-7xl px-6 py-14 md:py-20">
+    <nav aria-label="Breadcrumb" class="mb-7">
+      <ol class="flex items-center gap-2 text-sm text-gray-400">
+        <li><a href="index.html" class="transition-colors hover:text-lime-500">Home</a></li>
+        <li aria-hidden="true" class="text-navy-700">/</li>
+        <li><span class="text-gray-200" aria-current="page">Privacy Policy</span></li>
+      </ol>
+    </nav>
+
+    <p class="eyebrow mb-4 flex items-center gap-3 text-lime-500">
+      <span class="h-px w-8 bg-lime-500"></span>
+      Legal
+    </p>
+
+    <h1 id="page-title" class="max-w-3xl font-display text-3xl font-extrabold leading-[1.12] tracking-tight text-white text-balance sm:text-4xl lg:text-5xl">
+      Privacy Policy
+    </h1>
+
+    <p class="mt-5 max-w-content leading-relaxed text-gray-300">What happens to the information you send us through this website — and, just as importantly, what we never collect.</p>
+
+    <p class="mt-7 text-sm text-gray-400">
+      Last updated <time datetime="2026-08-22">22 August 2026</time>
+    </p>
+  </div>
+</section>
+
+<!-- ============================================================
+     DOCUMENT — table of contents beside one readable column
+============================================================ -->
+<div class="mx-auto max-w-7xl px-6 py-16 md:py-20">
+  <div class="grid gap-12 lg:grid-cols-12 lg:gap-16">
+
+    <nav class="lg:col-span-3" aria-label="On this page">
+      <div class="lg:sticky lg:top-28">
+        <p class="eyebrow mb-4 text-gray-500">On this page</p>
+        <ol class="border-l border-gray-200">
+            <li><a href="#who-we-are" class="block border-l-2 border-transparent -ml-px pl-4 py-1 text-sm leading-snug text-gray-600 transition-colors hover:border-brand-600 hover:text-brand-700">Who we are</a></li>
+            <li><a href="#information-we-collect" class="block border-l-2 border-transparent -ml-px pl-4 py-1 text-sm leading-snug text-gray-600 transition-colors hover:border-brand-600 hover:text-brand-700">Information we collect</a></li>
+            <li><a href="#information-we-do-not-collect" class="block border-l-2 border-transparent -ml-px pl-4 py-1 text-sm leading-snug text-gray-600 transition-colors hover:border-brand-600 hover:text-brand-700">Information we do not collect</a></li>
+            <li><a href="#how-we-use-your-information" class="block border-l-2 border-transparent -ml-px pl-4 py-1 text-sm leading-snug text-gray-600 transition-colors hover:border-brand-600 hover:text-brand-700">How we use your information</a></li>
+            <li><a href="#service-providers-we-rely-on" class="block border-l-2 border-transparent -ml-px pl-4 py-1 text-sm leading-snug text-gray-600 transition-colors hover:border-brand-600 hover:text-brand-700">Service providers we rely on</a></li>
+            <li><a href="#how-long-we-keep-information" class="block border-l-2 border-transparent -ml-px pl-4 py-1 text-sm leading-snug text-gray-600 transition-colors hover:border-brand-600 hover:text-brand-700">How long we keep information</a></li>
+            <li><a href="#your-choices-and-your-rights" class="block border-l-2 border-transparent -ml-px pl-4 py-1 text-sm leading-snug text-gray-600 transition-colors hover:border-brand-600 hover:text-brand-700">Your choices and your rights</a></li>
+            <li><a href="#security" class="block border-l-2 border-transparent -ml-px pl-4 py-1 text-sm leading-snug text-gray-600 transition-colors hover:border-brand-600 hover:text-brand-700">Security</a></li>
+            <li><a href="#please-do-not-send-health-information" class="block border-l-2 border-transparent -ml-px pl-4 py-1 text-sm leading-snug text-gray-600 transition-colors hover:border-brand-600 hover:text-brand-700">Please do not send health information</a></li>
+            <li><a href="#childrens-privacy" class="block border-l-2 border-transparent -ml-px pl-4 py-1 text-sm leading-snug text-gray-600 transition-colors hover:border-brand-600 hover:text-brand-700">Children&rsquo;s privacy</a></li>
+            <li><a href="#changes-to-this-policy" class="block border-l-2 border-transparent -ml-px pl-4 py-1 text-sm leading-snug text-gray-600 transition-colors hover:border-brand-600 hover:text-brand-700">Changes to this policy</a></li>
+            <li><a href="#contact-us" class="block border-l-2 border-transparent -ml-px pl-4 py-1 text-sm leading-snug text-gray-600 transition-colors hover:border-brand-600 hover:text-brand-700">Contact us</a></li>
+        </ol>
+      </div>
+    </nav>
+
+    <article class="max-w-content space-y-10 lg:col-span-9">
+      <section id="who-we-are" class="scroll-mt-28 border-t border-gray-200 pt-10">
+        <h2 class="font-display text-xl font-bold tracking-tight text-navy-900 text-balance sm:text-2xl">Who we are</h2>
+        <p class="mt-4 leading-relaxed text-gray-600">GLOBAL EPI LLC is a public health corporation founded in 2023, based in Bayam&oacute;n, Puerto Rico. This policy explains what happens to information you provide through this website, and what we do not collect.</p>
+        <p class="mt-4 leading-relaxed text-gray-600">It applies to this website only. It does not cover consulting engagements, which are governed by the contract signed for that work.</p>
+      </section>
+
+      <section id="information-we-collect" class="scroll-mt-28 border-t border-gray-200 pt-10">
+        <h2 class="font-display text-xl font-bold tracking-tight text-navy-900 text-balance sm:text-2xl">Information we collect</h2>
+        <p class="mt-4 leading-relaxed text-gray-600"><strong>Information you choose to give us.</strong> When you submit the consulting inquiry form, we receive the fields you fill in:</p>
+        <ul class="mt-4 space-y-3">
+          <li class="flex gap-3 leading-relaxed text-gray-600"><span aria-hidden="true" class="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-600"></span><span>Your name</span></li>
+          <li class="flex gap-3 leading-relaxed text-gray-600"><span aria-hidden="true" class="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-600"></span><span>Your organization</span></li>
+          <li class="flex gap-3 leading-relaxed text-gray-600"><span aria-hidden="true" class="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-600"></span><span>Your email address</span></li>
+          <li class="flex gap-3 leading-relaxed text-gray-600"><span aria-hidden="true" class="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-600"></span><span>Your phone number, if you provide one — this field is optional</span></li>
+          <li class="flex gap-3 leading-relaxed text-gray-600"><span aria-hidden="true" class="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-600"></span><span>The service you selected</span></li>
+          <li class="flex gap-3 leading-relaxed text-gray-600"><span aria-hidden="true" class="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-600"></span><span>The message you wrote</span></li>
+        </ul>
+        <p class="mt-4 leading-relaxed text-gray-600"><strong>Information collected automatically.</strong> This website is hosted on GitHub Pages. Like nearly all web servers, GitHub records standard technical information when a page is requested, including IP address, browser type, and the page requested. We do not have access to those logs and do not use them.</p>
+      </section>
+
+      <section id="information-we-do-not-collect" class="scroll-mt-28 border-t border-gray-200 pt-10">
+        <h2 class="font-display text-xl font-bold tracking-tight text-navy-900 text-balance sm:text-2xl">Information we do not collect</h2>
+        <p class="mt-4 leading-relaxed text-gray-600">We think this is worth stating plainly, because it is unusual:</p>
+        <ul class="mt-4 space-y-3">
+          <li class="flex gap-3 leading-relaxed text-gray-600"><span aria-hidden="true" class="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-600"></span><span><strong>No cookies.</strong> This site sets none.</span></li>
+          <li class="flex gap-3 leading-relaxed text-gray-600"><span aria-hidden="true" class="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-600"></span><span><strong>No analytics.</strong> There is no Google Analytics, no tracking pixel, and no third-party measurement of any kind.</span></li>
+          <li class="flex gap-3 leading-relaxed text-gray-600"><span aria-hidden="true" class="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-600"></span><span><strong>No advertising or profiling.</strong> We do not build profiles of visitors and we do not sell, rent, or trade your information to anyone, for any purpose.</span></li>
+          <li class="flex gap-3 leading-relaxed text-gray-600"><span aria-hidden="true" class="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-600"></span><span><strong>No accounts.</strong> There is nothing to log in to.</span></li>
+        </ul>
+        <p class="mt-4 leading-relaxed text-gray-600">If you never submit the inquiry form, we receive no personal information from your visit.</p>
+      </section>
+
+      <section id="how-we-use-your-information" class="scroll-mt-28 border-t border-gray-200 pt-10">
+        <h2 class="font-display text-xl font-bold tracking-tight text-navy-900 text-balance sm:text-2xl">How we use your information</h2>
+        <p class="mt-4 leading-relaxed text-gray-600">We use what you send through the inquiry form for one purpose: to respond to you and, if it leads to an engagement, to carry out that work. Specifically, to:</p>
+        <ul class="mt-4 space-y-3">
+          <li class="flex gap-3 leading-relaxed text-gray-600"><span aria-hidden="true" class="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-600"></span><span>Reply to your inquiry</span></li>
+          <li class="flex gap-3 leading-relaxed text-gray-600"><span aria-hidden="true" class="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-600"></span><span>Understand the scope of what you are asking for</span></li>
+          <li class="flex gap-3 leading-relaxed text-gray-600"><span aria-hidden="true" class="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-600"></span><span>Follow up on a proposal or a scope of work you requested</span></li>
+          <li class="flex gap-3 leading-relaxed text-gray-600"><span aria-hidden="true" class="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-600"></span><span>Keep a record of the correspondence</span></li>
+        </ul>
+        <p class="mt-4 leading-relaxed text-gray-600">We do not add you to a marketing list, and we do not send newsletters or promotional email.</p>
+      </section>
+
+      <section id="service-providers-we-rely-on" class="scroll-mt-28 border-t border-gray-200 pt-10">
+        <h2 class="font-display text-xl font-bold tracking-tight text-navy-900 text-balance sm:text-2xl">Service providers we rely on</h2>
+        <p class="mt-4 leading-relaxed text-gray-600">Running this website means a small number of companies necessarily handle some data. We name them rather than referring vaguely to &ldquo;third parties&rdquo;:</p>
+        <ul class="mt-4 space-y-3">
+          <li class="flex gap-3 leading-relaxed text-gray-600"><span aria-hidden="true" class="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-600"></span><span><strong>Formspree</strong> — processes the inquiry form. What you submit passes through their servers and is stored there so we can retrieve it if an email is lost.</span></li>
+          <li class="flex gap-3 leading-relaxed text-gray-600"><span aria-hidden="true" class="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-600"></span><span><strong>GitHub</strong> — hosts the website and keeps standard server logs.</span></li>
+          <li class="flex gap-3 leading-relaxed text-gray-600"><span aria-hidden="true" class="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-600"></span><span><strong>Google Fonts</strong> — serves the typefaces the site uses. Loading a font from Google means your browser contacts Google, which can see your IP address.</span></li>
+          <li class="flex gap-3 leading-relaxed text-gray-600"><span aria-hidden="true" class="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-600"></span><span><strong>Tailwind CDN</strong> — serves the stylesheet engine, with the same implication.</span></li>
+        </ul>
+        <p class="mt-4 leading-relaxed text-gray-600">Each of these companies has its own privacy policy governing what it does with that information. We do not control their practices.</p>
+      </section>
+
+      <section id="how-long-we-keep-information" class="scroll-mt-28 border-t border-gray-200 pt-10">
+        <h2 class="font-display text-xl font-bold tracking-tight text-navy-900 text-balance sm:text-2xl">How long we keep information</h2>
+        <p class="mt-4 leading-relaxed text-gray-600">Inquiries are kept as long as they remain useful for the relationship — typically while a proposal is live and for a reasonable period afterwards, and for the duration of any engagement that follows. We remove inquiries that lead nowhere once they are no longer needed.</p>
+        <p class="mt-4 leading-relaxed text-gray-600">If you want your inquiry deleted sooner, ask us and we will do it.</p>
+      </section>
+
+      <section id="your-choices-and-your-rights" class="scroll-mt-28 border-t border-gray-200 pt-10">
+        <h2 class="font-display text-xl font-bold tracking-tight text-navy-900 text-balance sm:text-2xl">Your choices and your rights</h2>
+        <p class="mt-4 leading-relaxed text-gray-600">You can ask us at any time to:</p>
+        <ul class="mt-4 space-y-3">
+          <li class="flex gap-3 leading-relaxed text-gray-600"><span aria-hidden="true" class="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-600"></span><span>Tell you what information about you we hold</span></li>
+          <li class="flex gap-3 leading-relaxed text-gray-600"><span aria-hidden="true" class="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-600"></span><span>Correct anything that is wrong</span></li>
+          <li class="flex gap-3 leading-relaxed text-gray-600"><span aria-hidden="true" class="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-600"></span><span>Delete your inquiry and our record of it</span></li>
+          <li class="flex gap-3 leading-relaxed text-gray-600"><span aria-hidden="true" class="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-600"></span><span>Stop contacting you</span></li>
+        </ul>
+        <p class="mt-4 leading-relaxed text-gray-600">Write to <a class="font-medium text-brand-700 underline underline-offset-2 hover:text-navy-900" href="mailto:global.epi.consulting@gmail.com">global.epi.consulting@gmail.com</a> and we will act on it. We will not ask you to justify the request.</p>
+        <p class="mt-4 leading-relaxed text-gray-600">Depending on where you live, you may have additional rights under laws such as the GDPR. We will honor those requests regardless of whether a particular law applies to us.</p>
+      </section>
+
+      <section id="security" class="scroll-mt-28 border-t border-gray-200 pt-10">
+        <h2 class="font-display text-xl font-bold tracking-tight text-navy-900 text-balance sm:text-2xl">Security</h2>
+        <p class="mt-4 leading-relaxed text-gray-600">The website is served over HTTPS, so what you submit is encrypted in transit. Form submissions are held by Formspree under their security practices, and our correspondence lives in our email account.</p>
+        <p class="mt-4 leading-relaxed text-gray-600">We will be honest about the limits of that: this is a small organization using reputable third-party services, not a hardened enterprise system. Please read the next section before deciding what to send us.</p>
+      </section>
+
+      <section id="please-do-not-send-health-information" class="scroll-mt-28 border-t border-gray-200 pt-10">
+        <h2 class="font-display text-xl font-bold tracking-tight text-navy-900 text-balance sm:text-2xl">Please do not send health information</h2>
+        <div class="mt-5 rounded-lg border border-gray-200 border-l-4 border-l-brand-600 bg-gray-50 p-5 leading-relaxed text-gray-700">The inquiry form is for professional and business correspondence. <strong>Do not use it to send protected health information, patient records, identifiable participant data, or any other sensitive personal data.</strong> It is not built for that, and we cannot accept such data through it.</div>
+        <p class="mt-4 leading-relaxed text-gray-600">If an engagement requires us to handle sensitive or identifiable data, that transfer is arranged separately through an appropriate secure channel and governed by the agreement covering the work, including any data use agreement or business associate agreement the work requires.</p>
+      </section>
+
+      <section id="childrens-privacy" class="scroll-mt-28 border-t border-gray-200 pt-10">
+        <h2 class="font-display text-xl font-bold tracking-tight text-navy-900 text-balance sm:text-2xl">Children&rsquo;s privacy</h2>
+        <p class="mt-4 leading-relaxed text-gray-600">This website is directed at organizations and professionals. It is not intended for children, and we do not knowingly collect information from anyone under 13. If you believe a child has sent us information, contact us and we will delete it.</p>
+      </section>
+
+      <section id="changes-to-this-policy" class="scroll-mt-28 border-t border-gray-200 pt-10">
+        <h2 class="font-display text-xl font-bold tracking-tight text-navy-900 text-balance sm:text-2xl">Changes to this policy</h2>
+        <p class="mt-4 leading-relaxed text-gray-600">If we change this policy we will update the date at the top of the page. Material changes will be described here rather than made quietly.</p>
+      </section>
+
+      <section id="contact-us" class="scroll-mt-28 border-t border-gray-200 pt-10">
+        <h2 class="font-display text-xl font-bold tracking-tight text-navy-900 text-balance sm:text-2xl">Contact us</h2>
+        <p class="mt-4 leading-relaxed text-gray-600">Questions about this policy, or about information we hold:</p>
+        <ul class="mt-4 space-y-3">
+          <li class="flex gap-3 leading-relaxed text-gray-600"><span aria-hidden="true" class="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-600"></span><span>Email: <a class="font-medium text-brand-700 underline underline-offset-2 hover:text-navy-900" href="mailto:global.epi.consulting@gmail.com">global.epi.consulting@gmail.com</a></span></li>
+          <li class="flex gap-3 leading-relaxed text-gray-600"><span aria-hidden="true" class="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-600"></span><span>Phone: <a class="font-medium text-brand-700 underline underline-offset-2 hover:text-navy-900" href="tel:+19394014402">(939) 401-4402</a></span></li>
+          <li class="flex gap-3 leading-relaxed text-gray-600"><span aria-hidden="true" class="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-600"></span><span>Mail: GLOBAL EPI LLC, Sierra Bayam&oacute;n 81-37, Calle 68, Bayam&oacute;n, Puerto Rico 00961</span></li>
+        </ul>
+      </section>
+    </article>
+  </div>
+</div>
+
+</main>
+
+<!-- ============================================================
+     12 · FOOTER
+============================================================ -->
+<footer class="bg-navy-900 on-dark">
+  <div class="mx-auto max-w-7xl px-6 py-16">
+    <div class="grid gap-12 lg:grid-cols-12">
+
+      <div class="lg:col-span-5">
+        <div class="flex items-center gap-3">
+          <svg class="h-10 w-auto shrink-0" viewBox="0 0 27 29" role="img" aria-hidden="true">
+        <circle cx="16" cy="18" r="10" fill="#B4C908" />
+        <g fill="#A3A3A3">
+          <circle cx="13" cy="15.5" r="3.8" /><circle cx="22" cy="23" r="3" />
+          <circle cx="14.5" cy="3.5" r="2.5" /><circle cx="23.5" cy="11.5" r="2.5" />
+          <circle cx="3" cy="14" r="2" /><circle cx="5" cy="2.5" r="1.8" />
+          <circle cx="23" cy="17" r="1" /><circle cx="2" cy="20" r="1" />
+        </g>
+      </svg>
+          <span class="font-display text-xl font-bold tracking-tight text-brand-500">Global Epi</span>
+        </div>
+        <p class="mt-5 max-w-sm leading-relaxed text-gray-400">
+          A public health corporation delivering evidence-based services to communities and
+          populations — transforming access to health equity through data collection, analysis,
+          and translation.
+        </p>
+      </div>
+
+      <div class="lg:col-span-3">
+        <h2 class="eyebrow mb-5 text-gray-400">Services</h2>
+        <ul class="space-y-3 text-sm">
+          <li><a href="services.html#service-1" class="text-gray-300 transition-colors hover:text-lime-500">Research &amp; Development</a></li>
+          <li><a href="services.html#service-2" class="text-gray-300 transition-colors hover:text-lime-500">Program Development &amp; Evaluation</a></li>
+          <li><a href="services.html#service-3" class="text-gray-300 transition-colors hover:text-lime-500">Needs Assessment</a></li>
+          <li><a href="services.html#service-4" class="text-gray-300 transition-colors hover:text-lime-500">Policy Analysis &amp; Advocacy</a></li>
+          <li><a href="services.html#service-5" class="text-gray-300 transition-colors hover:text-lime-500">Capacity Building &amp; Training</a></li>
+          <li><a href="services.html#service-6" class="text-gray-300 transition-colors hover:text-lime-500">Health Communication</a></li>
+          <li><a href="services.html#service-7" class="text-gray-300 transition-colors hover:text-lime-500">Global Health Collaboration</a></li>
+        </ul>
+      </div>
+
+      <div class="lg:col-span-2">
+        <h2 class="eyebrow mb-5 text-gray-400">Company</h2>
+        <ul class="space-y-3 text-sm">
+          <li><a href="index.html#about" class="text-gray-300 transition-colors hover:text-lime-500">Mission &amp; Vision</a></li>
+          <li><a href="index.html#approach" class="text-gray-300 transition-colors hover:text-lime-500">Our Approach</a></li>
+          <li><a href="index.html#values" class="text-gray-300 transition-colors hover:text-lime-500">Core Values</a></li>
+          <li><a href="index.html#determinants" class="text-gray-300 transition-colors hover:text-lime-500">Determinants</a></li>
+          <li><a href="index.html#contact" class="text-gray-300 transition-colors hover:text-lime-500">Contact</a></li>
+        </ul>
+      </div>
+
+      <div class="lg:col-span-2">
+        <h2 class="eyebrow mb-5 text-gray-400">Get in Touch</h2>
+        <ul class="space-y-3 text-sm">
+          <li><a href="mailto:global.epi.consulting@gmail.com" class="break-all text-gray-300 transition-colors hover:text-lime-500">global.epi.consulting@gmail.com</a></li>
+          <li><a href="tel:+19394014402" class="text-gray-300 transition-colors hover:text-lime-500">(939) 401-4402</a></li>
+          <li>
+            <address class="not-italic leading-relaxed text-gray-300">
+              Sierra Bayam&oacute;n 81-37, Calle 68<br />
+              Bayam&oacute;n, Puerto Rico 00961
+            </address>
+          </li>
+          <li class="pt-1"><a href="index.html#contact" class="inline-block rounded-md bg-brand-500 px-4 py-2 font-semibold text-navy-900 transition-colors hover:bg-brand-400">Request a Consultation</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="mt-14 flex flex-col gap-4 border-t border-navy-700 pt-8 text-sm text-gray-400 sm:flex-row sm:items-center sm:justify-between">
+      <p>&copy; <span id="year">2026</span> GLOBAL EPI LLC. All rights reserved.</p>
+      <ul class="flex gap-6">
+        <li><a href="privacy.html" class="transition-colors hover:text-lime-500">Privacy Policy</a></li>
+        <li><a href="terms.html" class="transition-colors hover:text-lime-500">Terms of Use</a></li>
+        <li><a href="accessibility.html" class="transition-colors hover:text-lime-500">Accessibility</a></li>
+      </ul>
+    </div>
+  </div>
+</footer>
+
+<!-- ============================================================
+     BEHAVIOUR — shared across every page, vanilla JS, no dependencies
+============================================================ -->
+<script src="assets/js/main.js" defer></script>
+
+</body>
+</html>

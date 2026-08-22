@@ -16,6 +16,9 @@ delivering evidence-based public health services to communities and populations.
 ```
 index.html            Homepage
 services.html         The seven service lines in detail
+privacy.html          Privacy Policy
+terms.html            Terms of Use
+accessibility.html    Accessibility Statement
 assets/js/main.js     Shared behaviour for every page
 README.md
 ```
@@ -84,7 +87,10 @@ and the Essential Public Health Services it maps to) · engagement models · CTA
 - [ ] Confirm the service-to-EPHS mapping on `services.html` — it is our reading of
       the 2020 framework, not something you specified
 - [ ] Confirm the four engagement models on `services.html` reflect how you actually contract
-- [ ] Privacy Policy, Terms of Use and Accessibility pages (footer links are stubs)
+- [x] Privacy Policy, Terms of Use and Accessibility pages are live and linked from the footer
+- [ ] **Have an attorney review `privacy.html` and `terms.html`.** They are drafted to
+      describe accurately what this site does, but they are not legal advice and have
+      not been reviewed by a lawyer licensed in Puerto Rico
 - [ ] For production traffic, swap the Play CDN for a prebuilt Tailwind stylesheet —
       a one-line change in `<head>`
 
