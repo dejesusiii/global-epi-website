@@ -23,11 +23,20 @@
 <script src="https://cdn.tailwindcss.com"></script>
 
 <!--
-  Brand tokens. This single config block is the source of truth for the
-  GLOBAL EPI identity and is copied verbatim into every page of the site,
+  Brand tokens, derived from the GLOBAL EPI logo. This single config block is
+  the source of truth for the identity and is copied verbatim into every page,
   so a palette or type change is a one-place edit.
-    navy  -> corporate / data          teal -> health / equity (action)
-    cyan  -> data highlight only       slate -> neutral surfaces
+
+    brand  #06BD95  the wordmark green — actions and accents
+    lime   #B4C908  the mark's chartreuse — dark surfaces only
+    navy            corporate / data ground
+    gray            neutrals, biased green so they sit with the accent
+
+  Contrast rules baked into the scale, not left to chance:
+    brand-500 is too light to carry text on white (2.4:1) — it is a FILL, and
+    anything on top of it is navy-900 (7.3:1). Text and links on light
+    surfaces use brand-700 (5.4:1). lime-500 is legible on navy (9.5:1) and
+    invisible on white (1.9:1), so it never appears on a light surface.
 -->
 <script>
   tailwind.config = {
@@ -35,8 +44,10 @@
       extend: {
         colors: {
           navy:  { 700: '#123A5C', 800: '#0A2540', 900: '#061A2E' },
-          teal:  { 500: '#14A89B', 600: '#0D9488', 700: '#0B7A70' },
-          cyan:  { 400: '#22D3EE' },
+          brand: { 50: '#E8FBF5', 400: '#2FD3AF', 500: '#06BD95', 600: '#059B7B', 700: '#047963', 800: '#036452' },
+          lime:  { 500: '#B4C908' },
+          gray:  { 50: '#F6F8F7', 100: '#EDF1EF', 200: '#DEE5E2', 300: '#C5CFCB',
+                   400: '#87918D', 500: '#69736F', 600: '#4E5854', 700: '#39413E', 800: '#272D2B' },
         },
         fontFamily: {
           display: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
@@ -60,10 +71,10 @@
     html { scroll-behavior: smooth; }
     /* Offset anchor targets so the sticky header never covers a heading */
     section[id] { scroll-margin-top: 5.5rem; }
-    body { @apply bg-white text-slate-700 font-sans antialiased; }
-    ::selection { @apply bg-teal-600 text-white; }
-    :focus-visible { @apply outline-none ring-2 ring-teal-600 ring-offset-2 ring-offset-white rounded-sm; }
-    .on-dark :focus-visible { @apply ring-cyan-400 ring-offset-navy-900; }
+    body { @apply bg-white text-gray-700 font-sans antialiased; }
+    ::selection { @apply bg-brand-500 text-white; }
+    :focus-visible { @apply outline-none ring-2 ring-brand-600 ring-offset-2 ring-offset-white rounded-sm; }
+    .on-dark :focus-visible { @apply ring-lime-500 ring-offset-navy-900; }
   }
 
   @layer components {
@@ -75,7 +86,7 @@
     .eyebrow { @apply text-xs font-semibold uppercase tracking-[0.18em]; }
 
     /* Hairline that separates a card's header from its body */
-    .rule-teal { @apply w-10 h-px bg-teal-600; }
+    .rule-teal { @apply w-10 h-px bg-brand-500; }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -97,12 +108,12 @@
 <!-- ============================================================
      01 · UTILITY BAR — corporate status line, hidden on mobile
 ============================================================ -->
-<div class="hidden bg-navy-900 text-slate-300 md:block on-dark">
+<div class="hidden bg-navy-900 text-gray-300 md:block on-dark">
   <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-2 text-xs">
     <p class="tracking-wide">Public Health Corporation &middot; Founded 2023 &middot; Delaware, USA</p>
     <div class="flex items-center gap-5">
-      <a href="mailto:info@globalepi.com" class="transition-colors hover:text-cyan-400">info@globalepi.com</a>
-      <a href="#contact" class="transition-colors hover:text-cyan-400">LinkedIn</a>
+      <a href="mailto:info@globalepi.com" class="transition-colors hover:text-lime-500">info@globalepi.com</a>
+      <a href="#contact" class="transition-colors hover:text-lime-500">LinkedIn</a>
     </div>
   </div>
 </div>
@@ -110,35 +121,37 @@
 <!-- ============================================================
      02 · STICKY HEADER — logo, primary nav, consultation CTA
 ============================================================ -->
-<header id="site-header" class="sticky top-0 z-40 border-b border-slate-200 bg-white/90 backdrop-blur-md transition-shadow">
+<header id="site-header" class="sticky top-0 z-40 border-b border-gray-200 bg-white/90 backdrop-blur-md transition-shadow">
   <nav class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4" aria-label="Primary">
 
     <!-- Wordmark: placeholder monogram, swap the SVG for the final logo file -->
-    <a href="#top" class="flex items-center gap-3" aria-label="GLOBAL EPI LLC — home">
-      <svg class="h-10 w-10 shrink-0" viewBox="0 0 40 40" role="img" aria-hidden="true">
-        <rect width="40" height="40" rx="8" fill="#0A2540" />
-        <path d="M9 27.5 L16 19 L23 23.5 L31 11.5" fill="none" stroke="#22D3EE" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
-        <circle cx="16" cy="19" r="2.6" fill="#0D9488" />
-        <circle cx="23" cy="23.5" r="2.6" fill="#0D9488" />
-        <circle cx="31" cy="11.5" r="2.6" fill="#22D3EE" />
+    <a href="#top" class="flex items-center gap-3" aria-label="Global Epi — home">
+      <svg class="h-9 w-auto shrink-0" viewBox="0 0 27 29" role="img" aria-hidden="true">
+        <circle cx="16" cy="18" r="10" fill="#B4C908" />
+        <g fill="#A3A3A3">
+          <circle cx="13" cy="15.5" r="3.8" /><circle cx="22" cy="23" r="3" />
+          <circle cx="14.5" cy="3.5" r="2.5" /><circle cx="23.5" cy="11.5" r="2.5" />
+          <circle cx="3" cy="14" r="2" /><circle cx="5" cy="2.5" r="1.8" />
+          <circle cx="23" cy="17" r="1" /><circle cx="2" cy="20" r="1" />
+        </g>
       </svg>
       <span class="leading-tight">
-        <span class="block font-display text-lg font-extrabold tracking-tight text-navy-900">GLOBAL EPI<span class="text-teal-600">.</span></span>
-        <span class="block text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500">Public Health Corporation</span>
+        <span class="block font-display text-xl font-bold tracking-tight text-brand-500">Global Epi</span>
+        <span class="block text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-500">Public Health Corporation</span>
       </span>
     </a>
 
     <!-- Desktop navigation -->
     <ul class="hidden items-center gap-8 lg:flex">
-      <li><a href="#about" class="text-sm font-medium text-slate-600 transition-colors hover:text-teal-600">About</a></li>
-      <li><a href="#approach" class="text-sm font-medium text-slate-600 transition-colors hover:text-teal-600">Approach</a></li>
-      <li><a href="#values" class="text-sm font-medium text-slate-600 transition-colors hover:text-teal-600">Values</a></li>
-      <li><a href="services.html" class="text-sm font-medium text-slate-600 transition-colors hover:text-teal-600">Services</a></li>
-      <li><a href="#determinants" class="text-sm font-medium text-slate-600 transition-colors hover:text-teal-600">Determinants</a></li>
+      <li><a href="#about" class="text-sm font-medium text-gray-600 transition-colors hover:text-brand-700">About</a></li>
+      <li><a href="#approach" class="text-sm font-medium text-gray-600 transition-colors hover:text-brand-700">Approach</a></li>
+      <li><a href="#values" class="text-sm font-medium text-gray-600 transition-colors hover:text-brand-700">Values</a></li>
+      <li><a href="services.html" class="text-sm font-medium text-gray-600 transition-colors hover:text-brand-700">Services</a></li>
+      <li><a href="#determinants" class="text-sm font-medium text-gray-600 transition-colors hover:text-brand-700">Determinants</a></li>
     </ul>
 
     <div class="flex items-center gap-3">
-      <a href="#contact" class="hidden rounded-md bg-teal-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-teal-700 sm:inline-block">Request a Consultation</a>
+      <a href="#contact" class="hidden rounded-md bg-brand-500 px-5 py-2.5 text-sm font-semibold text-navy-900 shadow-sm transition-colors hover:bg-brand-400 sm:inline-block">Request a Consultation</a>
 
       <!-- Mobile menu trigger -->
       <button id="nav-toggle" type="button" class="rounded-md p-2 text-navy-900 lg:hidden" aria-expanded="false" aria-controls="mobile-nav" aria-label="Open navigation menu">
@@ -149,14 +162,14 @@
   </nav>
 
   <!-- Mobile navigation panel -->
-  <div id="mobile-nav" class="hidden border-t border-slate-200 bg-white lg:hidden">
+  <div id="mobile-nav" class="hidden border-t border-gray-200 bg-white lg:hidden">
     <ul class="mx-auto max-w-7xl space-y-1 px-6 py-4">
-      <li><a href="#about"        class="block rounded-md px-3 py-2.5 font-medium text-slate-700 hover:bg-slate-50 hover:text-teal-600">About</a></li>
-      <li><a href="#approach"     class="block rounded-md px-3 py-2.5 font-medium text-slate-700 hover:bg-slate-50 hover:text-teal-600">Approach</a></li>
-      <li><a href="#values"       class="block rounded-md px-3 py-2.5 font-medium text-slate-700 hover:bg-slate-50 hover:text-teal-600">Values</a></li>
-      <li><a href="services.html" class="block rounded-md px-3 py-2.5 font-medium text-slate-700 hover:bg-slate-50 hover:text-teal-600">Services</a></li>
-      <li><a href="#determinants" class="block rounded-md px-3 py-2.5 font-medium text-slate-700 hover:bg-slate-50 hover:text-teal-600">Determinants</a></li>
-      <li class="pt-2"><a href="#contact" class="block rounded-md bg-teal-600 px-3 py-3 text-center font-semibold text-white">Request a Consultation</a></li>
+      <li><a href="#about"        class="block rounded-md px-3 py-2.5 font-medium text-gray-700 hover:bg-gray-50 hover:text-brand-700">About</a></li>
+      <li><a href="#approach"     class="block rounded-md px-3 py-2.5 font-medium text-gray-700 hover:bg-gray-50 hover:text-brand-700">Approach</a></li>
+      <li><a href="#values"       class="block rounded-md px-3 py-2.5 font-medium text-gray-700 hover:bg-gray-50 hover:text-brand-700">Values</a></li>
+      <li><a href="services.html" class="block rounded-md px-3 py-2.5 font-medium text-gray-700 hover:bg-gray-50 hover:text-brand-700">Services</a></li>
+      <li><a href="#determinants" class="block rounded-md px-3 py-2.5 font-medium text-gray-700 hover:bg-gray-50 hover:text-brand-700">Determinants</a></li>
+      <li class="pt-2"><a href="#contact" class="block rounded-md bg-brand-500 px-3 py-3 text-center font-semibold text-navy-900">Request a Consultation</a></li>
     </ul>
   </div>
 </header>
@@ -173,23 +186,23 @@
   <div class="pointer-events-none absolute inset-0 opacity-[0.35]" aria-hidden="true"
        style="background-image:linear-gradient(to right,#123A5C 1px,transparent 1px),linear-gradient(to bottom,#123A5C 1px,transparent 1px);background-size:72px 72px;">
   </div>
-  <div class="pointer-events-none absolute -right-24 -top-24 h-[28rem] w-[28rem] rounded-full bg-teal-600/20 blur-3xl" aria-hidden="true"></div>
+  <div class="pointer-events-none absolute -right-24 -top-24 h-[28rem] w-[28rem] rounded-full bg-brand-500/20 blur-3xl" aria-hidden="true"></div>
 
   <div class="relative mx-auto grid max-w-7xl items-center gap-14 px-6 py-20 lg:grid-cols-12 lg:py-28">
 
     <!-- Copy -->
     <div class="lg:col-span-7">
-      <p class="eyebrow mb-5 flex items-center gap-3 text-cyan-400">
-        <span class="h-px w-8 bg-cyan-400"></span>
+      <p class="eyebrow mb-5 flex items-center gap-3 text-lime-500">
+        <span class="h-px w-8 bg-lime-500"></span>
         Evidence-Based Public Health Services
       </p>
 
       <h1 id="hero-title" class="font-display text-4xl font-extrabold leading-[1.08] tracking-tight text-white text-balance sm:text-5xl lg:text-6xl">
         Data as the axis of<br class="hidden sm:block" />
-        <span class="text-teal-500">health equity.</span>
+        <span class="text-brand-500">health equity.</span>
       </h1>
 
-      <p class="mt-6 max-w-content text-lg leading-relaxed text-slate-300">
+      <p class="mt-6 max-w-content text-lg leading-relaxed text-gray-300">
         GLOBAL EPI LLC is a public health corporation founded by healthcare professionals.
         We transform the health of communities and populations throughout the life course
         through rigorous data collection, analysis, and translation — turning evidence into
@@ -197,11 +210,11 @@
       </p>
 
       <div class="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
-        <a href="#contact" class="inline-flex items-center justify-center gap-2 rounded-md bg-teal-600 px-7 py-3.5 font-semibold text-white shadow-lg shadow-teal-600/20 transition-colors hover:bg-teal-500">
+        <a href="#contact" class="inline-flex items-center justify-center gap-2 rounded-md bg-brand-500 px-7 py-3.5 font-semibold text-navy-900 shadow-lg shadow-brand-500/25 transition-colors hover:bg-brand-400">
           Request a Consultation
           <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-6-6 6 6-6 6" /></svg>
         </a>
-        <a href="#services" class="inline-flex items-center justify-center rounded-md border border-navy-700 px-7 py-3.5 font-semibold text-white transition-colors hover:border-cyan-400 hover:text-cyan-400">
+        <a href="#services" class="inline-flex items-center justify-center rounded-md border border-navy-700 px-7 py-3.5 font-semibold text-white transition-colors hover:border-lime-500 hover:text-lime-500">
           Explore Our Services
         </a>
       </div>
@@ -211,17 +224,17 @@
     <div class="lg:col-span-5">
       <figure class="rounded-xl border border-navy-700 bg-navy-800/60 p-5 shadow-2xl">
         <figcaption class="mb-4 flex items-center justify-between">
-          <span class="eyebrow text-slate-400">Population Health Surface</span>
-          <span class="flex items-center gap-1.5 text-[11px] font-medium text-teal-500">
-            <span class="h-1.5 w-1.5 rounded-full bg-teal-500"></span> Illustrative
+          <span class="eyebrow text-gray-400">Population Health Surface</span>
+          <span class="flex items-center gap-1.5 text-[11px] font-medium text-brand-500">
+            <span class="h-1.5 w-1.5 rounded-full bg-brand-500"></span> Illustrative
           </span>
         </figcaption>
         <canvas id="hero-surface" class="block h-auto w-full rounded-md" width="480" height="330" role="img" aria-label="Decorative animated grid representing population health data across age and time."></canvas>
-        <div class="mt-4 flex items-center justify-between border-t border-navy-700 pt-3 text-[11px] uppercase tracking-wider text-slate-500">
+        <div class="mt-4 flex items-center justify-between border-t border-navy-700 pt-3 text-[11px] uppercase tracking-wider text-gray-400">
           <span>Life course &rarr;</span>
           <span class="flex items-center gap-2">
             Lower
-            <span class="h-1.5 w-16 rounded-full" style="background:linear-gradient(to right,#123A5C,#0D9488,#22D3EE)"></span>
+            <span class="h-1.5 w-16 rounded-full" style="background:linear-gradient(to right,#123A5C,#06BD95,#B4C908)"></span>
             Higher
           </span>
         </div>
@@ -236,20 +249,20 @@
 <section class="border-b border-navy-700 bg-navy-800 on-dark" aria-label="Professional standards and frameworks">
   <div class="mx-auto grid max-w-7xl gap-px bg-navy-700 px-6 sm:grid-cols-2 lg:grid-cols-4">
     <div class="flex items-start gap-3 bg-navy-800 px-2 py-6 lg:px-6">
-      <svg class="mt-0.5 h-5 w-5 shrink-0 text-teal-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.5 11 14.5 15.5 10M12 3l7.5 3.2v5.1c0 4.6-3.1 8.4-7.5 9.7-4.4-1.3-7.5-5.1-7.5-9.7V6.2L12 3z" /></svg>
-      <p class="text-sm font-medium leading-snug text-slate-200">10 Essential Public<br />Health Services</p>
+      <svg class="mt-0.5 h-5 w-5 shrink-0 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.5 11 14.5 15.5 10M12 3l7.5 3.2v5.1c0 4.6-3.1 8.4-7.5 9.7-4.4-1.3-7.5-5.1-7.5-9.7V6.2L12 3z" /></svg>
+      <p class="text-sm font-medium leading-snug text-gray-200">10 Essential Public<br />Health Services</p>
     </div>
     <div class="flex items-start gap-3 bg-navy-800 px-2 py-6 lg:px-6">
-      <svg class="mt-0.5 h-5 w-5 shrink-0 text-teal-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM3.5 9h17M3.5 15h17M12 3c2.5 2.6 3.8 5.7 3.8 9S14.5 18.4 12 21C9.5 18.4 8.2 15.3 8.2 12S9.5 5.6 12 3z" /></svg>
-      <p class="text-sm font-medium leading-snug text-slate-200">Social Determinants<br />of Health</p>
+      <svg class="mt-0.5 h-5 w-5 shrink-0 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM3.5 9h17M3.5 15h17M12 3c2.5 2.6 3.8 5.7 3.8 9S14.5 18.4 12 21C9.5 18.4 8.2 15.3 8.2 12S9.5 5.6 12 3z" /></svg>
+      <p class="text-sm font-medium leading-snug text-gray-200">Social Determinants<br />of Health</p>
     </div>
     <div class="flex items-start gap-3 bg-navy-800 px-2 py-6 lg:px-6">
-      <svg class="mt-0.5 h-5 w-5 shrink-0 text-teal-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 19V5m0 14h16M8 15V9m4 6V6.5M16 15v-3.5M20 15V8" /></svg>
-      <p class="text-sm font-medium leading-snug text-slate-200">Evidence-Based<br />Practice</p>
+      <svg class="mt-0.5 h-5 w-5 shrink-0 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 19V5m0 14h16M8 15V9m4 6V6.5M16 15v-3.5M20 15V8" /></svg>
+      <p class="text-sm font-medium leading-snug text-gray-200">Evidence-Based<br />Practice</p>
     </div>
     <div class="flex items-start gap-3 bg-navy-800 px-2 py-6 lg:px-6">
-      <svg class="mt-0.5 h-5 w-5 shrink-0 text-teal-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15.5 20.5v-1.8a3.4 3.4 0 0 0-3.4-3.4H6.9a3.4 3.4 0 0 0-3.4 3.4v1.8M9.5 11.6a3.4 3.4 0 1 0 0-6.8 3.4 3.4 0 0 0 0 6.8zM20.5 20.5v-1.8a3.4 3.4 0 0 0-2.6-3.3M15.6 4.9a3.4 3.4 0 0 1 0 6.6" /></svg>
-      <p class="text-sm font-medium leading-snug text-slate-200">Founded by Healthcare<br />Professionals</p>
+      <svg class="mt-0.5 h-5 w-5 shrink-0 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15.5 20.5v-1.8a3.4 3.4 0 0 0-3.4-3.4H6.9a3.4 3.4 0 0 0-3.4 3.4v1.8M9.5 11.6a3.4 3.4 0 1 0 0-6.8 3.4 3.4 0 0 0 0 6.8zM20.5 20.5v-1.8a3.4 3.4 0 0 0-2.6-3.3M15.6 4.9a3.4 3.4 0 0 1 0 6.6" /></svg>
+      <p class="text-sm font-medium leading-snug text-gray-200">Founded by Healthcare<br />Professionals</p>
     </div>
   </div>
 </section>
@@ -261,11 +274,11 @@
   <div class="mx-auto max-w-7xl px-6">
 
     <div class="reveal mb-14 max-w-content">
-      <p class="eyebrow mb-4 text-teal-600">Who We Are</p>
+      <p class="eyebrow mb-4 text-brand-700">Who We Are</p>
       <h2 id="about-title" class="font-display text-3xl font-bold leading-tight tracking-tight text-navy-900 text-balance sm:text-4xl">
         A public health corporation built to close the distance between evidence and access.
       </h2>
-      <p class="mt-5 text-lg leading-relaxed text-slate-600">
+      <p class="mt-5 text-lg leading-relaxed text-gray-600">
         Founded in 2023 by healthcare professionals, GLOBAL EPI LLC delivers evidence-based
         public health services to communities and populations — with data as the primary axis
         of every engagement.
@@ -275,10 +288,10 @@
     <div class="grid gap-8 lg:grid-cols-2">
 
       <!-- Mission -->
-      <article class="reveal relative overflow-hidden rounded-xl border border-slate-200 bg-slate-50 p-8 md:p-10">
+      <article class="reveal relative overflow-hidden rounded-xl border border-gray-200 bg-gray-50 p-8 md:p-10">
         <span class="pointer-events-none absolute -right-4 -top-8 select-none font-display text-[9rem] font-extrabold leading-none text-navy-900/[0.04]" aria-hidden="true">M</span>
         <div class="relative">
-          <p class="eyebrow mb-4 text-teal-600">Our Mission</p>
+          <p class="eyebrow mb-4 text-brand-700">Our Mission</p>
           <div class="rule-teal mb-6"></div>
           <p class="font-serif text-xl leading-relaxed text-navy-900 md:text-[1.4rem] md:leading-relaxed">
             To transform the health of communities and populations throughout the life course,
@@ -291,9 +304,9 @@
       <article class="reveal relative overflow-hidden rounded-xl border border-navy-700 bg-navy-900 p-8 md:p-10 on-dark">
         <span class="pointer-events-none absolute -right-4 -top-8 select-none font-display text-[9rem] font-extrabold leading-none text-white/[0.05]" aria-hidden="true">V</span>
         <div class="relative">
-          <p class="eyebrow mb-4 text-cyan-400">Our Vision</p>
-          <div class="mb-6 h-px w-10 bg-cyan-400"></div>
-          <p class="font-serif text-xl leading-relaxed text-slate-100 md:text-[1.4rem] md:leading-relaxed">
+          <p class="eyebrow mb-4 text-lime-500">Our Vision</p>
+          <div class="mb-6 h-px w-10 bg-lime-500"></div>
+          <p class="font-serif text-xl leading-relaxed text-gray-100 md:text-[1.4rem] md:leading-relaxed">
             To position ourselves as the leading public health corporation providing consulting,
             coordination, project management, and health advocacy services, in alignment with
             quality standards, based on the 10 Essential Public Health Services, and addressing
@@ -310,15 +323,15 @@
      Numbered because this genuinely is a sequence: each stage
      depends on the output of the one before it.
 ============================================================ -->
-<section id="approach" class="border-y border-slate-200 bg-slate-50 py-20 md:py-28" aria-labelledby="approach-title">
+<section id="approach" class="border-y border-gray-200 bg-gray-50 py-20 md:py-28" aria-labelledby="approach-title">
   <div class="mx-auto max-w-7xl px-6">
 
     <div class="reveal mb-16 max-w-content">
-      <p class="eyebrow mb-4 text-teal-600">Our Approach</p>
+      <p class="eyebrow mb-4 text-brand-700">Our Approach</p>
       <h2 id="approach-title" class="font-display text-3xl font-bold leading-tight tracking-tight text-navy-900 text-balance sm:text-4xl">
         Collect. Analyze. Translate.
       </h2>
-      <p class="mt-5 text-lg leading-relaxed text-slate-600">
+      <p class="mt-5 text-lg leading-relaxed text-gray-600">
         Data only changes outcomes when it survives the journey from the field to the decision.
         Our methodology is built around that journey — and we do not hand off a finding until
         a partner can act on it.
@@ -327,24 +340,24 @@
 
     <ol class="grid gap-10 md:grid-cols-3 md:gap-8">
       <li class="reveal relative">
-        <span class="pointer-events-none absolute left-16 -right-8 top-7 hidden h-px bg-slate-300 md:block" aria-hidden="true"></span>
+        <span class="pointer-events-none absolute left-16 -right-8 top-7 hidden h-px bg-gray-300 md:block" aria-hidden="true"></span>
         <div class="mb-6 flex items-center">
-          <span class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-slate-300 bg-white font-display text-sm font-bold tracking-wider text-teal-600">01</span>
+          <span class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-gray-300 bg-white font-display text-sm font-bold tracking-wider text-brand-700">01</span>
         </div>
         <h3 class="font-display text-xl font-bold text-navy-900">Collect</h3>
-        <p class="mt-3 leading-relaxed text-slate-600">
+        <p class="mt-3 leading-relaxed text-gray-600">
           Surveillance data, community assessment, and primary field collection — designed
           so that the populations most often left out of the record are counted first.
         </p>
       </li>
 
       <li class="reveal relative">
-        <span class="pointer-events-none absolute left-16 -right-8 top-7 hidden h-px bg-slate-300 md:block" aria-hidden="true"></span>
+        <span class="pointer-events-none absolute left-16 -right-8 top-7 hidden h-px bg-gray-300 md:block" aria-hidden="true"></span>
         <div class="mb-6 flex items-center">
-          <span class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-slate-300 bg-white font-display text-sm font-bold tracking-wider text-teal-600">02</span>
+          <span class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-gray-300 bg-white font-display text-sm font-bold tracking-wider text-brand-700">02</span>
         </div>
         <h3 class="font-display text-xl font-bold text-navy-900">Analyze</h3>
-        <p class="mt-3 leading-relaxed text-slate-600">
+        <p class="mt-3 leading-relaxed text-gray-600">
           Demographic, epidemiological, and economic analysis that identifies where the burden
           sits, which determinants drive it, and what a measurable improvement would look like.
         </p>
@@ -352,10 +365,10 @@
 
       <li class="reveal relative">
         <div class="mb-6 flex items-center">
-          <span class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-teal-600 bg-teal-600 font-display text-sm font-bold tracking-wider text-white">03</span>
+          <span class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-brand-600 bg-brand-500 font-display text-sm font-bold tracking-wider text-navy-900">03</span>
         </div>
         <h3 class="font-display text-xl font-bold text-navy-900">Translate</h3>
-        <p class="mt-3 leading-relaxed text-slate-600">
+        <p class="mt-3 leading-relaxed text-gray-600">
           Findings converted into programs, policy, training, and communication — built so
           partner organizations can sustain the work after the engagement ends.
         </p>
@@ -371,52 +384,52 @@
   <div class="mx-auto max-w-7xl px-6">
 
     <div class="reveal mb-14 max-w-content">
-      <p class="eyebrow mb-4 text-teal-600">Core Values</p>
+      <p class="eyebrow mb-4 text-brand-700">Core Values</p>
       <h2 id="values-title" class="font-display text-3xl font-bold leading-tight tracking-tight text-navy-900 text-balance sm:text-4xl">
         Five commitments that govern how we practice.
       </h2>
     </div>
 
-    <ul class="grid gap-px overflow-hidden rounded-xl border border-slate-200 bg-slate-200 sm:grid-cols-2 xl:grid-cols-5">
+    <ul class="grid gap-px overflow-hidden rounded-xl border border-gray-200 bg-gray-200 sm:grid-cols-2 xl:grid-cols-5">
 
-      <li class="reveal group bg-white p-7 transition-colors hover:bg-slate-50">
-        <span class="mb-5 flex h-11 w-11 items-center justify-center rounded-lg bg-navy-900 text-cyan-400 transition-colors group-hover:bg-teal-600 group-hover:text-white">
+      <li class="reveal group bg-white p-7 transition-colors hover:bg-gray-50">
+        <span class="mb-5 flex h-11 w-11 items-center justify-center rounded-lg bg-navy-900 text-lime-500 transition-colors group-hover:bg-brand-500 group-hover:text-navy-900">
           <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM3.5 9h17M3.5 15h17M12 3c2.5 2.6 3.8 5.7 3.8 9S14.5 18.4 12 21C9.5 18.4 8.2 15.3 8.2 12S9.5 5.6 12 3z" /></svg>
         </span>
         <h3 class="font-display text-lg font-bold text-navy-900">Global Health</h3>
-        <p class="mt-2.5 text-sm leading-relaxed text-slate-600">Demographic, epidemiological, and economic analysis applied across borders and populations.</p>
+        <p class="mt-2.5 text-sm leading-relaxed text-gray-600">Demographic, epidemiological, and economic analysis applied across borders and populations.</p>
       </li>
 
-      <li class="reveal group bg-white p-7 transition-colors hover:bg-slate-50">
-        <span class="mb-5 flex h-11 w-11 items-center justify-center rounded-lg bg-navy-900 text-cyan-400 transition-colors group-hover:bg-teal-600 group-hover:text-white">
+      <li class="reveal group bg-white p-7 transition-colors hover:bg-gray-50">
+        <span class="mb-5 flex h-11 w-11 items-center justify-center rounded-lg bg-navy-900 text-lime-500 transition-colors group-hover:bg-brand-500 group-hover:text-navy-900">
           <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m12 3 2.4 4.9 5.4.8-3.9 3.8.9 5.4-4.8-2.5-4.8 2.5.9-5.4L4.2 8.7l5.4-.8L12 3z" /></svg>
         </span>
         <h3 class="font-display text-lg font-bold text-navy-900">Leadership</h3>
-        <p class="mt-2.5 text-sm leading-relaxed text-slate-600">Empowerment, collaboration, and governance that build capacity rather than dependency.</p>
+        <p class="mt-2.5 text-sm leading-relaxed text-gray-600">Empowerment, collaboration, and governance that build capacity rather than dependency.</p>
       </li>
 
-      <li class="reveal group bg-white p-7 transition-colors hover:bg-slate-50">
-        <span class="mb-5 flex h-11 w-11 items-center justify-center rounded-lg bg-navy-900 text-cyan-400 transition-colors group-hover:bg-teal-600 group-hover:text-white">
+      <li class="reveal group bg-white p-7 transition-colors hover:bg-gray-50">
+        <span class="mb-5 flex h-11 w-11 items-center justify-center rounded-lg bg-navy-900 text-lime-500 transition-colors group-hover:bg-brand-500 group-hover:text-navy-900">
           <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M20 13.5A3.5 3.5 0 0 1 16.5 17H9l-4.5 3.5V6.5A3.5 3.5 0 0 1 8 3h8.5A3.5 3.5 0 0 1 20 6.5v7z" /></svg>
         </span>
         <h3 class="font-display text-lg font-bold text-navy-900">Communication</h3>
-        <p class="mt-2.5 text-sm leading-relaxed text-slate-600">Cultural competence and assertive dissemination, in the language the community actually uses.</p>
+        <p class="mt-2.5 text-sm leading-relaxed text-gray-600">Cultural competence and assertive dissemination, in the language the community actually uses.</p>
       </li>
 
-      <li class="reveal group bg-white p-7 transition-colors hover:bg-slate-50">
-        <span class="mb-5 flex h-11 w-11 items-center justify-center rounded-lg bg-navy-900 text-cyan-400 transition-colors group-hover:bg-teal-600 group-hover:text-white">
+      <li class="reveal group bg-white p-7 transition-colors hover:bg-gray-50">
+        <span class="mb-5 flex h-11 w-11 items-center justify-center rounded-lg bg-navy-900 text-lime-500 transition-colors group-hover:bg-brand-500 group-hover:text-navy-900">
           <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M8 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM16.5 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM3 20v-1.5A3.5 3.5 0 0 1 6.5 15h3A3.5 3.5 0 0 1 13 18.5V20M15 15h2.5a3.5 3.5 0 0 1 3.5 3.5V20" /></svg>
         </span>
         <h3 class="font-display text-lg font-bold text-navy-900">Interprofessional Practice</h3>
-        <p class="mt-2.5 text-sm leading-relaxed text-slate-600">Reducing structural biases, social inequalities, and racism through shared accountability.</p>
+        <p class="mt-2.5 text-sm leading-relaxed text-gray-600">Reducing structural biases, social inequalities, and racism through shared accountability.</p>
       </li>
 
-      <li class="reveal group bg-white p-7 transition-colors hover:bg-slate-50">
-        <span class="mb-5 flex h-11 w-11 items-center justify-center rounded-lg bg-navy-900 text-cyan-400 transition-colors group-hover:bg-teal-600 group-hover:text-white">
+      <li class="reveal group bg-white p-7 transition-colors hover:bg-gray-50">
+        <span class="mb-5 flex h-11 w-11 items-center justify-center rounded-lg bg-navy-900 text-lime-500 transition-colors group-hover:bg-brand-500 group-hover:text-navy-900">
           <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zM5 20.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zM19 20.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zM12 8.5v3.8M12 12.3 6.4 15.9M12 12.3l5.6 3.6" /></svg>
         </span>
         <h3 class="font-display text-lg font-bold text-navy-900">Systems Thinking</h3>
-        <p class="mt-2.5 text-sm leading-relaxed text-slate-600">Solving public health problems for hard-to-reach populations at the level of the system.</p>
+        <p class="mt-2.5 text-sm leading-relaxed text-gray-600">Solving public health problems for hard-to-reach populations at the level of the system.</p>
       </li>
     </ul>
   </div>
@@ -427,21 +440,21 @@
      Services 1–6 sit in a three-column grid; service 7 is
      promoted to a full-width feature card.
 ============================================================ -->
-<section id="services" class="border-y border-slate-200 bg-slate-50 py-20 md:py-28" aria-labelledby="services-title">
+<section id="services" class="border-y border-gray-200 bg-gray-50 py-20 md:py-28" aria-labelledby="services-title">
   <div class="mx-auto max-w-7xl px-6">
 
     <div class="reveal mb-14 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
       <div class="max-w-content">
-        <p class="eyebrow mb-4 text-teal-600">Our Services</p>
+        <p class="eyebrow mb-4 text-brand-700">Our Services</p>
         <h2 id="services-title" class="font-display text-3xl font-bold leading-tight tracking-tight text-navy-900 text-balance sm:text-4xl">
           Seven service lines, one evidence standard.
         </h2>
-        <p class="mt-5 text-lg leading-relaxed text-slate-600">
+        <p class="mt-5 text-lg leading-relaxed text-gray-600">
           Each engagement is scoped against the 10 Essential Public Health Services and
           designed to leave measurable capacity behind.
         </p>
       </div>
-      <a href="services.html" class="shrink-0 text-sm font-semibold text-teal-600 transition-colors hover:text-navy-900">
+      <a href="services.html" class="shrink-0 text-sm font-semibold text-brand-700 transition-colors hover:text-navy-900">
         See all seven in detail &rarr;
       </a>
     </div>
@@ -449,85 +462,85 @@
     <!-- Services 01–06 -->
     <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
 
-      <article class="reveal group flex flex-col rounded-xl border border-slate-200 bg-white p-8 transition-all hover:-translate-y-1 hover:border-teal-600/40 hover:shadow-xl hover:shadow-navy-900/5">
+      <article class="reveal group flex flex-col rounded-xl border border-gray-200 bg-white p-8 transition-all hover:-translate-y-1 hover:border-brand-500/50 hover:shadow-xl hover:shadow-navy-900/5">
         <div class="mb-6 flex items-start justify-between">
-          <span class="flex h-12 w-12 items-center justify-center rounded-lg bg-slate-100 text-navy-900 transition-colors group-hover:bg-navy-900 group-hover:text-cyan-400">
+          <span class="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100 text-navy-900 transition-colors group-hover:bg-navy-900 group-hover:text-lime-500">
             <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 17a6.5 6.5 0 1 0 0-13 6.5 6.5 0 0 0 0 13zM20 20l-4.9-4.9M10.5 7.5v6M7.5 10.5h6" /></svg>
           </span>
-          <span class="font-display text-sm font-bold tracking-wider text-slate-300">01</span>
+          <span aria-hidden="true" class="font-display text-sm font-bold tracking-wider text-gray-400">01</span>
         </div>
         <h3 class="font-display text-lg font-bold leading-snug text-navy-900">Public Health Research &amp; Development</h3>
-        <p class="mt-3 text-sm leading-relaxed text-slate-600">
+        <p class="mt-3 text-sm leading-relaxed text-gray-600">
           Rigorous study design, epidemiological surveillance, and applied research that turns
           population data into defensible, publishable evidence.
         </p>
       </article>
 
-      <article class="reveal group flex flex-col rounded-xl border border-slate-200 bg-white p-8 transition-all hover:-translate-y-1 hover:border-teal-600/40 hover:shadow-xl hover:shadow-navy-900/5">
+      <article class="reveal group flex flex-col rounded-xl border border-gray-200 bg-white p-8 transition-all hover:-translate-y-1 hover:border-brand-500/50 hover:shadow-xl hover:shadow-navy-900/5">
         <div class="mb-6 flex items-start justify-between">
-          <span class="flex h-12 w-12 items-center justify-center rounded-lg bg-slate-100 text-navy-900 transition-colors group-hover:bg-navy-900 group-hover:text-cyan-400">
+          <span class="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100 text-navy-900 transition-colors group-hover:bg-navy-900 group-hover:text-lime-500">
             <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 19.5V5a2 2 0 0 1 2-2h9l5 5v11.5a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 19.5zM14.5 3v5h5M8.5 13l2.2 2.2 4.3-4.4" /></svg>
           </span>
-          <span class="font-display text-sm font-bold tracking-wider text-slate-300">02</span>
+          <span aria-hidden="true" class="font-display text-sm font-bold tracking-wider text-gray-400">02</span>
         </div>
         <h3 class="font-display text-lg font-bold leading-snug text-navy-900">Program Development &amp; Evaluation</h3>
-        <p class="mt-3 text-sm leading-relaxed text-slate-600">
+        <p class="mt-3 text-sm leading-relaxed text-gray-600">
           End-to-end program design paired with process, outcome, and impact evaluation aligned
           to funder and accreditation standards.
         </p>
       </article>
 
-      <article class="reveal group flex flex-col rounded-xl border border-slate-200 bg-white p-8 transition-all hover:-translate-y-1 hover:border-teal-600/40 hover:shadow-xl hover:shadow-navy-900/5">
+      <article class="reveal group flex flex-col rounded-xl border border-gray-200 bg-white p-8 transition-all hover:-translate-y-1 hover:border-brand-500/50 hover:shadow-xl hover:shadow-navy-900/5">
         <div class="mb-6 flex items-start justify-between">
-          <span class="flex h-12 w-12 items-center justify-center rounded-lg bg-slate-100 text-navy-900 transition-colors group-hover:bg-navy-900 group-hover:text-cyan-400">
+          <span class="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100 text-navy-900 transition-colors group-hover:bg-navy-900 group-hover:text-lime-500">
             <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 4h6M9 4a2 2 0 0 0-2 2v.5H5.5A1.5 1.5 0 0 0 4 8v11.5A1.5 1.5 0 0 0 5.5 21h13a1.5 1.5 0 0 0 1.5-1.5V8a1.5 1.5 0 0 0-1.5-1.5H17V6a2 2 0 0 0-2-2M8 11.5h8M8 15.5h5" /></svg>
           </span>
-          <span class="font-display text-sm font-bold tracking-wider text-slate-300">03</span>
+          <span aria-hidden="true" class="font-display text-sm font-bold tracking-wider text-gray-400">03</span>
         </div>
         <h3 class="font-display text-lg font-bold leading-snug text-navy-900">Comprehensive Needs Assessment</h3>
-        <p class="mt-3 text-sm leading-relaxed text-slate-600">
+        <p class="mt-3 text-sm leading-relaxed text-gray-600">
           Community health needs assessments that pair quantitative indicators with
           lived-experience data to locate the gaps the numbers alone will not show.
         </p>
       </article>
 
-      <article class="reveal group flex flex-col rounded-xl border border-slate-200 bg-white p-8 transition-all hover:-translate-y-1 hover:border-teal-600/40 hover:shadow-xl hover:shadow-navy-900/5">
+      <article class="reveal group flex flex-col rounded-xl border border-gray-200 bg-white p-8 transition-all hover:-translate-y-1 hover:border-brand-500/50 hover:shadow-xl hover:shadow-navy-900/5">
         <div class="mb-6 flex items-start justify-between">
-          <span class="flex h-12 w-12 items-center justify-center rounded-lg bg-slate-100 text-navy-900 transition-colors group-hover:bg-navy-900 group-hover:text-cyan-400">
+          <span class="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100 text-navy-900 transition-colors group-hover:bg-navy-900 group-hover:text-lime-500">
             <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v18M5 7l7-3 7 3M5 7v3.5a3.5 3.5 0 1 0 7 0V7M12 7v3.5a3.5 3.5 0 1 0 7 0V7M8 21h8" /></svg>
           </span>
-          <span class="font-display text-sm font-bold tracking-wider text-slate-300">04</span>
+          <span aria-hidden="true" class="font-display text-sm font-bold tracking-wider text-gray-400">04</span>
         </div>
         <h3 class="font-display text-lg font-bold leading-snug text-navy-900">Policy Analysis &amp; Advocacy</h3>
-        <p class="mt-3 text-sm leading-relaxed text-slate-600">
+        <p class="mt-3 text-sm leading-relaxed text-gray-600">
           Evidence briefs, legislative analysis, and advocacy strategy that carry findings
           from the report into policy and practice.
         </p>
       </article>
 
-      <article class="reveal group flex flex-col rounded-xl border border-slate-200 bg-white p-8 transition-all hover:-translate-y-1 hover:border-teal-600/40 hover:shadow-xl hover:shadow-navy-900/5">
+      <article class="reveal group flex flex-col rounded-xl border border-gray-200 bg-white p-8 transition-all hover:-translate-y-1 hover:border-brand-500/50 hover:shadow-xl hover:shadow-navy-900/5">
         <div class="mb-6 flex items-start justify-between">
-          <span class="flex h-12 w-12 items-center justify-center rounded-lg bg-slate-100 text-navy-900 transition-colors group-hover:bg-navy-900 group-hover:text-cyan-400">
+          <span class="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100 text-navy-900 transition-colors group-hover:bg-navy-900 group-hover:text-lime-500">
             <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m12 4 9 4.5-9 4.5-9-4.5L12 4zM6.5 11v4.8c0 .6.3 1.1.8 1.4L12 20l4.7-2.8c.5-.3.8-.8.8-1.4V11M21 8.5V14" /></svg>
           </span>
-          <span class="font-display text-sm font-bold tracking-wider text-slate-300">05</span>
+          <span aria-hidden="true" class="font-display text-sm font-bold tracking-wider text-gray-400">05</span>
         </div>
         <h3 class="font-display text-lg font-bold leading-snug text-navy-900">Capacity Building &amp; Training</h3>
-        <p class="mt-3 text-sm leading-relaxed text-slate-600">
+        <p class="mt-3 text-sm leading-relaxed text-gray-600">
           Workforce development, technical assistance, and curricula that leave partner
           organizations able to sustain the work themselves.
         </p>
       </article>
 
-      <article class="reveal group flex flex-col rounded-xl border border-slate-200 bg-white p-8 transition-all hover:-translate-y-1 hover:border-teal-600/40 hover:shadow-xl hover:shadow-navy-900/5">
+      <article class="reveal group flex flex-col rounded-xl border border-gray-200 bg-white p-8 transition-all hover:-translate-y-1 hover:border-brand-500/50 hover:shadow-xl hover:shadow-navy-900/5">
         <div class="mb-6 flex items-start justify-between">
-          <span class="flex h-12 w-12 items-center justify-center rounded-lg bg-slate-100 text-navy-900 transition-colors group-hover:bg-navy-900 group-hover:text-cyan-400">
+          <span class="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100 text-navy-900 transition-colors group-hover:bg-navy-900 group-hover:text-lime-500">
             <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 9v6h3.5L13 19V5L7.5 9H4zM17 9.2a4 4 0 0 1 0 5.6M19.6 6.5a7.6 7.6 0 0 1 0 11" /></svg>
           </span>
-          <span class="font-display text-sm font-bold tracking-wider text-slate-300">06</span>
+          <span aria-hidden="true" class="font-display text-sm font-bold tracking-wider text-gray-400">06</span>
         </div>
         <h3 class="font-display text-lg font-bold leading-snug text-navy-900">Health Communication &amp; Social Marketing</h3>
-        <p class="mt-3 text-sm leading-relaxed text-slate-600">
+        <p class="mt-3 text-sm leading-relaxed text-gray-600">
           Culturally responsive campaigns and risk communication designed for — and tested
           with — the populations they are meant to reach.
         </p>
@@ -539,18 +552,18 @@
       <div class="grid items-center gap-10 p-8 md:p-12 lg:grid-cols-12">
         <div class="lg:col-span-7">
           <div class="mb-5 flex items-center gap-4">
-            <span class="flex h-12 w-12 items-center justify-center rounded-lg bg-teal-600 text-white">
+            <span class="flex h-12 w-12 items-center justify-center rounded-lg bg-brand-500 text-navy-900">
               <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM3.5 9h17M3.5 15h17M12 3c2.5 2.6 3.8 5.7 3.8 9S14.5 18.4 12 21C9.5 18.4 8.2 15.3 8.2 12S9.5 5.6 12 3z" /></svg>
             </span>
-            <span class="font-display text-sm font-bold tracking-wider text-navy-700">07</span>
+            <span aria-hidden="true" class="font-display text-sm font-bold tracking-wider text-navy-700">07</span>
           </div>
           <h3 class="font-display text-2xl font-bold leading-snug text-white sm:text-3xl">Global Health Collaboration</h3>
-          <p class="mt-4 max-w-content leading-relaxed text-slate-300">
+          <p class="mt-4 max-w-content leading-relaxed text-gray-300">
             Cross-border partnerships, demographic and economic analysis, and coordination with
             international agencies, ministries, and NGOs — extending evidence-based practice to
             the hard-to-reach populations that national datasets routinely miss.
           </p>
-          <a href="#contact" class="mt-7 inline-flex items-center gap-2 font-semibold text-cyan-400 transition-colors hover:text-white">
+          <a href="#contact" class="mt-7 inline-flex items-center gap-2 font-semibold text-lime-500 transition-colors hover:text-white">
             Start a collaboration
             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-6-6 6 6-6 6" /></svg>
           </a>
@@ -558,14 +571,14 @@
 
         <!-- Supporting detail list -->
         <ul class="grid gap-3 lg:col-span-5">
-          <li class="flex items-center gap-3 rounded-lg border border-navy-700 bg-navy-800 px-5 py-4 text-sm text-slate-200">
-            <span class="h-1.5 w-1.5 shrink-0 rounded-full bg-teal-500"></span> Multi-country program coordination
+          <li class="flex items-center gap-3 rounded-lg border border-navy-700 bg-navy-800 px-5 py-4 text-sm text-gray-200">
+            <span class="h-1.5 w-1.5 shrink-0 rounded-full bg-brand-500"></span> Multi-country program coordination
           </li>
-          <li class="flex items-center gap-3 rounded-lg border border-navy-700 bg-navy-800 px-5 py-4 text-sm text-slate-200">
-            <span class="h-1.5 w-1.5 shrink-0 rounded-full bg-teal-500"></span> Comparative epidemiological analysis
+          <li class="flex items-center gap-3 rounded-lg border border-navy-700 bg-navy-800 px-5 py-4 text-sm text-gray-200">
+            <span class="h-1.5 w-1.5 shrink-0 rounded-full bg-brand-500"></span> Comparative epidemiological analysis
           </li>
-          <li class="flex items-center gap-3 rounded-lg border border-navy-700 bg-navy-800 px-5 py-4 text-sm text-slate-200">
-            <span class="h-1.5 w-1.5 shrink-0 rounded-full bg-teal-500"></span> Health advocacy with international bodies
+          <li class="flex items-center gap-3 rounded-lg border border-navy-700 bg-navy-800 px-5 py-4 text-sm text-gray-200">
+            <span class="h-1.5 w-1.5 shrink-0 rounded-full bg-brand-500"></span> Health advocacy with international bodies
           </li>
         </ul>
       </div>
@@ -581,11 +594,11 @@
   <div class="mx-auto max-w-7xl px-6">
 
     <div class="reveal mb-12 max-w-content">
-      <p class="eyebrow mb-4 text-cyan-400">Social Determinants of Health</p>
+      <p class="eyebrow mb-4 text-lime-500">Social Determinants of Health</p>
       <h2 id="sdoh-title" class="font-display text-3xl font-bold leading-tight tracking-tight text-white text-balance sm:text-4xl">
         Health outcomes are decided long before the clinic.
       </h2>
-      <p class="mt-5 text-lg leading-relaxed text-slate-300">
+      <p class="mt-5 text-lg leading-relaxed text-gray-300">
         We build every engagement around the five determinant domains — because addressing
         them is the difference between treating a population and transforming it.
       </p>
@@ -596,23 +609,23 @@
       <!-- Tabs -->
       <div class="lg:col-span-5">
         <div class="flex flex-col gap-2" role="tablist" aria-label="Social determinants of health domains">
-          <button type="button" role="tab" id="sdoh-tab-0" aria-controls="sdoh-panel" aria-selected="true"  data-sdoh="0" class="sdoh-tab flex items-center justify-between gap-4 rounded-lg border border-teal-600 bg-navy-800 px-5 py-4 text-left font-display font-semibold text-white transition-colors">
+          <button type="button" role="tab" id="sdoh-tab-0" aria-controls="sdoh-panel" aria-selected="true"  data-sdoh="0" class="sdoh-tab flex items-center justify-between gap-4 rounded-lg border border-brand-600 bg-navy-800 px-5 py-4 text-left font-display font-semibold text-white transition-colors">
             <span>Economic Stability</span>
             <svg class="h-4 w-4 shrink-0 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6" /></svg>
           </button>
-          <button type="button" role="tab" id="sdoh-tab-1" aria-controls="sdoh-panel" aria-selected="false" data-sdoh="1" class="sdoh-tab flex items-center justify-between gap-4 rounded-lg border border-navy-700 px-5 py-4 text-left font-display font-semibold text-slate-300 transition-colors hover:border-teal-600 hover:text-white">
+          <button type="button" role="tab" id="sdoh-tab-1" aria-controls="sdoh-panel" aria-selected="false" data-sdoh="1" class="sdoh-tab flex items-center justify-between gap-4 rounded-lg border border-navy-700 px-5 py-4 text-left font-display font-semibold text-gray-300 transition-colors hover:border-brand-600 hover:text-white">
             <span>Education Access &amp; Quality</span>
             <svg class="h-4 w-4 shrink-0 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6" /></svg>
           </button>
-          <button type="button" role="tab" id="sdoh-tab-2" aria-controls="sdoh-panel" aria-selected="false" data-sdoh="2" class="sdoh-tab flex items-center justify-between gap-4 rounded-lg border border-navy-700 px-5 py-4 text-left font-display font-semibold text-slate-300 transition-colors hover:border-teal-600 hover:text-white">
+          <button type="button" role="tab" id="sdoh-tab-2" aria-controls="sdoh-panel" aria-selected="false" data-sdoh="2" class="sdoh-tab flex items-center justify-between gap-4 rounded-lg border border-navy-700 px-5 py-4 text-left font-display font-semibold text-gray-300 transition-colors hover:border-brand-600 hover:text-white">
             <span>Health Care Access &amp; Quality</span>
             <svg class="h-4 w-4 shrink-0 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6" /></svg>
           </button>
-          <button type="button" role="tab" id="sdoh-tab-3" aria-controls="sdoh-panel" aria-selected="false" data-sdoh="3" class="sdoh-tab flex items-center justify-between gap-4 rounded-lg border border-navy-700 px-5 py-4 text-left font-display font-semibold text-slate-300 transition-colors hover:border-teal-600 hover:text-white">
+          <button type="button" role="tab" id="sdoh-tab-3" aria-controls="sdoh-panel" aria-selected="false" data-sdoh="3" class="sdoh-tab flex items-center justify-between gap-4 rounded-lg border border-navy-700 px-5 py-4 text-left font-display font-semibold text-gray-300 transition-colors hover:border-brand-600 hover:text-white">
             <span>Neighborhood &amp; Built Environment</span>
             <svg class="h-4 w-4 shrink-0 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6" /></svg>
           </button>
-          <button type="button" role="tab" id="sdoh-tab-4" aria-controls="sdoh-panel" aria-selected="false" data-sdoh="4" class="sdoh-tab flex items-center justify-between gap-4 rounded-lg border border-navy-700 px-5 py-4 text-left font-display font-semibold text-slate-300 transition-colors hover:border-teal-600 hover:text-white">
+          <button type="button" role="tab" id="sdoh-tab-4" aria-controls="sdoh-panel" aria-selected="false" data-sdoh="4" class="sdoh-tab flex items-center justify-between gap-4 rounded-lg border border-navy-700 px-5 py-4 text-left font-display font-semibold text-gray-300 transition-colors hover:border-brand-600 hover:text-white">
             <span>Social &amp; Community Context</span>
             <svg class="h-4 w-4 shrink-0 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6" /></svg>
           </button>
@@ -622,9 +635,9 @@
       <!-- Panel -->
       <div class="lg:col-span-7">
         <div id="sdoh-panel" role="tabpanel" aria-labelledby="sdoh-tab-0" tabindex="0" class="h-full rounded-xl border border-navy-700 bg-navy-800 p-8 md:p-10">
-          <p class="eyebrow mb-4 text-teal-500" id="sdoh-domain">Domain 1 of 5</p>
+          <p class="eyebrow mb-4 text-brand-500" id="sdoh-domain">Domain 1 of 5</p>
           <h3 class="font-display text-2xl font-bold text-white" id="sdoh-heading">Economic Stability</h3>
-          <p class="mt-4 leading-relaxed text-slate-300" id="sdoh-body">
+          <p class="mt-4 leading-relaxed text-gray-300" id="sdoh-body">
             Employment, income, expenses, debt, and food security shape health long before a
             clinical encounter takes place. We quantify economic exposure at the neighborhood
             level and build it directly into program design, rather than controlling it away.
@@ -640,17 +653,17 @@
 ============================================================ -->
 <section class="bg-white py-20 md:py-24" aria-labelledby="clients-title">
   <div class="mx-auto max-w-7xl px-6 text-center">
-    <p class="eyebrow reveal mb-4 text-teal-600">Who We Serve</p>
+    <p class="eyebrow reveal mb-4 text-brand-700">Who We Serve</p>
     <h2 id="clients-title" class="reveal mx-auto max-w-2xl font-display text-2xl font-bold leading-snug tracking-tight text-navy-900 text-balance sm:text-3xl">
       We partner with the organizations that carry public health forward.
     </h2>
     <ul class="reveal mt-10 flex flex-wrap justify-center gap-3">
-      <li class="rounded-full border border-slate-200 bg-slate-50 px-5 py-2.5 text-sm font-medium text-slate-700">Government &amp; Public Health Agencies</li>
-      <li class="rounded-full border border-slate-200 bg-slate-50 px-5 py-2.5 text-sm font-medium text-slate-700">Community-Based Organizations</li>
-      <li class="rounded-full border border-slate-200 bg-slate-50 px-5 py-2.5 text-sm font-medium text-slate-700">Health Systems &amp; Clinics</li>
-      <li class="rounded-full border border-slate-200 bg-slate-50 px-5 py-2.5 text-sm font-medium text-slate-700">Academic &amp; Research Institutions</li>
-      <li class="rounded-full border border-slate-200 bg-slate-50 px-5 py-2.5 text-sm font-medium text-slate-700">NGOs &amp; International Agencies</li>
-      <li class="rounded-full border border-slate-200 bg-slate-50 px-5 py-2.5 text-sm font-medium text-slate-700">Foundations &amp; Funders</li>
+      <li class="rounded-full border border-gray-200 bg-gray-50 px-5 py-2.5 text-sm font-medium text-gray-700">Government &amp; Public Health Agencies</li>
+      <li class="rounded-full border border-gray-200 bg-gray-50 px-5 py-2.5 text-sm font-medium text-gray-700">Community-Based Organizations</li>
+      <li class="rounded-full border border-gray-200 bg-gray-50 px-5 py-2.5 text-sm font-medium text-gray-700">Health Systems &amp; Clinics</li>
+      <li class="rounded-full border border-gray-200 bg-gray-50 px-5 py-2.5 text-sm font-medium text-gray-700">Academic &amp; Research Institutions</li>
+      <li class="rounded-full border border-gray-200 bg-gray-50 px-5 py-2.5 text-sm font-medium text-gray-700">NGOs &amp; International Agencies</li>
+      <li class="rounded-full border border-gray-200 bg-gray-50 px-5 py-2.5 text-sm font-medium text-gray-700">Foundations &amp; Funders</li>
     </ul>
   </div>
 </section>
@@ -661,16 +674,16 @@
      hands off to a mailto: draft. Swap FORM_ENDPOINT in main.js
      for a Formspree/Netlify URL when the backend is chosen.
 ============================================================ -->
-<section id="contact" class="border-t border-slate-200 bg-slate-50 py-20 md:py-28" aria-labelledby="contact-title">
+<section id="contact" class="border-t border-gray-200 bg-gray-50 py-20 md:py-28" aria-labelledby="contact-title">
   <div class="mx-auto grid max-w-7xl gap-14 px-6 lg:grid-cols-12">
 
     <!-- Contact detail -->
     <div class="reveal lg:col-span-5">
-      <p class="eyebrow mb-4 text-teal-600">Contact</p>
+      <p class="eyebrow mb-4 text-brand-700">Contact</p>
       <h2 id="contact-title" class="font-display text-3xl font-bold leading-tight tracking-tight text-navy-900 text-balance sm:text-4xl">
         Let's build healthier communities together.
       </h2>
-      <p class="mt-5 leading-relaxed text-slate-600">
+      <p class="mt-5 leading-relaxed text-gray-600">
         Tell us about the population you serve and the decision you need evidence for.
         We respond to consulting inquiries within two business days.
       </p>
@@ -678,37 +691,37 @@
       <dl class="mt-10 space-y-6">
         <div class="flex gap-4">
           <dt class="sr-only">Email</dt>
-          <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-navy-900 text-cyan-400" aria-hidden="true">
+          <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-navy-900 text-lime-500" aria-hidden="true">
             <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M3.5 7.5 12 13l8.5-5.5M4 19h16a1.5 1.5 0 0 0 1.5-1.5v-11A1.5 1.5 0 0 0 20 5H4a1.5 1.5 0 0 0-1.5 1.5v11A1.5 1.5 0 0 0 4 19z" /></svg>
           </span>
           <dd>
             <p class="text-sm font-semibold text-navy-900">Email</p>
-            <a href="mailto:info@globalepi.com" class="text-slate-600 transition-colors hover:text-teal-600">info@globalepi.com</a>
-            <p class="mt-1 text-xs text-slate-400">[PLACEHOLDER — confirm official address]</p>
+            <a href="mailto:info@globalepi.com" class="text-gray-600 transition-colors hover:text-brand-700">info@globalepi.com</a>
+            <p class="mt-1 text-xs text-gray-500">[PLACEHOLDER — confirm official address]</p>
           </dd>
         </div>
 
         <div class="flex gap-4">
           <dt class="sr-only">Phone</dt>
-          <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-navy-900 text-cyan-400" aria-hidden="true">
+          <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-navy-900 text-lime-500" aria-hidden="true">
             <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M21 16.5v2.6a1.9 1.9 0 0 1-2.1 1.9 18.8 18.8 0 0 1-8.2-2.9 18.5 18.5 0 0 1-5.7-5.7A18.8 18.8 0 0 1 2.1 4.1 1.9 1.9 0 0 1 4 2h2.6a1.9 1.9 0 0 1 1.9 1.6c.1 1 .3 1.9.7 2.8a1.9 1.9 0 0 1-.4 2L7.7 9.5a15 15 0 0 0 5.7 5.7l1.1-1.1a1.9 1.9 0 0 1 2-.4c.9.4 1.8.6 2.8.7a1.9 1.9 0 0 1 1.7 2z" /></svg>
           </span>
           <dd>
             <p class="text-sm font-semibold text-navy-900">Phone</p>
-            <a href="tel:+10000000000" class="text-slate-600 transition-colors hover:text-teal-600">+1 (000) 000-0000</a>
-            <p class="mt-1 text-xs text-slate-400">[PLACEHOLDER — confirm number]</p>
+            <a href="tel:+10000000000" class="text-gray-600 transition-colors hover:text-brand-700">+1 (000) 000-0000</a>
+            <p class="mt-1 text-xs text-gray-500">[PLACEHOLDER — confirm number]</p>
           </dd>
         </div>
 
         <div class="flex gap-4">
           <dt class="sr-only">Office</dt>
-          <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-navy-900 text-cyan-400" aria-hidden="true">
+          <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-navy-900 text-lime-500" aria-hidden="true">
             <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21s7-5.6 7-11a7 7 0 1 0-14 0c0 5.4 7 11 7 11zM12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z" /></svg>
           </span>
           <dd>
             <p class="text-sm font-semibold text-navy-900">Office</p>
-            <p class="text-slate-600">United States</p>
-            <p class="mt-1 text-xs text-slate-400">[PLACEHOLDER — confirm mailing address]</p>
+            <p class="text-gray-600">United States</p>
+            <p class="mt-1 text-xs text-gray-500">[PLACEHOLDER — confirm mailing address]</p>
           </dd>
         </div>
       </dl>
@@ -716,16 +729,16 @@
 
     <!-- Inquiry form -->
     <div class="reveal lg:col-span-7">
-      <form id="inquiry-form" novalidate class="rounded-xl border border-slate-200 bg-white p-8 shadow-sm md:p-10">
+      <form id="inquiry-form" novalidate class="rounded-xl border border-gray-200 bg-white p-8 shadow-sm md:p-10">
         <h3 class="font-display text-xl font-bold text-navy-900">Consulting Inquiry</h3>
-        <p class="mt-2 text-sm text-slate-500">Fields marked with an asterisk are required.</p>
+        <p class="mt-2 text-sm text-gray-500">Fields marked with an asterisk are required.</p>
 
         <div class="mt-8 grid gap-6 sm:grid-cols-2">
 
           <div>
             <label for="f-name" class="mb-2 block text-sm font-semibold text-navy-900">Full name *</label>
             <input id="f-name" name="name" type="text" autocomplete="name" required
-                   class="w-full rounded-md border border-slate-300 bg-white px-4 py-3 text-slate-800 placeholder:text-slate-400 focus:border-teal-600 focus:outline-none focus:ring-1 focus:ring-teal-600"
+                   class="w-full rounded-md border border-gray-400 bg-white px-4 py-3 text-gray-800 placeholder:text-gray-500 focus:border-brand-600 focus:outline-none focus:ring-1 focus:ring-brand-600"
                    placeholder="Jane Doe" />
             <p class="mt-1.5 hidden text-sm text-red-600" data-error-for="f-name"></p>
           </div>
@@ -733,7 +746,7 @@
           <div>
             <label for="f-org" class="mb-2 block text-sm font-semibold text-navy-900">Organization *</label>
             <input id="f-org" name="organization" type="text" autocomplete="organization" required
-                   class="w-full rounded-md border border-slate-300 bg-white px-4 py-3 text-slate-800 placeholder:text-slate-400 focus:border-teal-600 focus:outline-none focus:ring-1 focus:ring-teal-600"
+                   class="w-full rounded-md border border-gray-400 bg-white px-4 py-3 text-gray-800 placeholder:text-gray-500 focus:border-brand-600 focus:outline-none focus:ring-1 focus:ring-brand-600"
                    placeholder="County Health Department" />
             <p class="mt-1.5 hidden text-sm text-red-600" data-error-for="f-org"></p>
           </div>
@@ -741,7 +754,7 @@
           <div>
             <label for="f-email" class="mb-2 block text-sm font-semibold text-navy-900">Work email *</label>
             <input id="f-email" name="email" type="email" autocomplete="email" required
-                   class="w-full rounded-md border border-slate-300 bg-white px-4 py-3 text-slate-800 placeholder:text-slate-400 focus:border-teal-600 focus:outline-none focus:ring-1 focus:ring-teal-600"
+                   class="w-full rounded-md border border-gray-400 bg-white px-4 py-3 text-gray-800 placeholder:text-gray-500 focus:border-brand-600 focus:outline-none focus:ring-1 focus:ring-brand-600"
                    placeholder="jane.doe@organization.org" />
             <p class="mt-1.5 hidden text-sm text-red-600" data-error-for="f-email"></p>
           </div>
@@ -749,14 +762,14 @@
           <div>
             <label for="f-phone" class="mb-2 block text-sm font-semibold text-navy-900">Phone</label>
             <input id="f-phone" name="phone" type="tel" autocomplete="tel"
-                   class="w-full rounded-md border border-slate-300 bg-white px-4 py-3 text-slate-800 placeholder:text-slate-400 focus:border-teal-600 focus:outline-none focus:ring-1 focus:ring-teal-600"
+                   class="w-full rounded-md border border-gray-400 bg-white px-4 py-3 text-gray-800 placeholder:text-gray-500 focus:border-brand-600 focus:outline-none focus:ring-1 focus:ring-brand-600"
                    placeholder="Optional" />
           </div>
 
           <div class="sm:col-span-2">
             <label for="f-service" class="mb-2 block text-sm font-semibold text-navy-900">Service of interest *</label>
             <select id="f-service" name="service" required
-                    class="w-full rounded-md border border-slate-300 bg-white px-4 py-3 text-slate-800 focus:border-teal-600 focus:outline-none focus:ring-1 focus:ring-teal-600">
+                    class="w-full rounded-md border border-gray-400 bg-white px-4 py-3 text-gray-800 focus:border-brand-600 focus:outline-none focus:ring-1 focus:ring-brand-600">
               <option value="">Select a service&hellip;</option>
               <option>Public Health Research &amp; Development</option>
               <option>Program Development &amp; Evaluation</option>
@@ -773,22 +786,22 @@
           <div class="sm:col-span-2">
             <label for="f-message" class="mb-2 block text-sm font-semibold text-navy-900">How can we help? *</label>
             <textarea id="f-message" name="message" rows="5" required
-                      class="w-full resize-y rounded-md border border-slate-300 bg-white px-4 py-3 text-slate-800 placeholder:text-slate-400 focus:border-teal-600 focus:outline-none focus:ring-1 focus:ring-teal-600"
+                      class="w-full resize-y rounded-md border border-gray-400 bg-white px-4 py-3 text-gray-800 placeholder:text-gray-500 focus:border-brand-600 focus:outline-none focus:ring-1 focus:ring-brand-600"
                       placeholder="Describe the population you serve, the scope you have in mind, and any timeline or funding constraints."></textarea>
             <p class="mt-1.5 hidden text-sm text-red-600" data-error-for="f-message"></p>
           </div>
 
           <div class="sm:col-span-2">
-            <label class="flex items-start gap-3 text-sm text-slate-600">
+            <label class="flex items-start gap-3 text-sm text-gray-600">
               <input id="f-consent" name="consent" type="checkbox" required
-                     class="mt-0.5 h-4 w-4 shrink-0 rounded border-slate-300 text-teal-600 focus:ring-teal-600" />
+                     class="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 text-brand-700 focus:ring-brand-600" />
               <span>I consent to GLOBAL EPI LLC storing this information in order to respond to my inquiry. *</span>
             </label>
             <p class="mt-1.5 hidden text-sm text-red-600" data-error-for="f-consent"></p>
           </div>
         </div>
 
-        <button type="submit" class="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-md bg-navy-900 px-8 py-4 font-semibold text-white transition-colors hover:bg-teal-600 sm:w-auto">
+        <button type="submit" class="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-md bg-navy-900 px-8 py-4 font-semibold text-white transition-colors hover:bg-brand-500 hover:text-navy-900 sm:w-auto">
           Submit Inquiry
           <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-6-6 6 6-6 6" /></svg>
         </button>
@@ -811,16 +824,18 @@
 
       <div class="lg:col-span-5">
         <div class="flex items-center gap-3">
-          <svg class="h-10 w-10" viewBox="0 0 40 40" role="img" aria-hidden="true">
-            <rect width="40" height="40" rx="8" fill="#0A2540" />
-            <path d="M9 27.5 L16 19 L23 23.5 L31 11.5" fill="none" stroke="#22D3EE" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
-            <circle cx="16" cy="19" r="2.6" fill="#0D9488" />
-            <circle cx="23" cy="23.5" r="2.6" fill="#0D9488" />
-            <circle cx="31" cy="11.5" r="2.6" fill="#22D3EE" />
-          </svg>
-          <span class="font-display text-lg font-extrabold tracking-tight text-white">GLOBAL EPI<span class="text-teal-500">.</span></span>
+          <svg class="h-10 w-auto shrink-0" viewBox="0 0 27 29" role="img" aria-hidden="true">
+        <circle cx="16" cy="18" r="10" fill="#B4C908" />
+        <g fill="#A3A3A3">
+          <circle cx="13" cy="15.5" r="3.8" /><circle cx="22" cy="23" r="3" />
+          <circle cx="14.5" cy="3.5" r="2.5" /><circle cx="23.5" cy="11.5" r="2.5" />
+          <circle cx="3" cy="14" r="2" /><circle cx="5" cy="2.5" r="1.8" />
+          <circle cx="23" cy="17" r="1" /><circle cx="2" cy="20" r="1" />
+        </g>
+      </svg>
+          <span class="font-display text-xl font-bold tracking-tight text-brand-500">Global Epi</span>
         </div>
-        <p class="mt-5 max-w-sm leading-relaxed text-slate-400">
+        <p class="mt-5 max-w-sm leading-relaxed text-gray-400">
           A public health corporation delivering evidence-based services to communities and
           populations — transforming access to health equity through data collection, analysis,
           and translation.
@@ -828,45 +843,45 @@
       </div>
 
       <div class="lg:col-span-3">
-        <h2 class="eyebrow mb-5 text-slate-500">Services</h2>
+        <h2 class="eyebrow mb-5 text-gray-400">Services</h2>
         <ul class="space-y-3 text-sm">
-          <li><a href="services.html#service-1" class="text-slate-300 transition-colors hover:text-cyan-400">Research &amp; Development</a></li>
-          <li><a href="services.html#service-2" class="text-slate-300 transition-colors hover:text-cyan-400">Program Development &amp; Evaluation</a></li>
-          <li><a href="services.html#service-3" class="text-slate-300 transition-colors hover:text-cyan-400">Needs Assessment</a></li>
-          <li><a href="services.html#service-4" class="text-slate-300 transition-colors hover:text-cyan-400">Policy Analysis &amp; Advocacy</a></li>
-          <li><a href="services.html#service-5" class="text-slate-300 transition-colors hover:text-cyan-400">Capacity Building &amp; Training</a></li>
-          <li><a href="services.html#service-6" class="text-slate-300 transition-colors hover:text-cyan-400">Health Communication</a></li>
-          <li><a href="services.html#service-7" class="text-slate-300 transition-colors hover:text-cyan-400">Global Health Collaboration</a></li>
+          <li><a href="services.html#service-1" class="text-gray-300 transition-colors hover:text-lime-500">Research &amp; Development</a></li>
+          <li><a href="services.html#service-2" class="text-gray-300 transition-colors hover:text-lime-500">Program Development &amp; Evaluation</a></li>
+          <li><a href="services.html#service-3" class="text-gray-300 transition-colors hover:text-lime-500">Needs Assessment</a></li>
+          <li><a href="services.html#service-4" class="text-gray-300 transition-colors hover:text-lime-500">Policy Analysis &amp; Advocacy</a></li>
+          <li><a href="services.html#service-5" class="text-gray-300 transition-colors hover:text-lime-500">Capacity Building &amp; Training</a></li>
+          <li><a href="services.html#service-6" class="text-gray-300 transition-colors hover:text-lime-500">Health Communication</a></li>
+          <li><a href="services.html#service-7" class="text-gray-300 transition-colors hover:text-lime-500">Global Health Collaboration</a></li>
         </ul>
       </div>
 
       <div class="lg:col-span-2">
-        <h2 class="eyebrow mb-5 text-slate-500">Company</h2>
+        <h2 class="eyebrow mb-5 text-gray-400">Company</h2>
         <ul class="space-y-3 text-sm">
-          <li><a href="#about" class="text-slate-300 transition-colors hover:text-cyan-400">Mission &amp; Vision</a></li>
-          <li><a href="#approach" class="text-slate-300 transition-colors hover:text-cyan-400">Our Approach</a></li>
-          <li><a href="#values" class="text-slate-300 transition-colors hover:text-cyan-400">Core Values</a></li>
-          <li><a href="#determinants" class="text-slate-300 transition-colors hover:text-cyan-400">Determinants</a></li>
-          <li><a href="#contact" class="text-slate-300 transition-colors hover:text-cyan-400">Contact</a></li>
+          <li><a href="#about" class="text-gray-300 transition-colors hover:text-lime-500">Mission &amp; Vision</a></li>
+          <li><a href="#approach" class="text-gray-300 transition-colors hover:text-lime-500">Our Approach</a></li>
+          <li><a href="#values" class="text-gray-300 transition-colors hover:text-lime-500">Core Values</a></li>
+          <li><a href="#determinants" class="text-gray-300 transition-colors hover:text-lime-500">Determinants</a></li>
+          <li><a href="#contact" class="text-gray-300 transition-colors hover:text-lime-500">Contact</a></li>
         </ul>
       </div>
 
       <div class="lg:col-span-2">
-        <h2 class="eyebrow mb-5 text-slate-500">Get in Touch</h2>
+        <h2 class="eyebrow mb-5 text-gray-400">Get in Touch</h2>
         <ul class="space-y-3 text-sm">
-          <li><a href="mailto:info@globalepi.com" class="text-slate-300 transition-colors hover:text-cyan-400">info@globalepi.com</a></li>
-          <li><a href="tel:+10000000000" class="text-slate-300 transition-colors hover:text-cyan-400">+1 (000) 000-0000</a></li>
-          <li><a href="#contact" class="inline-block rounded-md bg-teal-600 px-4 py-2 font-semibold text-white transition-colors hover:bg-teal-500">Request a Consultation</a></li>
+          <li><a href="mailto:info@globalepi.com" class="text-gray-300 transition-colors hover:text-lime-500">info@globalepi.com</a></li>
+          <li><a href="tel:+10000000000" class="text-gray-300 transition-colors hover:text-lime-500">+1 (000) 000-0000</a></li>
+          <li><a href="#contact" class="inline-block rounded-md bg-brand-500 px-4 py-2 font-semibold text-navy-900 transition-colors hover:bg-brand-400">Request a Consultation</a></li>
         </ul>
       </div>
     </div>
 
-    <div class="mt-14 flex flex-col gap-4 border-t border-navy-700 pt-8 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+    <div class="mt-14 flex flex-col gap-4 border-t border-navy-700 pt-8 text-sm text-gray-400 sm:flex-row sm:items-center sm:justify-between">
       <p>&copy; <span id="year">2026</span> GLOBAL EPI LLC. All rights reserved.</p>
       <ul class="flex gap-6">
-        <li><a href="#" class="transition-colors hover:text-cyan-400">Privacy Policy</a></li>
-        <li><a href="#" class="transition-colors hover:text-cyan-400">Terms of Use</a></li>
-        <li><a href="#" class="transition-colors hover:text-cyan-400">Accessibility</a></li>
+        <li><a href="#" class="transition-colors hover:text-lime-500">Privacy Policy</a></li>
+        <li><a href="#" class="transition-colors hover:text-lime-500">Terms of Use</a></li>
+        <li><a href="#" class="transition-colors hover:text-lime-500">Accessibility</a></li>
       </ul>
     </div>
   </div>

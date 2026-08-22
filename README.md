@@ -32,21 +32,30 @@ across those regions apart from hrefs.
 
 ## Brand tokens
 
-Defined once in the `tailwind.config` block in `<head>` and copied verbatim into every
-future page, so a palette or type change is a one-place edit.
+Derived from the GLOBAL EPI logo and defined once in the `tailwind.config` block in
+`<head>`, copied verbatim into every page, so a palette change is a one-place edit.
 
-| Token | Hex | Role |
-|---|---|---|
-| `navy-900` | `#061A2E` | Hero, footer, dark bands |
-| `navy-800` | `#0A2540` | Primary dark surfaces |
-| `navy-700` | `#123A5C` | Borders on dark |
-| `teal-600` | `#0D9488` | Primary accent — actions, links |
-| `teal-500` | `#14A89B` | Hover |
-| `cyan-400` | `#22D3EE` | Data highlight only |
-| slate 50–700 | — | Neutral surfaces and body copy |
+| Token | Hex | Source | Role |
+|---|---|---|---|
+| `brand-500` | `#06BD95` | logo wordmark | Fills, and accents on navy |
+| `brand-700` | `#047963` | derived | Links and eyebrows on light surfaces |
+| `brand-400` | `#2FD3AF` | derived | Fill hover |
+| `lime-500` | `#B4C908` | logo mark | Highlights on navy only |
+| `navy-900` | `#061A2E` | — | Hero, footer, dark bands |
+| `navy-800` | `#0A2540` | — | Dark surfaces |
+| `navy-700` | `#123A5C` | — | Borders on dark |
+| `gray-50…800` | `#F6F8F7` … `#272D2B` | logo dots `#A3A3A3` | Neutrals, biased green |
 
-Rule: **navy carries authority, teal carries action, cyan appears only where data is
-being represented.**
+Rules, which the scale enforces rather than leaving to judgement:
+
+- **`brand-500` is a fill, never text on white** — it reaches only 2.4:1 there. Anything
+  sitting on a `brand-500` fill is `text-navy-900` (7.3:1).
+- **Text and links on light surfaces use `brand-700`** (5.4:1).
+- **`lime-500` never appears on a light surface** — 9.5:1 on navy, 1.9:1 on white.
+- **Navy carries authority, brand green carries action, lime marks data.**
+
+Every rendered text node on both pages was checked against WCAG AA. The only element
+below threshold is the "Global Epi" logotype itself, which WCAG 1.4.3 exempts.
 
 Type: **Plus Jakarta Sans** (display) · **Inter** (body) · **Source Serif 4** (mission
 and vision statements only).
@@ -64,7 +73,9 @@ and the Essential Public Health Services it maps to) · engagement models · CTA
 
 ## Outstanding
 
-- [ ] Replace the placeholder monogram with the final logo asset
+- [ ] Supply the logo as vector (SVG/AI/EPS). The mark is traced faithfully from the
+      supplied PNG, but the wordmark is set in Plus Jakarta Sans rather than the
+      logo's own typeface
 - [ ] Confirm contact details — every placeholder is marked `[PLACEHOLDER]` in the markup
 - [ ] Point the inquiry form at a real endpoint: set `FORM_ENDPOINT` in `index.html`
       (Formspree / Netlify Forms). Until then the form validates client-side and hands

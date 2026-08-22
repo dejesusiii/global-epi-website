@@ -94,8 +94,8 @@
 
   if (tabs.length && domainEl && headingEl && bodyEl && panelEl) {
     // Class sets kept as arrays so the active/inactive states stay symmetrical
-    var ACTIVE   = ['border-teal-600', 'bg-navy-800', 'text-white'];
-    var INACTIVE = ['border-navy-700', 'text-slate-300'];
+    var ACTIVE   = ['border-brand-600', 'bg-navy-800', 'text-white'];
+    var INACTIVE = ['border-navy-700', 'text-gray-300'];
 
     var selectTab = function (index) {
       tabs.forEach(function (tab, i) {
@@ -129,8 +129,8 @@
   --------------------------------------------------------------------- */
   var indexLinks = Array.prototype.slice.call(document.querySelectorAll('[data-service-link]'));
   if (indexLinks.length && 'IntersectionObserver' in window) {
-    var ON  = ['border-teal-600', 'bg-teal-600', 'text-white'];
-    var OFF = ['border-slate-300', 'bg-white', 'text-slate-600'];
+    var ON  = ['border-brand-600', 'bg-brand-500', 'text-white'];
+    var OFF = ['border-gray-400', 'bg-white', 'text-gray-600'];
 
     var mark = function (id) {
       indexLinks.forEach(function (link) {
@@ -184,7 +184,7 @@
       var note  = document.querySelector('[data-error-for="' + id + '"]');
       field.setAttribute('aria-invalid', 'true');
       if (field.type !== 'checkbox') {
-        field.classList.remove('border-slate-300');
+        field.classList.remove('border-gray-400');
         field.classList.add('border-red-500');
       }
       if (note) { note.textContent = message; note.classList.remove('hidden'); }
@@ -196,16 +196,16 @@
       field.removeAttribute('aria-invalid');
       if (field.type !== 'checkbox') {
         field.classList.remove('border-red-500');
-        field.classList.add('border-slate-300');
+        field.classList.add('border-gray-400');
       }
       if (note) { note.textContent = ''; note.classList.add('hidden'); }
     };
 
     var setStatus = function (kind, message) {
       status.textContent = message;
-      status.classList.remove('hidden', 'border-teal-600', 'bg-teal-50', 'text-teal-800', 'border-red-300', 'bg-red-50', 'text-red-700');
+      status.classList.remove('hidden', 'border-brand-600', 'bg-brand-50', 'text-brand-700', 'border-red-300', 'bg-red-50', 'text-red-700');
       if (kind === 'success') {
-        status.classList.add('border-teal-600', 'bg-teal-50', 'text-teal-800');
+        status.classList.add('border-brand-600', 'bg-brand-50', 'text-brand-700');
       } else {
         status.classList.add('border-red-300', 'bg-red-50', 'text-red-700');
       }
@@ -300,8 +300,8 @@
     var ctx  = canvas.getContext('2d');
     var COLS = 24, ROWS = 16;
 
-    // navy-700 -> teal-600 -> cyan-400
-    var STOPS = [[18, 58, 92], [13, 148, 136], [34, 211, 238]];
+    // navy-700 -> brand-500 -> lime-500
+    var STOPS = [[18, 58, 92], [6, 189, 149], [180, 201, 8]];
 
     var ramp = function (t) {
       t = Math.max(0, Math.min(1, t));
