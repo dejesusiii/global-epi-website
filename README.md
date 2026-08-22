@@ -77,8 +77,7 @@ and the Essential Public Health Services it maps to) · engagement models · CTA
       supplied PNG, but the wordmark is set in Plus Jakarta Sans rather than the
       logo's own typeface
 - [x] Email and phone are live: `global.epi.consulting@gmail.com` · (939) 401-4402
-- [ ] Mailing address — still `[PLACEHOLDER]` in the markup (the Office block on the
-      contact section reads "United States")
+- [x] Mailing address is live: Sierra Bayamón 81-37, Calle 68, Bayamón, Puerto Rico 00961
 - [ ] Point the inquiry form at a real endpoint: set `FORM_ENDPOINT` in `index.html`
       (Formspree / Netlify Forms). Until then the form validates client-side and hands
       off to a `mailto:` draft.
