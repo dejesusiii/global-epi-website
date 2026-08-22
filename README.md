@@ -96,11 +96,13 @@ surface uses the same field function as the hero canvas in `main.js`.
 `og:image` must be an **absolute** URL, so pages carry a base:
 
 ```
-https://dejesusiii.github.io/global-epi-website/
+https://globalepillc.com/
 ```
 
-If the site moves to a custom domain, change `BASE_URL` and regenerate — `og:url`
-and `<link rel="canonical">` are set per page from the same base.
+The domain is written in exactly two places: `CNAME`, which tells GitHub Pages what
+to serve, and the base above in `index.html`, from which every generated page takes
+its `og:url` and `<link rel="canonical">`. Changing domain means changing both and
+regenerating.
 
 ## Outstanding
 
