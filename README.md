@@ -91,14 +91,14 @@ the inquiry form, lifted from the homepage so the two cannot drift · what happe
       so the letterforms are the logo's own rather than a substitute typeface
 - [x] Email and phone are live: `global.epi.consulting@gmail.com` · (939) 401-4402
 - [x] Mailing address is live: Sierra Bayamón 81-37, Calle 68, Bayamón, Puerto Rico 00961
-- [x] The inquiry form posts to Formspree (`FORM_ENDPOINT` in `assets/js/main.js`).
-      If that request fails the visitor still gets a `mailto:` draft, so no inquiry is
-      silently lost.
+- [x] The inquiry form posts to Formspree (`FORM_ENDPOINT` in `assets/js/main.js`) and
+      delivery to the inbox is confirmed end to end. If the request fails the visitor
+      still gets a `mailto:` draft, so no inquiry is silently lost.
 - [ ] Founder portraits. The profile cards use initials medallions; an `<img>` drops
       straight into that slot
-- [ ] Confirm the service-to-EPHS mapping on `services.html` — it is our reading of
-      the 2020 framework, not something you specified
-- [ ] Confirm the four engagement models on `services.html` reflect how you actually contract
+- [x] The service-to-EPHS mapping is confirmed by the founder. Research & Development
+      gained EPHS 4, Needs Assessment gained 7, Capacity Building gained 9
+- [x] The four engagement models are confirmed as how the firm contracts
 - [x] Privacy Policy, Terms of Use and Accessibility pages are live and linked from the footer
 - [ ] **Have an attorney review `privacy.html` and `terms.html`.** They are drafted to
       describe accurately what this site does, but they are not legal advice and have
