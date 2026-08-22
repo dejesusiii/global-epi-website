@@ -14,13 +14,21 @@ delivering evidence-based public health services to communities and populations.
 ## Files
 
 ```
-index.html    Homepage — markup, brand config, styles and behaviour in one file
+index.html            Homepage
+services.html         The seven service lines in detail
+assets/js/main.js     Shared behaviour for every page
 README.md
 ```
 
-Everything is inline by design: with the Play CDN there is no bundler, so a single
-file keeps the brand tokens, the markup they style, and the JS that toggles them in
-one place. Split `assets/css` and `assets/js` out once a second page exists.
+Brand tokens and the custom `@layer` block stay inline in each page's `<head>` —
+with the Play CDN they must be parsed before first paint. Behaviour is shared: every
+module in `main.js` guards on the presence of its own markup, so a page without a
+form (or tab list, or canvas) simply skips that block.
+
+**Adding a page:** copy the `<head>`, utility bar, header and footer from an existing
+page verbatim, change only the `<title>`/description and the nav's `aria-current`,
+and load `assets/js/main.js` at the end. The two existing pages are byte-identical
+across those regions apart from hrefs.
 
 ## Brand tokens
 
@@ -43,12 +51,16 @@ being represented.**
 Type: **Plus Jakarta Sans** (display) · **Inter** (body) · **Source Serif 4** (mission
 and vision statements only).
 
-## Homepage sections
+## Page sections
 
-1. Utility bar · 2. Sticky header · 3. Hero · 4. Credibility strip ·
+**`index.html`** — 1. Utility bar · 2. Sticky header · 3. Hero · 4. Credibility strip ·
 5. Mission & Vision · 6. Approach (Collect / Analyze / Translate) · 7. Core Values ·
-8. Services (7 official service lines) · 9. Social Determinants of Health ·
-10. Who We Serve · 11. Contact form · 12. Footer
+8. Services overview · 9. Social Determinants of Health · 10. Who We Serve ·
+11. Contact form · 12. Footer
+
+**`services.html`** — page hero · sticky service index · seven detailed service
+sections (`#service-1` … `#service-7`, each with core activities, typical deliverables,
+and the Essential Public Health Services it maps to) · engagement models · CTA · footer
 
 ## Outstanding
 
@@ -57,6 +69,9 @@ and vision statements only).
 - [ ] Point the inquiry form at a real endpoint: set `FORM_ENDPOINT` in `index.html`
       (Formspree / Netlify Forms). Until then the form validates client-side and hands
       off to a `mailto:` draft.
+- [ ] Confirm the service-to-EPHS mapping on `services.html` — it is our reading of
+      the 2020 framework, not something you specified
+- [ ] Confirm the four engagement models on `services.html` reflect how you actually contract
 - [ ] Privacy Policy, Terms of Use and Accessibility pages (footer links are stubs)
 - [ ] For production traffic, swap the Play CDN for a prebuilt Tailwind stylesheet —
       a one-line change in `<head>`
