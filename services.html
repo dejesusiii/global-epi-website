@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Our Services — GLOBAL EPI LLC</title>
+<meta name="description" content="The seven official service lines of GLOBAL EPI LLC: public health research and development, program development and evaluation, comprehensive needs assessment, policy analysis and advocacy, capacity building and training, health communication and social marketing, and global health collaboration." />
+<meta name="author" content="GLOBAL EPI LLC" />
+<meta name="theme-color" content="#061A2E" />
+
+<!-- Open Graph / social sharing -->
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Our Services — GLOBAL EPI LLC" />
+<meta property="og:description" content="Seven service lines, one evidence standard — scoped against the 10 Essential Public Health Services." />
+<meta property="og:locale" content="en_US" />
+
+<!-- Google Fonts: Plus Jakarta Sans (display) · Inter (body) · Source Serif 4 (mission/vision) -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700;800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;1,8..60,400&display=swap" rel="stylesheet" />
+
+<!-- Tailwind CSS via Play CDN — no build step required -->
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!--
+  Brand tokens, derived from the GLOBAL EPI logo. This single config block is
+  the source of truth for the identity and is copied verbatim into every page,
+  so a palette or type change is a one-place edit.
+
+    brand  #06BD95  the wordmark green — actions and accents
+    lime   #B4C908  the mark's chartreuse — dark surfaces only
+    navy            corporate / data ground
+    gray            neutrals, biased green so they sit with the accent
+
+  Contrast rules baked into the scale, not left to chance:
+    brand-500 is too light to carry text on white (2.4:1) — it is a FILL, and
+    anything on top of it is navy-900 (7.3:1). Text and links on light
+    surfaces use brand-700 (5.4:1). lime-500 is legible on navy (9.5:1) and
+    invisible on white (1.9:1), so it never appears on a light surface.
+-->
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          navy:  { 700: '#123A5C', 800: '#0A2540', 900: '#061A2E' },
+          brand: { 50: '#E8FBF5', 400: '#2FD3AF', 500: '#06BD95', 600: '#059B7B', 700: '#047963', 800: '#036452' },
+          lime:  { 500: '#B4C908' },
+          gray:  { 50: '#F6F8F7', 100: '#EDF1EF', 200: '#DEE5E2', 300: '#C5CFCB',
+                   400: '#87918D', 500: '#69736F', 600: '#4E5854', 700: '#39413E', 800: '#272D2B' },
+        },
+        fontFamily: {
+          display: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+          sans:    ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+          serif:   ['"Source Serif 4"', 'Georgia', 'serif'],
+        },
+        maxWidth: { content: '72ch' },
+      },
+    },
+  };
+</script>
+
+<style type="text/tailwindcss">
+  /* ---------------------------------------------------------------
+     Custom layer: only what utilities genuinely cannot express.
+     The site commits to a single light identity by design — every
+     surface and text colour is painted explicitly so the page holds
+     on any host background.
+  ----------------------------------------------------------------*/
+  @layer base {
+    html { scroll-behavior: smooth; }
+    /* Offset anchor targets so the sticky header never covers a heading */
+    section[id] { scroll-margin-top: 5.5rem; }
+    body { @apply bg-white text-gray-700 font-sans antialiased; }
+    ::selection { @apply bg-brand-500 text-white; }
+    :focus-visible { @apply outline-none ring-2 ring-brand-600 ring-offset-2 ring-offset-white rounded-sm; }
+    .on-dark :focus-visible { @apply ring-lime-500 ring-offset-navy-900; }
+  }
+
+  @layer components {
+    /* Scroll-triggered reveal, driven by IntersectionObserver in main.js */
+    .reveal { opacity: 0; transform: translateY(18px); transition: opacity .7s ease, transform .7s ease; }
+    .reveal.is-visible { opacity: 1; transform: none; }
+
+    /* Uppercase eyebrow label used above every section heading */
+    .eyebrow { @apply text-xs font-semibold uppercase tracking-[0.18em]; }
+
+    /* Hairline that separates a card's header from its body */
+    .rule-teal { @apply w-10 h-px bg-brand-500; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .reveal { opacity: 1; transform: none; transition: none; }
+    *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
+  }
+</style>
+</head>
+
+<body id="top">
+
+<!-- Scroll-reveal starts hidden and is un-hidden by main.js; without JS it must never stay invisible. -->
+<noscript><style>.reveal{opacity:1 !important;transform:none !important;}</style></noscript>
+
+<!-- Keyboard users land here first -->
+<a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:m-3 focus:rounded focus:bg-navy-900 focus:px-4 focus:py-2 focus:text-white">Skip to main content</a>
+
+<!-- ============================================================
+     01 · UTILITY BAR — corporate status line, hidden on mobile
+============================================================ -->
+<div class="hidden bg-navy-900 text-gray-300 md:block on-dark">
+  <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-2 text-xs">
+    <p class="tracking-wide">Public Health Corporation &middot; Founded 2023 &middot; Bayam&oacute;n, Puerto Rico</p>
+    <div class="flex items-center gap-5">
+      <a href="mailto:global.epi.consulting@gmail.com" class="transition-colors hover:text-lime-500">global.epi.consulting@gmail.com</a>
+      <a href="index.html#contact" class="transition-colors hover:text-lime-500">LinkedIn</a>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     02 · STICKY HEADER — logo, primary nav, consultation CTA
+============================================================ -->
+<header id="site-header" class="sticky top-0 z-40 border-b border-gray-200 bg-white/90 backdrop-blur-md transition-shadow">
+  <nav class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4" aria-label="Primary">
+
+    <!-- Wordmark: placeholder monogram, swap the SVG for the final logo file -->
+    <a href="index.html" class="flex items-center gap-3" aria-label="Global Epi — home">
+      <svg class="h-9 w-auto shrink-0" viewBox="0 0 27 29" role="img" aria-hidden="true">
+        <circle cx="16" cy="18" r="10" fill="#B4C908" />
+        <g fill="#A3A3A3">
+          <circle cx="13" cy="15.5" r="3.8" /><circle cx="22" cy="23" r="3" />
+          <circle cx="14.5" cy="3.5" r="2.5" /><circle cx="23.5" cy="11.5" r="2.5" />
+          <circle cx="3" cy="14" r="2" /><circle cx="5" cy="2.5" r="1.8" />
+          <circle cx="23" cy="17" r="1" /><circle cx="2" cy="20" r="1" />
+        </g>
+      </svg>
+      <span class="leading-tight">
+        <span class="block font-display text-xl font-bold tracking-tight text-brand-500">Global Epi</span>
+        <span class="block text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-500">Public Health Corporation</span>
+      </span>
+    </a>
+
+    <!-- Desktop navigation -->
+    <ul class="hidden items-center gap-8 lg:flex">
+      <li><a href="index.html#about" class="text-sm font-medium text-gray-600 transition-colors hover:text-brand-700">About</a></li>
+      <li><a href="index.html#approach" class="text-sm font-medium text-gray-600 transition-colors hover:text-brand-700">Approach</a></li>
+      <li><a href="index.html#values" class="text-sm font-medium text-gray-600 transition-colors hover:text-brand-700">Values</a></li>
+      <li><a href="services.html" aria-current="page" class="text-sm font-medium text-brand-700 transition-colors hover:text-brand-700">Services</a></li>
+      <li><a href="index.html#determinants" class="text-sm font-medium text-gray-600 transition-colors hover:text-brand-700">Determinants</a></li>
+    </ul>
+
+    <div class="flex items-center gap-3">
+      <a href="index.html#contact" class="hidden rounded-md bg-brand-500 px-5 py-2.5 text-sm font-semibold text-navy-900 shadow-sm transition-colors hover:bg-brand-400 sm:inline-block">Request a Consultation</a>
+
+      <!-- Mobile menu trigger -->
+      <button id="nav-toggle" type="button" class="rounded-md p-2 text-navy-900 lg:hidden" aria-expanded="false" aria-controls="mobile-nav" aria-label="Open navigation menu">
+        <svg id="icon-open" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16" /></svg>
+        <svg id="icon-close" class="hidden h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" d="M6 6l12 12M18 6L6 18" /></svg>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Mobile navigation panel -->
+  <div id="mobile-nav" class="hidden border-t border-gray-200 bg-white lg:hidden">
+    <ul class="mx-auto max-w-7xl space-y-1 px-6 py-4">
+      <li><a href="index.html#about"        class="block rounded-md px-3 py-2.5 font-medium text-gray-700 hover:bg-gray-50 hover:text-brand-700">About</a></li>
+      <li><a href="index.html#approach"     class="block rounded-md px-3 py-2.5 font-medium text-gray-700 hover:bg-gray-50 hover:text-brand-700">Approach</a></li>
+      <li><a href="index.html#values"       class="block rounded-md px-3 py-2.5 font-medium text-gray-700 hover:bg-gray-50 hover:text-brand-700">Values</a></li>
+      <li><a href="services.html" aria-current="page" class="block rounded-md bg-gray-50 px-3 py-2.5 font-medium text-brand-700">Services</a></li>
+      <li><a href="index.html#determinants" class="block rounded-md px-3 py-2.5 font-medium text-gray-700 hover:bg-gray-50 hover:text-brand-700">Determinants</a></li>
+      <li class="pt-2"><a href="index.html#contact" class="block rounded-md bg-brand-500 px-3 py-3 text-center font-semibold text-navy-900">Request a Consultation</a></li>
+    </ul>
+  </div>
+</header>
+
+<main id="main">
+
+<!-- ============================================================
+     PAGE HERO
+============================================================ -->
+<section class="relative overflow-hidden bg-navy-900 on-dark" aria-labelledby="page-title">
+  <div class="pointer-events-none absolute inset-0 opacity-[0.35]" aria-hidden="true"
+       style="background-image:linear-gradient(to right,#123A5C 1px,transparent 1px),linear-gradient(to bottom,#123A5C 1px,transparent 1px);background-size:72px 72px;">
+  </div>
+  <div class="pointer-events-none absolute -right-24 -top-32 h-[26rem] w-[26rem] rounded-full bg-brand-500/20 blur-3xl" aria-hidden="true"></div>
+
+  <div class="relative mx-auto max-w-7xl px-6 py-16 md:py-24">
+    <!-- Breadcrumb -->
+    <nav aria-label="Breadcrumb" class="mb-8">
+      <ol class="flex items-center gap-2 text-sm text-gray-400">
+        <li><a href="index.html" class="transition-colors hover:text-lime-500">Home</a></li>
+        <li aria-hidden="true" class="text-navy-700">/</li>
+        <li><span class="text-gray-200" aria-current="page">Services</span></li>
+      </ol>
+    </nav>
+
+    <p class="eyebrow mb-5 flex items-center gap-3 text-lime-500">
+      <span class="h-px w-8 bg-lime-500"></span>
+      Our Services
+    </p>
+
+    <h1 id="page-title" class="max-w-4xl font-display text-4xl font-extrabold leading-[1.1] tracking-tight text-white text-balance sm:text-5xl">
+      Seven service lines,<br class="hidden sm:block" />
+      <span class="text-brand-500">one evidence standard.</span>
+    </h1>
+
+    <p class="mt-6 max-w-content text-lg leading-relaxed text-gray-300">
+      Every engagement is scoped against the 10 Essential Public Health Services, addresses the
+      social determinants that drive the outcome, and is designed to leave measurable capacity
+      behind. Below is what each service line covers and what you receive.
+    </p>
+
+    <a href="index.html#contact" class="mt-9 inline-flex items-center justify-center gap-2 rounded-md bg-brand-500 px-7 py-3.5 font-semibold text-navy-900 shadow-lg shadow-brand-500/25 transition-colors hover:bg-brand-400">
+      Request a Consultation
+      <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-6-6 6 6-6 6" /></svg>
+    </a>
+  </div>
+</section>
+
+<!-- ============================================================
+     SERVICE INDEX — sticky jump list; the active pill is tracked
+     by the scrollspy in main.js
+============================================================ -->
+<nav id="service-index" class="sticky top-[72px] z-30 border-b border-gray-200 bg-white/95 backdrop-blur-md" aria-label="Services on this page">
+  <div class="mx-auto max-w-7xl px-6 py-4">
+    <ul class="flex flex-wrap gap-2">
+        <li><a href="#service-1" data-service-link class="inline-flex items-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-600 transition-colors hover:border-brand-600 hover:text-brand-700"><span class="font-display text-xs font-bold tracking-wider opacity-60">01</span>Research &amp; Development</a></li>
+        <li><a href="#service-2" data-service-link class="inline-flex items-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-600 transition-colors hover:border-brand-600 hover:text-brand-700"><span class="font-display text-xs font-bold tracking-wider opacity-60">02</span>Program Development &amp; Evaluation</a></li>
+        <li><a href="#service-3" data-service-link class="inline-flex items-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-600 transition-colors hover:border-brand-600 hover:text-brand-700"><span class="font-display text-xs font-bold tracking-wider opacity-60">03</span>Comprehensive Needs Assessment</a></li>
+        <li><a href="#service-4" data-service-link class="inline-flex items-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-600 transition-colors hover:border-brand-600 hover:text-brand-700"><span class="font-display text-xs font-bold tracking-wider opacity-60">04</span>Policy Analysis &amp; Advocacy</a></li>
+        <li><a href="#service-5" data-service-link class="inline-flex items-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-600 transition-colors hover:border-brand-600 hover:text-brand-700"><span class="font-display text-xs font-bold tracking-wider opacity-60">05</span>Capacity Building &amp; Training</a></li>
+        <li><a href="#service-6" data-service-link class="inline-flex items-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-600 transition-colors hover:border-brand-600 hover:text-brand-700"><span class="font-display text-xs font-bold tracking-wider opacity-60">06</span>Health Communication &amp; Social Marketing</a></li>
+        <li><a href="#service-7" data-service-link class="inline-flex items-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-600 transition-colors hover:border-brand-600 hover:text-brand-700"><span class="font-display text-xs font-bold tracking-wider opacity-60">07</span>Global Health Collaboration</a></li>
+    </ul>
+  </div>
+</nav>
+
+
+<!-- --- 01 · Public Health Research & Development -->
+<section id="service-1" class="scroll-mt-40 border-t border-gray-200 bg-white py-20 md:py-28" aria-labelledby="service-1-title">
+  <div class="mx-auto max-w-7xl px-6">
+    <div class="grid gap-12 lg:grid-cols-12 lg:gap-16">
+
+      <!-- Overview — pinned alongside the detail on wide screens -->
+      <div class="reveal lg:col-span-5">
+        <div class="lg:sticky lg:top-40">
+          <div class="mb-6 flex items-center gap-4">
+            <span class="flex h-12 w-12 items-center justify-center rounded-lg bg-navy-900 text-lime-500">
+              <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 17a6.5 6.5 0 1 0 0-13 6.5 6.5 0 0 0 0 13zM20 20l-4.9-4.9M10.5 7.5v6M7.5 10.5h6" /></svg>
+            </span>
+            <span aria-hidden="true" class="font-display text-sm font-bold tracking-wider text-gray-400">01</span>
+          </div>
+
+          <h2 id="service-1-title" class="font-display text-2xl font-bold leading-snug tracking-tight text-navy-900 text-balance sm:text-3xl">Public Health Research &amp; Development</h2>
+          <p class="mt-5 leading-relaxed text-gray-600">Rigorous study design, epidemiological surveillance, and applied research that turns population data into evidence defensible enough to fund a program, change a policy, or survive peer review.</p>
+
+          <div class="mt-8">
+            <p class="eyebrow mb-3 text-gray-500">Anchored in</p>
+            <ul class="flex flex-wrap gap-2">
+              <li><abbr title="Essential Public Health Service 1: Assess and monitor population health" class="inline-block rounded border px-2.5 py-1 text-[11px] font-semibold no-underline border-gray-200 bg-white text-gray-500">EPHS 1</abbr></li>
+              <li><abbr title="Essential Public Health Service 2: Investigate, diagnose, and address health hazards and root causes" class="inline-block rounded border px-2.5 py-1 text-[11px] font-semibold no-underline border-gray-200 bg-white text-gray-500">EPHS 2</abbr></li>
+              <li><abbr title="Essential Public Health Service 9: Improve and innovate through evaluation, research, and quality improvement" class="inline-block rounded border px-2.5 py-1 text-[11px] font-semibold no-underline border-gray-200 bg-white text-gray-500">EPHS 9</abbr></li>
+            </ul>
+          </div>
+
+          <a href="index.html#contact" class="mt-8 inline-flex items-center gap-2 font-semibold text-brand-700 hover:text-navy-900 transition-colors">
+            Discuss this service
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-6-6 6 6-6 6" /></svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Detail -->
+      <div class="reveal grid gap-6 sm:grid-cols-2 lg:col-span-7">
+        <div class="rounded-xl border border-gray-200 bg-gray-50 p-7">
+          <h3 class="eyebrow mb-5 text-brand-700">Core Activities</h3>
+          <ul class="space-y-3.5">
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Study design and protocol development — observational, quasi-experimental, and mixed-methods</span></li>
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Epidemiological surveillance, cluster detection, and outbreak analysis</span></li>
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Instrument design, sampling frames, and primary data collection</span></li>
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Secondary analysis of national, state, and administrative datasets</span></li>
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Biostatistical modelling, risk estimation, and disparity decomposition</span></li>
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>IRB submissions, ethics documentation, and human subjects protection</span></li>
+          </ul>
+        </div>
+        <div class="rounded-xl border border-gray-200 bg-gray-50 p-7">
+          <h3 class="eyebrow mb-5 text-brand-700">Typical Deliverables</h3>
+          <ul class="space-y-3.5">
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Research protocol and pre-specified analysis plan</span></li>
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Cleaned, documented dataset with codebook and reproducible scripts</span></li>
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Technical report stating methods, findings, and limitations</span></li>
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Manuscript-ready results prepared for peer review</span></li>
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Surveillance dashboard for ongoing monitoring</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- --- 02 · Program Development & Evaluation -->
+<section id="service-2" class="scroll-mt-40 border-t border-gray-200 bg-gray-50 py-20 md:py-28" aria-labelledby="service-2-title">
+  <div class="mx-auto max-w-7xl px-6">
+    <div class="grid gap-12 lg:grid-cols-12 lg:gap-16">
+
+      <!-- Overview — pinned alongside the detail on wide screens -->
+      <div class="reveal lg:col-span-5">
+        <div class="lg:sticky lg:top-40">
+          <div class="mb-6 flex items-center gap-4">
+            <span class="flex h-12 w-12 items-center justify-center rounded-lg bg-navy-900 text-lime-500">
+              <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 19.5V5a2 2 0 0 1 2-2h9l5 5v11.5a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 19.5zM14.5 3v5h5M8.5 13l2.2 2.2 4.3-4.4" /></svg>
+            </span>
+            <span aria-hidden="true" class="font-display text-sm font-bold tracking-wider text-gray-400">02</span>
+          </div>
+
+          <h2 id="service-2-title" class="font-display text-2xl font-bold leading-snug tracking-tight text-navy-900 text-balance sm:text-3xl">Program Development &amp; Evaluation</h2>
+          <p class="mt-5 leading-relaxed text-gray-600">End-to-end program design paired with process, outcome, and impact evaluation built to the standard your funder and your accrediting body will actually apply.</p>
+
+          <div class="mt-8">
+            <p class="eyebrow mb-3 text-gray-500">Anchored in</p>
+            <ul class="flex flex-wrap gap-2">
+              <li><abbr title="Essential Public Health Service 9: Improve and innovate through evaluation, research, and quality improvement" class="inline-block rounded border px-2.5 py-1 text-[11px] font-semibold no-underline border-gray-200 bg-white text-gray-500">EPHS 9</abbr></li>
+              <li><abbr title="Essential Public Health Service 10: Build and maintain a strong organizational infrastructure for public health" class="inline-block rounded border px-2.5 py-1 text-[11px] font-semibold no-underline border-gray-200 bg-white text-gray-500">EPHS 10</abbr></li>
+            </ul>
+          </div>
+
+          <a href="index.html#contact" class="mt-8 inline-flex items-center gap-2 font-semibold text-brand-700 hover:text-navy-900 transition-colors">
+            Discuss this service
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-6-6 6 6-6 6" /></svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Detail -->
+      <div class="reveal grid gap-6 sm:grid-cols-2 lg:col-span-7">
+        <div class="rounded-xl border border-gray-200 bg-white p-7">
+          <h3 class="eyebrow mb-5 text-brand-700">Core Activities</h3>
+          <ul class="space-y-3.5">
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Logic models, theories of change, and measurement frameworks</span></li>
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Selection and cultural adaptation of evidence-based interventions</span></li>
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Implementation planning: staffing, workflow, and timeline design</span></li>
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Process evaluation and fidelity monitoring during delivery</span></li>
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Outcome and impact evaluation, including comparison-group designs</span></li>
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Continuous quality improvement through structured PDSA cycles</span></li>
+          </ul>
+        </div>
+        <div class="rounded-xl border border-gray-200 bg-white p-7">
+          <h3 class="eyebrow mb-5 text-brand-700">Typical Deliverables</h3>
+          <ul class="space-y-3.5">
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Program logic model and indicator set</span></li>
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Evaluation design, instruments, and data collection protocol</span></li>
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Interim process evaluation and fidelity reports</span></li>
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Final outcome and impact evaluation report</span></li>
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Funder-ready performance and progress reporting</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- --- 03 · Comprehensive Needs Assessment -->
+<section id="service-3" class="scroll-mt-40 border-t border-gray-200 bg-white py-20 md:py-28" aria-labelledby="service-3-title">
+  <div class="mx-auto max-w-7xl px-6">
+    <div class="grid gap-12 lg:grid-cols-12 lg:gap-16">
+
+      <!-- Overview — pinned alongside the detail on wide screens -->
+      <div class="reveal lg:col-span-5">
+        <div class="lg:sticky lg:top-40">
+          <div class="mb-6 flex items-center gap-4">
+            <span class="flex h-12 w-12 items-center justify-center rounded-lg bg-navy-900 text-lime-500">
+              <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 4h6M9 4a2 2 0 0 0-2 2v.5H5.5A1.5 1.5 0 0 0 4 8v11.5A1.5 1.5 0 0 0 5.5 21h13a1.5 1.5 0 0 0 1.5-1.5V8a1.5 1.5 0 0 0-1.5-1.5H17V6a2 2 0 0 0-2-2M8 11.5h8M8 15.5h5" /></svg>
+            </span>
+            <span aria-hidden="true" class="font-display text-sm font-bold tracking-wider text-gray-400">03</span>
+          </div>
+
+          <h2 id="service-3-title" class="font-display text-2xl font-bold leading-snug tracking-tight text-navy-900 text-balance sm:text-3xl">Comprehensive Needs Assessment</h2>
+          <p class="mt-5 leading-relaxed text-gray-600">Community health needs assessments that pair quantitative indicators with lived-experience data — because the gap that matters most is rarely the one the county-level average shows.</p>
+
+          <div class="mt-8">
+            <p class="eyebrow mb-3 text-gray-500">Anchored in</p>
+            <ul class="flex flex-wrap gap-2">
+              <li><abbr title="Essential Public Health Service 1: Assess and monitor population health" class="inline-block rounded border px-2.5 py-1 text-[11px] font-semibold no-underline border-gray-200 bg-white text-gray-500">EPHS 1</abbr></li>
+              <li><abbr title="Essential Public Health Service 4: Strengthen, support, and mobilize communities and partnerships" class="inline-block rounded border px-2.5 py-1 text-[11px] font-semibold no-underline border-gray-200 bg-white text-gray-500">EPHS 4</abbr></li>
+            </ul>
+          </div>
+
+          <a href="index.html#contact" class="mt-8 inline-flex items-center gap-2 font-semibold text-brand-700 hover:text-navy-900 transition-colors">
+            Discuss this service
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-6-6 6 6-6 6" /></svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Detail -->
+      <div class="reveal grid gap-6 sm:grid-cols-2 lg:col-span-7">
+        <div class="rounded-xl border border-gray-200 bg-gray-50 p-7">
+          <h3 class="eyebrow mb-5 text-brand-700">Core Activities</h3>
+          <ul class="space-y-3.5">
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Secondary data profiling across demographic, epidemiological, and economic indicators</span></li>
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Community survey design, sampling, and field administration</span></li>
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Key informant interviews and focus groups with affected populations</span></li>
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Asset and resource mapping of existing services</span></li>
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Geospatial analysis of disease burden, access, and travel time</span></li>
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Structured priority setting with community and stakeholder input</span></li>
+          </ul>
+        </div>
+        <div class="rounded-xl border border-gray-200 bg-gray-50 p-7">
+          <h3 class="eyebrow mb-5 text-brand-700">Typical Deliverables</h3>
+          <ul class="space-y-3.5">
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Community health profile with a defined indicator set</span></li>
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Qualitative synthesis representing community voice</span></li>
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Geospatial maps of burden, access, and service gaps</span></li>
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Prioritized needs matrix with transparent criteria</span></li>
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Full CHNA report and accompanying implementation strategy</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- --- 04 · Policy Analysis & Advocacy -->
+<section id="service-4" class="scroll-mt-40 border-t border-gray-200 bg-gray-50 py-20 md:py-28" aria-labelledby="service-4-title">
+  <div class="mx-auto max-w-7xl px-6">
+    <div class="grid gap-12 lg:grid-cols-12 lg:gap-16">
+
+      <!-- Overview — pinned alongside the detail on wide screens -->
+      <div class="reveal lg:col-span-5">
+        <div class="lg:sticky lg:top-40">
+          <div class="mb-6 flex items-center gap-4">
+            <span class="flex h-12 w-12 items-center justify-center rounded-lg bg-navy-900 text-lime-500">
+              <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v18M5 7l7-3 7 3M5 7v3.5a3.5 3.5 0 1 0 7 0V7M12 7v3.5a3.5 3.5 0 1 0 7 0V7M8 21h8" /></svg>
+            </span>
+            <span aria-hidden="true" class="font-display text-sm font-bold tracking-wider text-gray-400">04</span>
+          </div>
+
+          <h2 id="service-4-title" class="font-display text-2xl font-bold leading-snug tracking-tight text-navy-900 text-balance sm:text-3xl">Policy Analysis &amp; Advocacy</h2>
+          <p class="mt-5 leading-relaxed text-gray-600">Evidence briefs, legislative analysis, and advocacy strategy that carry a finding out of the report and into the statute, the regulation, or the budget line.</p>
+
+          <div class="mt-8">
+            <p class="eyebrow mb-3 text-gray-500">Anchored in</p>
+            <ul class="flex flex-wrap gap-2">
+              <li><abbr title="Essential Public Health Service 5: Create, champion, and implement policies, plans, and laws" class="inline-block rounded border px-2.5 py-1 text-[11px] font-semibold no-underline border-gray-200 bg-white text-gray-500">EPHS 5</abbr></li>
+              <li><abbr title="Essential Public Health Service 6: Utilize legal and regulatory actions" class="inline-block rounded border px-2.5 py-1 text-[11px] font-semibold no-underline border-gray-200 bg-white text-gray-500">EPHS 6</abbr></li>
+            </ul>
+          </div>
+
+          <a href="index.html#contact" class="mt-8 inline-flex items-center gap-2 font-semibold text-brand-700 hover:text-navy-900 transition-colors">
+            Discuss this service
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-6-6 6 6-6 6" /></svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Detail -->
+      <div class="reveal grid gap-6 sm:grid-cols-2 lg:col-span-7">
+        <div class="rounded-xl border border-gray-200 bg-white p-7">
+          <h3 class="eyebrow mb-5 text-brand-700">Core Activities</h3>
+          <ul class="space-y-3.5">
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Legislative and regulatory tracking across relevant jurisdictions</span></li>
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Health impact assessment of proposed policies and projects</span></li>
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Comparative policy analysis of what has been tried elsewhere</span></li>
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Fiscal and budget impact estimation</span></li>
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Stakeholder mapping and coalition development</span></li>
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Testimony preparation, briefing materials, and public comment</span></li>
+          </ul>
+        </div>
+        <div class="rounded-xl border border-gray-200 bg-white p-7">
+          <h3 class="eyebrow mb-5 text-brand-700">Typical Deliverables</h3>
+          <ul class="space-y-3.5">
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Policy brief and decision-maker one-pagers</span></li>
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Health impact assessment report</span></li>
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Legislative and regulatory analysis memoranda</span></li>
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Advocacy strategy with a tested messaging framework</span></li>
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Drafted testimony and public comment submissions</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- --- 05 · Capacity Building & Training -->
+<section id="service-5" class="scroll-mt-40 border-t border-gray-200 bg-white py-20 md:py-28" aria-labelledby="service-5-title">
+  <div class="mx-auto max-w-7xl px-6">
+    <div class="grid gap-12 lg:grid-cols-12 lg:gap-16">
+
+      <!-- Overview — pinned alongside the detail on wide screens -->
+      <div class="reveal lg:col-span-5">
+        <div class="lg:sticky lg:top-40">
+          <div class="mb-6 flex items-center gap-4">
+            <span class="flex h-12 w-12 items-center justify-center rounded-lg bg-navy-900 text-lime-500">
+              <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m12 4 9 4.5-9 4.5-9-4.5L12 4zM6.5 11v4.8c0 .6.3 1.1.8 1.4L12 20l4.7-2.8c.5-.3.8-.8.8-1.4V11M21 8.5V14" /></svg>
+            </span>
+            <span aria-hidden="true" class="font-display text-sm font-bold tracking-wider text-gray-400">05</span>
+          </div>
+
+          <h2 id="service-5-title" class="font-display text-2xl font-bold leading-snug tracking-tight text-navy-900 text-balance sm:text-3xl">Capacity Building &amp; Training</h2>
+          <p class="mt-5 leading-relaxed text-gray-600">Workforce development, technical assistance, and curricula designed so the capability stays with your organization after the engagement closes.</p>
+
+          <div class="mt-8">
+            <p class="eyebrow mb-3 text-gray-500">Anchored in</p>
+            <ul class="flex flex-wrap gap-2">
+              <li><abbr title="Essential Public Health Service 8: Build a diverse and skilled workforce" class="inline-block rounded border px-2.5 py-1 text-[11px] font-semibold no-underline border-gray-200 bg-white text-gray-500">EPHS 8</abbr></li>
+              <li><abbr title="Essential Public Health Service 10: Build and maintain a strong organizational infrastructure for public health" class="inline-block rounded border px-2.5 py-1 text-[11px] font-semibold no-underline border-gray-200 bg-white text-gray-500">EPHS 10</abbr></li>
+            </ul>
+          </div>
+
+          <a href="index.html#contact" class="mt-8 inline-flex items-center gap-2 font-semibold text-brand-700 hover:text-navy-900 transition-colors">
+            Discuss this service
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-6-6 6 6-6 6" /></svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Detail -->
+      <div class="reveal grid gap-6 sm:grid-cols-2 lg:col-span-7">
+        <div class="rounded-xl border border-gray-200 bg-gray-50 p-7">
+          <h3 class="eyebrow mb-5 text-brand-700">Core Activities</h3>
+          <ul class="space-y-3.5">
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Training needs assessment and competency mapping</span></li>
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Curriculum design for in-person, virtual, and hybrid delivery</span></li>
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Workshop facilitation and continuing-education sessions</span></li>
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Coaching and embedded technical assistance for staff and leadership</span></li>
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Data literacy and applied epidemiology for non-specialists</span></li>
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Organizational readiness and public health accreditation support</span></li>
+          </ul>
+        </div>
+        <div class="rounded-xl border border-gray-200 bg-gray-50 p-7">
+          <h3 class="eyebrow mb-5 text-brand-700">Typical Deliverables</h3>
+          <ul class="space-y-3.5">
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Competency framework and multi-year training plan</span></li>
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Facilitator guides and participant workbooks</span></li>
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Delivered workshop or certificate series</span></li>
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Pre- and post-training competency evaluation</span></li>
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Technical assistance plan with sustainability milestones</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- --- 06 · Health Communication & Social Marketing -->
+<section id="service-6" class="scroll-mt-40 border-t border-gray-200 bg-gray-50 py-20 md:py-28" aria-labelledby="service-6-title">
+  <div class="mx-auto max-w-7xl px-6">
+    <div class="grid gap-12 lg:grid-cols-12 lg:gap-16">
+
+      <!-- Overview — pinned alongside the detail on wide screens -->
+      <div class="reveal lg:col-span-5">
+        <div class="lg:sticky lg:top-40">
+          <div class="mb-6 flex items-center gap-4">
+            <span class="flex h-12 w-12 items-center justify-center rounded-lg bg-navy-900 text-lime-500">
+              <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 9v6h3.5L13 19V5L7.5 9H4zM17 9.2a4 4 0 0 1 0 5.6M19.6 6.5a7.6 7.6 0 0 1 0 11" /></svg>
+            </span>
+            <span aria-hidden="true" class="font-display text-sm font-bold tracking-wider text-gray-400">06</span>
+          </div>
+
+          <h2 id="service-6-title" class="font-display text-2xl font-bold leading-snug tracking-tight text-navy-900 text-balance sm:text-3xl">Health Communication &amp; Social Marketing</h2>
+          <p class="mt-5 leading-relaxed text-gray-600">Culturally responsive campaigns and risk communication designed for — and tested with — the populations they are meant to reach, not the populations easiest to survey.</p>
+
+          <div class="mt-8">
+            <p class="eyebrow mb-3 text-gray-500">Anchored in</p>
+            <ul class="flex flex-wrap gap-2">
+              <li><abbr title="Essential Public Health Service 3: Communicate effectively to inform and educate" class="inline-block rounded border px-2.5 py-1 text-[11px] font-semibold no-underline border-gray-200 bg-white text-gray-500">EPHS 3</abbr></li>
+              <li><abbr title="Essential Public Health Service 4: Strengthen, support, and mobilize communities and partnerships" class="inline-block rounded border px-2.5 py-1 text-[11px] font-semibold no-underline border-gray-200 bg-white text-gray-500">EPHS 4</abbr></li>
+            </ul>
+          </div>
+
+          <a href="index.html#contact" class="mt-8 inline-flex items-center gap-2 font-semibold text-brand-700 hover:text-navy-900 transition-colors">
+            Discuss this service
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-6-6 6 6-6 6" /></svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Detail -->
+      <div class="reveal grid gap-6 sm:grid-cols-2 lg:col-span-7">
+        <div class="rounded-xl border border-gray-200 bg-white p-7">
+          <h3 class="eyebrow mb-5 text-brand-700">Core Activities</h3>
+          <ul class="space-y-3.5">
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Audience segmentation and formative research</span></li>
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Message development, concept testing, and refinement</span></li>
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Culturally and linguistically adapted material development</span></li>
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Crisis and emergency risk communication planning</span></li>
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Channel strategy across community, clinical, digital, and earned media</span></li>
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Campaign monitoring and message effectiveness evaluation</span></li>
+          </ul>
+        </div>
+        <div class="rounded-xl border border-gray-200 bg-white p-7">
+          <h3 class="eyebrow mb-5 text-brand-700">Typical Deliverables</h3>
+          <ul class="space-y-3.5">
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Audience insight report with defined segments</span></li>
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Message framework and tested creative concepts</span></li>
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Multilingual campaign assets ready for deployment</span></li>
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Crisis communication plan and spokesperson materials</span></li>
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-600"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Campaign performance and reach evaluation</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- --- 07 · Global Health Collaboration -->
+<section id="service-7" class="scroll-mt-40 border-t border-navy-700 bg-navy-900 on-dark py-20 md:py-28" aria-labelledby="service-7-title">
+  <div class="mx-auto max-w-7xl px-6">
+    <div class="grid gap-12 lg:grid-cols-12 lg:gap-16">
+
+      <!-- Overview — pinned alongside the detail on wide screens -->
+      <div class="reveal lg:col-span-5">
+        <div class="lg:sticky lg:top-40">
+          <div class="mb-6 flex items-center gap-4">
+            <span class="flex h-12 w-12 items-center justify-center rounded-lg bg-brand-500 text-navy-900">
+              <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM3.5 9h17M3.5 15h17M12 3c2.5 2.6 3.8 5.7 3.8 9S14.5 18.4 12 21C9.5 18.4 8.2 15.3 8.2 12S9.5 5.6 12 3z" /></svg>
+            </span>
+            <span aria-hidden="true" class="font-display text-sm font-bold tracking-wider text-navy-700">07</span>
+          </div>
+
+          <h2 id="service-7-title" class="font-display text-2xl font-bold leading-snug tracking-tight text-white text-balance sm:text-3xl">Global Health Collaboration</h2>
+          <p class="mt-5 leading-relaxed text-gray-300">Cross-border partnerships, comparative analysis, and coordination with ministries, multilateral agencies, and NGOs — extending evidence-based practice to the hard-to-reach populations national datasets routinely miss.</p>
+
+          <div class="mt-8">
+            <p class="eyebrow mb-3 text-gray-400">Anchored in</p>
+            <ul class="flex flex-wrap gap-2">
+              <li><abbr title="Essential Public Health Service 4: Strengthen, support, and mobilize communities and partnerships" class="inline-block rounded border px-2.5 py-1 text-[11px] font-semibold no-underline border-navy-700 bg-navy-800 text-gray-400">EPHS 4</abbr></li>
+              <li><abbr title="Essential Public Health Service 7: Enable equitable access" class="inline-block rounded border px-2.5 py-1 text-[11px] font-semibold no-underline border-navy-700 bg-navy-800 text-gray-400">EPHS 7</abbr></li>
+            </ul>
+          </div>
+
+          <a href="index.html#contact" class="mt-8 inline-flex items-center gap-2 font-semibold text-lime-500 hover:text-white transition-colors">
+            Discuss this service
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-6-6 6 6-6 6" /></svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Detail -->
+      <div class="reveal grid gap-6 sm:grid-cols-2 lg:col-span-7">
+        <div class="rounded-xl border border-navy-700 bg-navy-800 p-7">
+          <h3 class="eyebrow mb-5 text-lime-500">Core Activities</h3>
+          <ul class="space-y-3.5">
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-300"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Multi-country program coordination and governance structures</span></li>
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-300"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Comparative epidemiological and demographic analysis</span></li>
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-300"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Health economics and cost-effectiveness analysis</span></li>
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-300"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Partnership development with ministries, NGOs, and multilateral agencies</span></li>
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-300"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Grant development, donor compliance, and reporting</span></li>
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-300"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Cross-cultural implementation and local capacity transfer</span></li>
+          </ul>
+        </div>
+        <div class="rounded-xl border border-navy-700 bg-navy-800 p-7">
+          <h3 class="eyebrow mb-5 text-lime-500">Typical Deliverables</h3>
+          <ul class="space-y-3.5">
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-300"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Country or regional situational analysis</span></li>
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-300"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Comparative burden and health equity analysis</span></li>
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-300"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Partnership and governance framework</span></li>
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-300"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Donor proposals and compliance reporting packages</span></li>
+            <li class="flex gap-3 text-sm leading-relaxed text-gray-300"><svg class="mt-1 h-4 w-4 shrink-0 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5" /></svg><span>Local capacity transfer and hand-over plan</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     ENGAGEMENT MODELS
+============================================================ -->
+<section id="engagement" class="border-t border-gray-200 bg-gray-50 py-20 md:py-28" aria-labelledby="engagement-title">
+  <div class="mx-auto max-w-7xl px-6">
+    <div class="reveal mb-14 max-w-content">
+      <p class="eyebrow mb-4 text-brand-700">How We Work</p>
+      <h2 id="engagement-title" class="font-display text-3xl font-bold leading-tight tracking-tight text-navy-900 text-balance sm:text-4xl">
+        Four ways to bring us in.
+      </h2>
+      <p class="mt-5 text-lg leading-relaxed text-gray-600">
+        Service lines combine. Most engagements draw on two or three, scoped to your timeline,
+        your funding cycle, and the decision you need to reach.
+      </p>
+    </div>
+
+    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <article class="reveal rounded-xl border border-gray-200 bg-white p-7">
+        <h3 class="font-display text-lg font-bold text-navy-900">Project-Based Consulting</h3>
+        <p class="mt-3 text-sm leading-relaxed text-gray-600">
+          A defined scope with a fixed deliverable set and timeline — an assessment, an
+          evaluation, a policy brief.
+        </p>
+      </article>
+      <article class="reveal rounded-xl border border-gray-200 bg-white p-7">
+        <h3 class="font-display text-lg font-bold text-navy-900">Retained Advisory</h3>
+        <p class="mt-3 text-sm leading-relaxed text-gray-600">
+          Ongoing epidemiological and strategic counsel across a program year, with a standing
+          allocation of hours.
+        </p>
+      </article>
+      <article class="reveal rounded-xl border border-gray-200 bg-white p-7">
+        <h3 class="font-display text-lg font-bold text-navy-900">Embedded Technical Assistance</h3>
+        <p class="mt-3 text-sm leading-relaxed text-gray-600">
+          Our team works inside yours for a defined period, building the capability as the work
+          gets done.
+        </p>
+      </article>
+      <article class="reveal rounded-xl border border-gray-200 bg-white p-7">
+        <h3 class="font-display text-lg font-bold text-navy-900">Grant Partnership</h3>
+        <p class="mt-3 text-sm leading-relaxed text-gray-600">
+          We join your proposal as evaluator, research partner, or subawardee, and carry that
+          role through the award.
+        </p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     CTA BAND
+============================================================ -->
+<section class="bg-navy-900 on-dark" aria-labelledby="cta-title">
+  <div class="mx-auto max-w-7xl px-6 py-20 md:py-24">
+    <div class="reveal flex flex-col items-start gap-8 rounded-xl border border-navy-700 bg-gradient-to-br from-navy-800 to-brand-800/45 p-10 md:flex-row md:items-center md:justify-between md:p-14">
+      <div>
+        <h2 id="cta-title" class="font-display text-2xl font-bold leading-snug tracking-tight text-white text-balance sm:text-3xl">
+          Not sure which service line fits?
+        </h2>
+        <p class="mt-4 max-w-content leading-relaxed text-gray-300">
+          Describe the population you serve and the decision you need evidence for. We will tell
+          you what we would scope — and say so plainly if it is not work we should take.
+        </p>
+      </div>
+      <a href="index.html#contact" class="inline-flex shrink-0 items-center justify-center gap-2 rounded-md bg-white px-7 py-3.5 font-semibold text-navy-900 transition-colors hover:bg-lime-500">
+        Start a Conversation
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-6-6 6 6-6 6" /></svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ============================================================
+     12 · FOOTER
+============================================================ -->
+<footer class="bg-navy-900 on-dark">
+  <div class="mx-auto max-w-7xl px-6 py-16">
+    <div class="grid gap-12 lg:grid-cols-12">
+
+      <div class="lg:col-span-5">
+        <div class="flex items-center gap-3">
+          <svg class="h-10 w-auto shrink-0" viewBox="0 0 27 29" role="img" aria-hidden="true">
+        <circle cx="16" cy="18" r="10" fill="#B4C908" />
+        <g fill="#A3A3A3">
+          <circle cx="13" cy="15.5" r="3.8" /><circle cx="22" cy="23" r="3" />
+          <circle cx="14.5" cy="3.5" r="2.5" /><circle cx="23.5" cy="11.5" r="2.5" />
+          <circle cx="3" cy="14" r="2" /><circle cx="5" cy="2.5" r="1.8" />
+          <circle cx="23" cy="17" r="1" /><circle cx="2" cy="20" r="1" />
+        </g>
+      </svg>
+          <span class="font-display text-xl font-bold tracking-tight text-brand-500">Global Epi</span>
+        </div>
+        <p class="mt-5 max-w-sm leading-relaxed text-gray-400">
+          A public health corporation delivering evidence-based services to communities and
+          populations — transforming access to health equity through data collection, analysis,
+          and translation.
+        </p>
+      </div>
+
+      <div class="lg:col-span-3">
+        <h2 class="eyebrow mb-5 text-gray-400">Services</h2>
+        <ul class="space-y-3 text-sm">
+          <li><a href="services.html#service-1" class="text-gray-300 transition-colors hover:text-lime-500">Research &amp; Development</a></li>
+          <li><a href="services.html#service-2" class="text-gray-300 transition-colors hover:text-lime-500">Program Development &amp; Evaluation</a></li>
+          <li><a href="services.html#service-3" class="text-gray-300 transition-colors hover:text-lime-500">Needs Assessment</a></li>
+          <li><a href="services.html#service-4" class="text-gray-300 transition-colors hover:text-lime-500">Policy Analysis &amp; Advocacy</a></li>
+          <li><a href="services.html#service-5" class="text-gray-300 transition-colors hover:text-lime-500">Capacity Building &amp; Training</a></li>
+          <li><a href="services.html#service-6" class="text-gray-300 transition-colors hover:text-lime-500">Health Communication</a></li>
+          <li><a href="services.html#service-7" class="text-gray-300 transition-colors hover:text-lime-500">Global Health Collaboration</a></li>
+        </ul>
+      </div>
+
+      <div class="lg:col-span-2">
+        <h2 class="eyebrow mb-5 text-gray-400">Company</h2>
+        <ul class="space-y-3 text-sm">
+          <li><a href="index.html#about" class="text-gray-300 transition-colors hover:text-lime-500">Mission &amp; Vision</a></li>
+          <li><a href="index.html#approach" class="text-gray-300 transition-colors hover:text-lime-500">Our Approach</a></li>
+          <li><a href="index.html#values" class="text-gray-300 transition-colors hover:text-lime-500">Core Values</a></li>
+          <li><a href="index.html#determinants" class="text-gray-300 transition-colors hover:text-lime-500">Determinants</a></li>
+          <li><a href="index.html#contact" class="text-gray-300 transition-colors hover:text-lime-500">Contact</a></li>
+        </ul>
+      </div>
+
+      <div class="lg:col-span-2">
+        <h2 class="eyebrow mb-5 text-gray-400">Get in Touch</h2>
+        <ul class="space-y-3 text-sm">
+          <li><a href="mailto:global.epi.consulting@gmail.com" class="break-all text-gray-300 transition-colors hover:text-lime-500">global.epi.consulting@gmail.com</a></li>
+          <li><a href="tel:+19394014402" class="text-gray-300 transition-colors hover:text-lime-500">(939) 401-4402</a></li>
+          <li>
+            <address class="not-italic leading-relaxed text-gray-300">
+              Sierra Bayam&oacute;n 81-37, Calle 68<br />
+              Bayam&oacute;n, Puerto Rico 00961
+            </address>
+          </li>
+          <li class="pt-1"><a href="index.html#contact" class="inline-block rounded-md bg-brand-500 px-4 py-2 font-semibold text-navy-900 transition-colors hover:bg-brand-400">Request a Consultation</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="mt-14 flex flex-col gap-4 border-t border-navy-700 pt-8 text-sm text-gray-400 sm:flex-row sm:items-center sm:justify-between">
+      <p>&copy; <span id="year">2026</span> GLOBAL EPI LLC. All rights reserved.</p>
+      <ul class="flex gap-6">
+        <li><a href="#" class="transition-colors hover:text-lime-500">Privacy Policy</a></li>
+        <li><a href="#" class="transition-colors hover:text-lime-500">Terms of Use</a></li>
+        <li><a href="#" class="transition-colors hover:text-lime-500">Accessibility</a></li>
+      </ul>
+    </div>
+  </div>
+</footer>
+
+<!-- ============================================================
+     BEHAVIOUR — shared across every page, vanilla JS, no dependencies
+============================================================ -->
+<script src="assets/js/main.js" defer></script>
+
+</body>
+</html>
