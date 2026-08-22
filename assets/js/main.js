@@ -155,13 +155,12 @@
   }
 
   /* --- Inquiry form ----------------------------------------------------
-     FORM_ENDPOINT is intentionally null: this is a static site with no
-     backend yet. Validation runs client-side and the submission is handed
-     to the visitor's mail client. Set FORM_ENDPOINT to a Formspree or
-     Netlify Forms URL and the POST branch below takes over — no markup
-     changes required.
+     Submissions POST to Formspree, which forwards them to the address on
+     the account and keeps a copy in its dashboard. If that request fails
+     for any reason, the visitor is not left stranded: the mailto: branch
+     below still runs as a fallback so the inquiry can be sent by hand.
   --------------------------------------------------------------------- */
-  var FORM_ENDPOINT = null;
+  var FORM_ENDPOINT = 'https://formspree.io/f/xoeabyyq';
   var CONTACT_EMAIL = 'global.epi.consulting@gmail.com';
 
   var form   = document.getElementById('inquiry-form');
@@ -203,9 +202,13 @@
 
     var setStatus = function (kind, message) {
       status.textContent = message;
-      status.classList.remove('hidden', 'border-brand-600', 'bg-brand-50', 'text-brand-700', 'border-red-300', 'bg-red-50', 'text-red-700');
+      status.classList.remove('hidden', 'border-brand-600', 'bg-brand-50', 'text-brand-700',
+                              'border-red-300', 'bg-red-50', 'text-red-700',
+                              'border-gray-300', 'bg-gray-50', 'text-gray-700');
       if (kind === 'success') {
         status.classList.add('border-brand-600', 'bg-brand-50', 'text-brand-700');
+      } else if (kind === 'pending') {
+        status.classList.add('border-gray-300', 'bg-gray-50', 'text-gray-700');
       } else {
         status.classList.add('border-red-300', 'bg-red-50', 'text-red-700');
       }
@@ -246,34 +249,19 @@
 
       var data = {
         name:    document.getElementById('f-name').value.trim(),
-        org:     document.getElementById('f-org').value.trim(),
+        organization: document.getElementById('f-org').value.trim(),
         email:   document.getElementById('f-email').value.trim(),
         phone:   document.getElementById('f-phone').value.trim() || 'Not provided',
         service: document.getElementById('f-service').value,
         message: document.getElementById('f-message').value.trim()
       };
 
-      if (FORM_ENDPOINT) {
-        // Backend branch — enabled once an endpoint is configured
-        fetch(FORM_ENDPOINT, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-          body: JSON.stringify(data)
-        }).then(function (res) {
-          if (!res.ok) { throw new Error('Request failed'); }
-          form.reset();
-          setStatus('success', 'Thank you. Your inquiry has been received — we respond within two business days.');
-        }).catch(function () {
-          setStatus('error', 'We could not submit the form. Please email ' + CONTACT_EMAIL + ' directly.');
-        });
-        return;
-      }
-
-      // Static fallback — compose the inquiry as an email draft
+      // Compose the plain-text version once: it is both the mailto: body and
+      // the fallback if the POST fails.
       var subject = 'Consulting Inquiry: ' + data.service;
       var body = [
         'Name: ' + data.name,
-        'Organization: ' + data.org,
+        'Organization: ' + data.organization,
         'Email: ' + data.email,
         'Phone: ' + data.phone,
         'Service of interest: ' + data.service,
@@ -282,9 +270,49 @@
         data.message
       ].join('\n');
 
-      window.location.href = 'mailto:' + CONTACT_EMAIL +
+      var mailtoHref = 'mailto:' + CONTACT_EMAIL +
         '?subject=' + encodeURIComponent(subject) +
         '&body='    + encodeURIComponent(body);
+
+      if (FORM_ENDPOINT) {
+        var submitBtn = form.querySelector('button[type="submit"]');
+        var honeypot  = document.getElementById('f-gotcha');
+
+        submitBtn.disabled = true;
+        submitBtn.classList.add('opacity-60');
+        setStatus('pending', 'Sending your inquiry…');
+
+        fetch(FORM_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({
+            name:         data.name,
+            organization: data.organization,
+            email:        data.email,
+            phone:        data.phone,
+            service:      data.service,
+            message:      data.message,
+            _subject:     subject,
+            _replyto:     data.email,
+            _gotcha:      honeypot ? honeypot.value : ''
+          })
+        }).then(function (res) {
+          if (!res.ok) { throw new Error('HTTP ' + res.status); }
+          form.reset();
+          setStatus('success', 'Thank you. Your inquiry has been received — we respond within two business days.');
+        }).catch(function () {
+          // Never strand the visitor: hand them the same inquiry as an email draft.
+          setStatus('error', 'We could not send the form automatically. Your email client is opening with the inquiry ready — or write to ' + CONTACT_EMAIL + ' directly.');
+          window.location.href = mailtoHref;
+        }).then(function () {
+          submitBtn.disabled = false;
+          submitBtn.classList.remove('opacity-60');
+        });
+        return;
+      }
+
+      // No endpoint configured — compose the inquiry as an email draft
+      window.location.href = mailtoHref;
 
       setStatus('success', 'Your email client is opening with this inquiry ready to send. If nothing happens, email ' + CONTACT_EMAIL + ' directly.');
     });

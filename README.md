@@ -78,9 +78,9 @@ and the Essential Public Health Services it maps to) · engagement models · CTA
       logo's own typeface
 - [x] Email and phone are live: `global.epi.consulting@gmail.com` · (939) 401-4402
 - [x] Mailing address is live: Sierra Bayamón 81-37, Calle 68, Bayamón, Puerto Rico 00961
-- [ ] Point the inquiry form at a real endpoint: set `FORM_ENDPOINT` in `index.html`
-      (Formspree / Netlify Forms). Until then the form validates client-side and hands
-      off to a `mailto:` draft.
+- [x] The inquiry form posts to Formspree (`FORM_ENDPOINT` in `assets/js/main.js`).
+      If that request fails the visitor still gets a `mailto:` draft, so no inquiry is
+      silently lost.
 - [ ] Confirm the service-to-EPHS mapping on `services.html` — it is our reading of
       the 2020 framework, not something you specified
 - [ ] Confirm the four engagement models on `services.html` reflect how you actually contract
