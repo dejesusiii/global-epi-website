@@ -15,7 +15,9 @@ delivering evidence-based public health services to communities and populations.
 
 ```
 index.html            Homepage
+about.html            The firm and its founders
 services.html         The seven service lines in detail
+contact.html          Contact details and inquiry form
 privacy.html          Privacy Policy
 terms.html            Terms of Use
 accessibility.html    Accessibility Statement
@@ -76,6 +78,12 @@ and vision statements only).
 sections (`#service-1` … `#service-7`, each with core activities, typical deliverables,
 and the Essential Public Health Services it maps to) · engagement models · CTA · footer
 
+**`about.html`** — page hero · why the firm exists · founder profiles
+(`#luis`, `#jomary`) · mission and vision · CTA
+
+**`contact.html`** — page hero · contact details and what helps an inquiry ·
+the inquiry form, lifted from the homepage so the two cannot drift · what happens next
+
 ## Outstanding
 
 - [x] The real logo is in use. `assets/logo.svg` was vectorised from the 5000px
@@ -86,6 +94,8 @@ and the Essential Public Health Services it maps to) · engagement models · CTA
 - [x] The inquiry form posts to Formspree (`FORM_ENDPOINT` in `assets/js/main.js`).
       If that request fails the visitor still gets a `mailto:` draft, so no inquiry is
       silently lost.
+- [ ] Founder portraits. The profile cards use initials medallions; an `<img>` drops
+      straight into that slot
 - [ ] Confirm the service-to-EPHS mapping on `services.html` — it is our reading of
       the 2020 framework, not something you specified
 - [ ] Confirm the four engagement models on `services.html` reflect how you actually contract

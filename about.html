@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>About — GLOBAL EPI LLC</title>
+<meta name="description" content="GLOBAL EPI LLC is a public health corporation founded in 2023 in Bayam&oacute;n, Puerto Rico, by a physician-epidemiologist and a health services administrator." />
+<meta name="author" content="GLOBAL EPI LLC" />
+<meta name="theme-color" content="#061A2E" />
+
+<!-- Favicons, generated from the logo mark -->
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+<link rel="alternate icon" href="assets/favicon-32.png" sizes="32x32" type="image/png" />
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
+
+<!-- Open Graph / social sharing -->
+<meta property="og:type" content="website" />
+<meta property="og:title" content="About — GLOBAL EPI LLC" />
+<meta property="og:description" content="GLOBAL EPI LLC is a public health corporation founded in 2023 in Bayam&oacute;n, Puerto Rico, by a physician-epidemiologist and a health services administrator." />
+<meta property="og:locale" content="en_US" />
+
+<!-- Google Fonts: Plus Jakarta Sans (display) · Inter (body) · Source Serif 4 (mission/vision) -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700;800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;1,8..60,400&display=swap" rel="stylesheet" />
+
+<!-- Tailwind CSS via Play CDN — no build step required -->
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!--
+  Brand tokens, derived from the GLOBAL EPI logo. This single config block is
+  the source of truth for the identity and is copied verbatim into every page,
+  so a palette or type change is a one-place edit.
+
+    brand  #06BD95  the wordmark green — actions and accents
+    lime   #B4C908  the mark's chartreuse — dark surfaces only
+    navy            corporate / data ground
+    gray            neutrals, biased green so they sit with the accent
+
+  Contrast rules baked into the scale, not left to chance:
+    brand-500 is too light to carry text on white (2.4:1) — it is a FILL, and
+    anything on top of it is navy-900 (7.3:1). Text and links on light
+    surfaces use brand-700 (5.4:1). lime-500 is legible on navy (9.5:1) and
+    invisible on white (1.9:1), so it never appears on a light surface.
+-->
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          navy:  { 700: '#123A5C', 800: '#0A2540', 900: '#061A2E' },
+          brand: { 50: '#E8FBF5', 400: '#2FD3AF', 500: '#06BD95', 600: '#059B7B', 700: '#047963', 800: '#036452' },
+          lime:  { 500: '#B4C908' },
+          gray:  { 50: '#F6F8F7', 100: '#EDF1EF', 200: '#DEE5E2', 300: '#C5CFCB',
+                   400: '#87918D', 500: '#69736F', 600: '#4E5854', 700: '#39413E', 800: '#272D2B' },
+        },
+        fontFamily: {
+          display: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+          sans:    ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+          serif:   ['"Source Serif 4"', 'Georgia', 'serif'],
+        },
+        maxWidth: { content: '72ch' },
+      },
+    },
+  };
+</script>
+
+<style type="text/tailwindcss">
+  /* ---------------------------------------------------------------
+     Custom layer: only what utilities genuinely cannot express.
+     The site commits to a single light identity by design — every
+     surface and text colour is painted explicitly so the page holds
+     on any host background.
+  ----------------------------------------------------------------*/
+  @layer base {
+    html { scroll-behavior: smooth; }
+    /* Offset anchor targets so the sticky header never covers a heading */
+    section[id] { scroll-margin-top: 5.5rem; }
+    body { @apply bg-white text-gray-700 font-sans antialiased; }
+    ::selection { @apply bg-brand-500 text-white; }
+    :focus-visible { @apply outline-none ring-2 ring-brand-600 ring-offset-2 ring-offset-white rounded-sm; }
+    .on-dark :focus-visible { @apply ring-lime-500 ring-offset-navy-900; }
+  }
+
+  @layer components {
+    /* Scroll-triggered reveal, driven by IntersectionObserver in main.js */
+    .reveal { opacity: 0; transform: translateY(18px); transition: opacity .7s ease, transform .7s ease; }
+    .reveal.is-visible { opacity: 1; transform: none; }
+
+    /* Uppercase eyebrow label used above every section heading */
+    .eyebrow { @apply text-xs font-semibold uppercase tracking-[0.18em]; }
+
+    /* Hairline that separates a card's header from its body */
+    .rule-teal { @apply w-10 h-px bg-brand-500; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .reveal { opacity: 1; transform: none; transition: none; }
+    *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
+  }
+</style>
+</head>
+
+<body id="top">
+
+<!-- Scroll-reveal starts hidden and is un-hidden by main.js; without JS it must never stay invisible. -->
+<noscript><style>.reveal{opacity:1 !important;transform:none !important;}</style></noscript>
+
+<!-- Keyboard users land here first -->
+<a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:m-3 focus:rounded focus:bg-navy-900 focus:px-4 focus:py-2 focus:text-white">Skip to main content</a>
+
+<!-- ============================================================
+     01 · UTILITY BAR — corporate status line, hidden on mobile
+============================================================ -->
+<div class="hidden bg-navy-900 text-gray-300 md:block on-dark">
+  <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-2 text-xs">
+    <p class="tracking-wide">Public Health Corporation &middot; Founded 2023 &middot; Bayam&oacute;n, Puerto Rico</p>
+    <div class="flex items-center gap-5">
+      <a href="mailto:global.epi.consulting@gmail.com" class="transition-colors hover:text-lime-500">global.epi.consulting@gmail.com</a>
+      <a href="index.html#contact" class="transition-colors hover:text-lime-500">LinkedIn</a>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     02 · STICKY HEADER — logo, primary nav, consultation CTA
+============================================================ -->
+<header id="site-header" class="sticky top-0 z-40 border-b border-gray-200 bg-white/90 backdrop-blur-md transition-shadow">
+  <nav class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4" aria-label="Primary">
+
+    <!-- Wordmark: placeholder monogram, swap the SVG for the final logo file -->
+    <a href="index.html" class="flex items-center" aria-label="Global Epi — home">
+      <img src="assets/logo.svg" alt="" width="151" height="40" class="h-10 w-auto" />
+    </a>
+
+    <!-- Desktop navigation -->
+    <ul class="hidden items-center gap-8 lg:flex">
+      <li><a href="about.html" aria-current="page" class="text-sm font-medium text-brand-700">About</a></li>
+      <li><a href="services.html" class="text-sm font-medium text-gray-600 transition-colors hover:text-brand-700">Services</a></li>
+      <li><a href="index.html#approach" class="text-sm font-medium text-gray-600 transition-colors hover:text-brand-700">Approach</a></li>
+      <li><a href="index.html#determinants" class="text-sm font-medium text-gray-600 transition-colors hover:text-brand-700">Determinants</a></li>
+      <li><a href="contact.html" class="text-sm font-medium text-gray-600 transition-colors hover:text-brand-700">Contact</a></li>
+    </ul>
+
+    <div class="flex items-center gap-3">
+      <a href="contact.html" class="hidden rounded-md bg-brand-500 px-5 py-2.5 text-sm font-semibold text-navy-900 shadow-sm transition-colors hover:bg-brand-400 sm:inline-block">Request a Consultation</a>
+
+      <!-- Mobile menu trigger -->
+      <button id="nav-toggle" type="button" class="rounded-md p-2 text-navy-900 lg:hidden" aria-expanded="false" aria-controls="mobile-nav" aria-label="Open navigation menu">
+        <svg id="icon-open" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16" /></svg>
+        <svg id="icon-close" class="hidden h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" d="M6 6l12 12M18 6L6 18" /></svg>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Mobile navigation panel -->
+  <div id="mobile-nav" class="hidden border-t border-gray-200 bg-white lg:hidden">
+    <ul class="mx-auto max-w-7xl space-y-1 px-6 py-4">
+      <li><a href="about.html" aria-current="page" class="block rounded-md bg-gray-50 px-3 py-2.5 font-medium text-brand-700">About</a></li>
+      <li><a href="services.html" class="block rounded-md px-3 py-2.5 font-medium text-gray-700 hover:bg-gray-50 hover:text-brand-700">Services</a></li>
+      <li><a href="index.html#approach" class="block rounded-md px-3 py-2.5 font-medium text-gray-700 hover:bg-gray-50 hover:text-brand-700">Approach</a></li>
+      <li><a href="index.html#determinants" class="block rounded-md px-3 py-2.5 font-medium text-gray-700 hover:bg-gray-50 hover:text-brand-700">Determinants</a></li>
+      <li><a href="contact.html" class="block rounded-md px-3 py-2.5 font-medium text-gray-700 hover:bg-gray-50 hover:text-brand-700">Contact</a></li>
+      <li class="pt-2"><a href="contact.html" class="block rounded-md bg-brand-500 px-3 py-3 text-center font-semibold text-navy-900">Request a Consultation</a></li>
+    </ul>
+  </div>
+</header>
+
+<main id="main">
+
+<!-- ============================================================
+     PAGE HERO
+============================================================ -->
+<section class="relative overflow-hidden bg-navy-900 on-dark" aria-labelledby="page-title">
+  <div class="pointer-events-none absolute inset-0 opacity-[0.35]" aria-hidden="true"
+       style="background-image:linear-gradient(to right,#123A5C 1px,transparent 1px),linear-gradient(to bottom,#123A5C 1px,transparent 1px);background-size:72px 72px;">
+  </div>
+  <div class="pointer-events-none absolute -right-24 -top-32 h-[26rem] w-[26rem] rounded-full bg-brand-500/20 blur-3xl" aria-hidden="true"></div>
+
+  <div class="relative mx-auto max-w-7xl px-6 py-16 md:py-24">
+    <nav aria-label="Breadcrumb" class="mb-8">
+      <ol class="flex items-center gap-2 text-sm text-gray-400">
+        <li><a href="index.html" class="transition-colors hover:text-lime-500">Home</a></li>
+        <li aria-hidden="true" class="text-navy-700">/</li>
+        <li><span class="text-gray-200" aria-current="page">About</span></li>
+      </ol>
+    </nav>
+
+    <p class="eyebrow mb-5 flex items-center gap-3 text-lime-500">
+      <span class="h-px w-8 bg-lime-500"></span>
+      Who We Are
+    </p>
+
+    <h1 id="page-title" class="max-w-4xl font-display text-3xl font-extrabold leading-[1.1] tracking-tight text-white text-balance sm:text-4xl lg:text-5xl">
+      Founded by practitioners,<br class="hidden sm:block" />
+      <span class="text-brand-500">not by consultants.</span>
+    </h1>
+
+    <p class="mt-6 max-w-content text-lg leading-relaxed text-gray-300">GLOBAL EPI LLC was founded in 2023 in Bayam&oacute;n, Puerto Rico, by two healthcare professionals who had spent their careers on opposite ends of the same problem — one producing the evidence, the other responsible for making programs actually run.</p>
+
+    <a href="contact.html" class="mt-9 inline-flex items-center justify-center gap-2 rounded-md bg-brand-500 px-7 py-3.5 font-semibold text-navy-900 shadow-lg shadow-brand-500/25 transition-colors hover:bg-brand-400">
+      Request a Consultation
+      <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-6-6 6 6-6 6" /></svg>
+    </a>
+  </div>
+</section>
+
+<!-- ============================================================
+     WHY THE FIRM EXISTS
+============================================================ -->
+<section class="bg-white py-20 md:py-24" aria-labelledby="origin-title">
+  <div class="mx-auto max-w-7xl px-6">
+    <div class="grid gap-12 lg:grid-cols-12 lg:gap-16">
+      <div class="reveal lg:col-span-5">
+        <p class="eyebrow mb-4 text-brand-700">Why we exist</p>
+        <h2 id="origin-title" class="font-display text-3xl font-bold leading-tight tracking-tight text-navy-900 text-balance sm:text-4xl">
+          Evidence fails at the handoff.
+        </h2>
+      </div>
+      <div class="reveal lg:col-span-7">
+        <p class="max-w-content text-lg leading-relaxed text-gray-700">
+          Public health does not usually fail for lack of a finding. It fails in the gap between a
+          finding and a program someone can staff, fund, and sustain — where a rigorous study
+          becomes a report nobody can act on, or an operational plan runs ahead of the evidence
+          meant to justify it.
+        </p>
+        <p class="mt-5 max-w-content leading-relaxed text-gray-600">
+          GLOBAL EPI LLC was built to hold both ends at once. Our founders pair doctoral-level
+          research and epidemiological training with hands-on administration of health services
+          inside Puerto Rico&rsquo;s hospitals and primary care centers. That pairing is the firm:
+          every engagement is designed so the science survives contact with an operating budget,
+          a staffing model, and a regulator.
+        </p>
+        <p class="mt-5 max-w-content leading-relaxed text-gray-600">
+          We work throughout the life course and across the social determinants of health, with
+          data as the primary axis — and we scope every engagement against the
+          <a href="services.html" class="font-medium text-brand-700 underline underline-offset-2 hover:text-navy-900">10 Essential Public Health Services</a>.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     LEADERSHIP
+============================================================ -->
+<section class="border-t border-gray-200 bg-gray-50 py-16 md:py-20" aria-labelledby="leadership-title">
+  <div class="mx-auto max-w-7xl px-6">
+    <div class="reveal max-w-content">
+      <p class="eyebrow mb-4 text-brand-700">Leadership</p>
+      <h2 id="leadership-title" class="font-display text-3xl font-bold leading-tight tracking-tight text-navy-900 text-balance sm:text-4xl">
+        The two people accountable for the work.
+      </h2>
+      <p class="mt-5 text-lg leading-relaxed text-gray-600">
+        Small firm, senior people. The founders do the work rather than sell it and hand it down.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- --- luis -->
+<section id="luis" class="scroll-mt-28 border-t border-gray-200 bg-white py-16 md:py-20" aria-labelledby="luis-name">
+  <div class="mx-auto max-w-7xl px-6">
+    <div class="grid gap-10 lg:grid-cols-12 lg:gap-16">
+
+      <div class="reveal lg:col-span-4">
+        <div class="lg:sticky lg:top-28">
+          <!-- Initials stand in until a portrait is supplied; the <img> drops straight in here. -->
+          <div class="mb-6 flex h-20 w-20 items-center justify-center rounded-xl bg-navy-900 font-display text-2xl font-extrabold tracking-tight text-lime-500" aria-hidden="true">LD</div>
+          <h2 id="luis-name" class="font-display text-2xl font-bold leading-snug tracking-tight text-navy-900 text-balance">Dr. Luis G. De Jes&uacute;s III Vega</h2>
+          <p class="mt-2 font-display text-sm font-semibold uppercase tracking-[0.14em] text-brand-700">Founder &amp; Chief Executive Officer</p>
+
+          <ul class="mt-5 flex flex-wrap gap-2"><li><span class="inline-block rounded border border-gray-200 bg-white px-2.5 py-1 text-[11px] font-bold tracking-wider text-navy-900">MD</span></li><li><span class="inline-block rounded border border-gray-200 bg-white px-2.5 py-1 text-[11px] font-bold tracking-wider text-navy-900">PhD</span></li><li><span class="inline-block rounded border border-gray-200 bg-white px-2.5 py-1 text-[11px] font-bold tracking-wider text-navy-900">MPH</span></li><li><span class="inline-block rounded border border-gray-200 bg-white px-2.5 py-1 text-[11px] font-bold tracking-wider text-navy-900">MSc</span></li></ul>
+
+          <p class="eyebrow mt-8 mb-2 text-gray-500">Core focus</p>
+          <p class="leading-relaxed text-gray-600">Scientific research, public health epidemiology, and evidence-based policy design</p>
+        </div>
+      </div>
+
+      <div class="reveal lg:col-span-8">
+        <p class="max-w-content text-lg leading-relaxed text-gray-700">Scientist, academic, and public health strategist with multidisciplinary training spanning medicine, philosophy, public health, and science — a Doctor of Medicine, a Doctor of Philosophy, a Master of Public Health, and a Master of Science.</p>
+
+        <h3 class="eyebrow mt-10 mb-4 text-brand-700">Track record</h3>
+        <ul class="max-w-content space-y-3.5">
+            <li class="flex gap-3 leading-relaxed text-gray-600"><span aria-hidden="true" class="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-600"></span><span>Postdoctoral researcher and university professor in Puerto Rico, at Universidad Ana G. M&eacute;ndez and Universidad Central de Bayam&oacute;n</span></li>
+            <li class="flex gap-3 leading-relaxed text-gray-600"><span aria-hidden="true" class="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-600"></span><span>Has led institutional review boards, with direct responsibility for research ethics and human subjects protection</span></li>
+            <li class="flex gap-3 leading-relaxed text-gray-600"><span aria-hidden="true" class="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-600"></span><span>Deep experience in research methodology design across observational, clinical, and community study types</span></li>
+            <li class="flex gap-3 leading-relaxed text-gray-600"><span aria-hidden="true" class="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-600"></span><span>Has coordinated high-complexity clinical and community programs for NGOs and health organizations</span></li>
+        </ul>
+
+        <p class="mt-8 max-w-content border-l-4 border-brand-600 bg-gray-50 py-4 pl-5 pr-4 leading-relaxed text-gray-700">His technical direction is what holds scientific validity and epidemiological rigor in place across every project the firm takes on.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- --- jomary -->
+<section id="jomary" class="scroll-mt-28 border-t border-gray-200 bg-gray-50 py-16 md:py-20" aria-labelledby="jomary-name">
+  <div class="mx-auto max-w-7xl px-6">
+    <div class="grid gap-10 lg:grid-cols-12 lg:gap-16">
+
+      <div class="reveal lg:col-span-4">
+        <div class="lg:sticky lg:top-28">
+          <!-- Initials stand in until a portrait is supplied; the <img> drops straight in here. -->
+          <div class="mb-6 flex h-20 w-20 items-center justify-center rounded-xl bg-navy-900 font-display text-2xl font-extrabold tracking-tight text-lime-500" aria-hidden="true">JR</div>
+          <h2 id="jomary-name" class="font-display text-2xl font-bold leading-snug tracking-tight text-navy-900 text-balance">Jomary Rosado Huertas</h2>
+          <p class="mt-2 font-display text-sm font-semibold uppercase tracking-[0.14em] text-brand-700">Co-Founder &amp; Vice President</p>
+
+          <ul class="mt-5 flex flex-wrap gap-2"><li><span class="inline-block rounded border border-gray-200 bg-white px-2.5 py-1 text-[11px] font-bold tracking-wider text-navy-900">MHSA</span></li><li><span class="inline-block rounded border border-gray-200 bg-white px-2.5 py-1 text-[11px] font-bold tracking-wider text-navy-900">BS</span></li><li><span class="inline-block rounded border border-gray-200 bg-white px-2.5 py-1 text-[11px] font-bold tracking-wider text-navy-900">AAS-RT</span></li></ul>
+
+          <p class="eyebrow mt-8 mb-2 text-gray-500">Core focus</p>
+          <p class="leading-relaxed text-gray-600">Health services administration, operational evaluation, and institutional technology management</p>
+        </div>
+      </div>
+
+      <div class="reveal lg:col-span-8">
+        <p class="max-w-content text-lg leading-relaxed text-gray-700">Health services administrator and clinical specialist, holding a Master of Health Services Administration, a Bachelor of Science, and a technical background in public health technologies.</p>
+
+        <h3 class="eyebrow mt-10 mb-4 text-brand-700">Track record</h3>
+        <ul class="max-w-content space-y-3.5">
+            <li class="flex gap-3 leading-relaxed text-gray-600"><span aria-hidden="true" class="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-600"></span><span>Brings a managerial, inside view of Puerto Rico&rsquo;s health ecosystem rather than an outside consultant&rsquo;s</span></li>
+            <li class="flex gap-3 leading-relaxed text-gray-600"><span aria-hidden="true" class="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-600"></span><span>Has led operational optimization and institutional training as a Training Officer</span></li>
+            <li class="flex gap-3 leading-relaxed text-gray-600"><span aria-hidden="true" class="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-600"></span><span>Has implemented critical diagnostic technologies in first-tier hospital settings and in primary care centers, including HealthproMed</span></li>
+            <li class="flex gap-3 leading-relaxed text-gray-600"><span aria-hidden="true" class="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-600"></span><span>Focused on continuous evaluation, regulatory compliance, and administrative viability</span></li>
+        </ul>
+
+        <p class="mt-8 max-w-content border-l-4 border-brand-600 bg-gray-50 py-4 pl-5 pr-4 leading-relaxed text-gray-700">Her work is what turns a scientifically sound finding into a program an organization can actually staff, fund, and run.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     MISSION & VISION
+============================================================ -->
+<section id="mission" class="scroll-mt-28 border-t border-gray-200 bg-white py-20 md:py-24" aria-labelledby="mv-title">
+  <div class="mx-auto max-w-7xl px-6">
+    <div class="reveal mb-12 max-w-content">
+      <p class="eyebrow mb-4 text-brand-700">What guides us</p>
+      <h2 id="mv-title" class="font-display text-3xl font-bold leading-tight tracking-tight text-navy-900 text-balance sm:text-4xl">
+        Mission and vision.
+      </h2>
+    </div>
+
+    <div class="grid gap-8 lg:grid-cols-2">
+      <article class="reveal relative overflow-hidden rounded-xl border border-gray-200 bg-gray-50 p-8 md:p-10">
+        <span class="pointer-events-none absolute -right-4 -top-8 select-none font-display text-[9rem] font-extrabold leading-none text-navy-900/[0.04]" aria-hidden="true">M</span>
+        <div class="relative">
+          <p class="eyebrow mb-4 text-brand-700">Our Mission</p>
+          <div class="rule-teal mb-6"></div>
+          <p class="font-serif text-xl leading-relaxed text-navy-900 md:text-[1.4rem] md:leading-relaxed">
+            To transform the health of communities and populations throughout the life course,
+            where data serves as the primary axis to guarantee an optimal state of health.
+          </p>
+        </div>
+      </article>
+
+      <article class="reveal relative overflow-hidden rounded-xl border border-navy-700 bg-navy-900 p-8 on-dark md:p-10">
+        <span class="pointer-events-none absolute -right-4 -top-8 select-none font-display text-[9rem] font-extrabold leading-none text-white/[0.05]" aria-hidden="true">V</span>
+        <div class="relative">
+          <p class="eyebrow mb-4 text-lime-500">Our Vision</p>
+          <div class="mb-6 h-px w-10 bg-lime-500"></div>
+          <p class="font-serif text-xl leading-relaxed text-gray-100 md:text-[1.4rem] md:leading-relaxed">
+            To position ourselves as the leading public health corporation providing consulting,
+            coordination, project management, and health advocacy services, in alignment with
+            quality standards, based on the 10 Essential Public Health Services, and addressing
+            the social determinants of health to ensure continuous community transformation.
+          </p>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     CTA
+============================================================ -->
+<section class="bg-navy-900 on-dark" aria-labelledby="cta-title">
+  <div class="mx-auto max-w-7xl px-6 py-20 md:py-24">
+    <div class="reveal flex flex-col items-start gap-8 rounded-xl border border-navy-700 bg-gradient-to-br from-navy-800 to-brand-800/45 p-10 md:flex-row md:items-center md:justify-between md:p-14">
+      <div>
+        <h2 id="cta-title" class="font-display text-2xl font-bold leading-snug tracking-tight text-white text-balance sm:text-3xl">
+          Work directly with the founders.
+        </h2>
+        <p class="mt-4 max-w-content leading-relaxed text-gray-300">
+          Tell us about the population you serve and the decision you need evidence for. You will
+          be talking to the people who will do the work.
+        </p>
+      </div>
+      <a href="contact.html" class="inline-flex shrink-0 items-center justify-center gap-2 rounded-md bg-white px-7 py-3.5 font-semibold text-navy-900 transition-colors hover:bg-lime-500">
+        Start a Conversation
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-6-6 6 6-6 6" /></svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ============================================================
+     12 · FOOTER
+============================================================ -->
+<footer class="bg-navy-900 on-dark">
+  <div class="mx-auto max-w-7xl px-6 py-16">
+    <div class="grid gap-12 lg:grid-cols-12">
+
+      <div class="lg:col-span-5">
+        <div>
+          <img src="assets/logo.svg" alt="Global Epi" width="166" height="44" class="h-11 w-auto" />
+        </div>
+        <p class="mt-5 max-w-sm leading-relaxed text-gray-400">
+          A public health corporation delivering evidence-based services to communities and
+          populations — transforming access to health equity through data collection, analysis,
+          and translation.
+        </p>
+      </div>
+
+      <div class="lg:col-span-3">
+        <h2 class="eyebrow mb-5 text-gray-400">Services</h2>
+        <ul class="space-y-3 text-sm">
+          <li><a href="services.html#service-1" class="text-gray-300 transition-colors hover:text-lime-500">Research &amp; Development</a></li>
+          <li><a href="services.html#service-2" class="text-gray-300 transition-colors hover:text-lime-500">Program Development &amp; Evaluation</a></li>
+          <li><a href="services.html#service-3" class="text-gray-300 transition-colors hover:text-lime-500">Needs Assessment</a></li>
+          <li><a href="services.html#service-4" class="text-gray-300 transition-colors hover:text-lime-500">Policy Analysis &amp; Advocacy</a></li>
+          <li><a href="services.html#service-5" class="text-gray-300 transition-colors hover:text-lime-500">Capacity Building &amp; Training</a></li>
+          <li><a href="services.html#service-6" class="text-gray-300 transition-colors hover:text-lime-500">Health Communication</a></li>
+          <li><a href="services.html#service-7" class="text-gray-300 transition-colors hover:text-lime-500">Global Health Collaboration</a></li>
+        </ul>
+      </div>
+
+      <div class="lg:col-span-2">
+        <h2 class="eyebrow mb-5 text-gray-400">Company</h2>
+        <ul class="space-y-3 text-sm">
+          <li><a href="about.html" class="text-gray-300 transition-colors hover:text-lime-500">About Us</a></li>
+          <li><a href="index.html#about" class="text-gray-300 transition-colors hover:text-lime-500">Mission &amp; Vision</a></li>
+          <li><a href="index.html#approach" class="text-gray-300 transition-colors hover:text-lime-500">Our Approach</a></li>
+          <li><a href="index.html#values" class="text-gray-300 transition-colors hover:text-lime-500">Core Values</a></li>
+          <li><a href="index.html#determinants" class="text-gray-300 transition-colors hover:text-lime-500">Determinants</a></li>
+          <li><a href="contact.html" class="text-gray-300 transition-colors hover:text-lime-500">Contact</a></li>
+        </ul>
+      </div>
+
+      <div class="lg:col-span-2">
+        <h2 class="eyebrow mb-5 text-gray-400">Get in Touch</h2>
+        <ul class="space-y-3 text-sm">
+          <li><a href="mailto:global.epi.consulting@gmail.com" class="break-all text-gray-300 transition-colors hover:text-lime-500">global.epi.consulting@gmail.com</a></li>
+          <li><a href="tel:+19394014402" class="text-gray-300 transition-colors hover:text-lime-500">(939) 401-4402</a></li>
+          <li>
+            <address class="not-italic leading-relaxed text-gray-300">
+              Sierra Bayam&oacute;n 81-37, Calle 68<br />
+              Bayam&oacute;n, Puerto Rico 00961
+            </address>
+          </li>
+          <li class="pt-1"><a href="index.html#contact" class="inline-block rounded-md bg-brand-500 px-4 py-2 font-semibold text-navy-900 transition-colors hover:bg-brand-400">Request a Consultation</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="mt-14 flex flex-col gap-4 border-t border-navy-700 pt-8 text-sm text-gray-400 sm:flex-row sm:items-center sm:justify-between">
+      <p>&copy; <span id="year">2026</span> GLOBAL EPI LLC. All rights reserved.</p>
+      <ul class="flex gap-6">
+        <li><a href="privacy.html" class="transition-colors hover:text-lime-500">Privacy Policy</a></li>
+        <li><a href="terms.html" class="transition-colors hover:text-lime-500">Terms of Use</a></li>
+        <li><a href="accessibility.html" class="transition-colors hover:text-lime-500">Accessibility</a></li>
+      </ul>
+    </div>
+  </div>
+</footer>
+
+<!-- ============================================================
+     BEHAVIOUR — shared across every page, vanilla JS, no dependencies
+============================================================ -->
+<script src="assets/js/main.js" defer></script>
+
+</body>
+</html>
