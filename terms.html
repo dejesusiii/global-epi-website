@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Terms of Use — GLOBAL EPI LLC</title>
+<meta name="description" content="Terms of use for the GLOBAL EPI LLC website." />
+<meta name="author" content="GLOBAL EPI LLC" />
+<meta name="robots" content="index, follow" />
+<meta name="theme-color" content="#061A2E" />
+
+<!-- Open Graph / social sharing -->
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Terms of Use — GLOBAL EPI LLC" />
+<meta property="og:description" content="Terms of use for the GLOBAL EPI LLC website." />
+<meta property="og:locale" content="en_US" />
+
+<!-- Google Fonts: Plus Jakarta Sans (display) · Inter (body) · Source Serif 4 (mission/vision) -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700;800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;1,8..60,400&display=swap" rel="stylesheet" />
+
+<!-- Tailwind CSS via Play CDN — no build step required -->
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!--
+  Brand tokens, derived from the GLOBAL EPI logo. This single config block is
+  the source of truth for the identity and is copied verbatim into every page,
+  so a palette or type change is a one-place edit.
+
+    brand  #06BD95  the wordmark green — actions and accents
+    lime   #B4C908  the mark's chartreuse — dark surfaces only
+    navy            corporate / data ground
+    gray            neutrals, biased green so they sit with the accent
+
+  Contrast rules baked into the scale, not left to chance:
+    brand-500 is too light to carry text on white (2.4:1) — it is a FILL, and
+    anything on top of it is navy-900 (7.3:1). Text and links on light
+    surfaces use brand-700 (5.4:1). lime-500 is legible on navy (9.5:1) and
+    invisible on white (1.9:1), so it never appears on a light surface.
+-->
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          navy:  { 700: '#123A5C', 800: '#0A2540', 900: '#061A2E' },
+          brand: { 50: '#E8FBF5', 400: '#2FD3AF', 500: '#06BD95', 600: '#059B7B', 700: '#047963', 800: '#036452' },
+          lime:  { 500: '#B4C908' },
+          gray:  { 50: '#F6F8F7', 100: '#EDF1EF', 200: '#DEE5E2', 300: '#C5CFCB',
+                   400: '#87918D', 500: '#69736F', 600: '#4E5854', 700: '#39413E', 800: '#272D2B' },
+        },
+        fontFamily: {
+          display: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+          sans:    ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+          serif:   ['"Source Serif 4"', 'Georgia', 'serif'],
+        },
+        maxWidth: { content: '72ch' },
+      },
+    },
+  };
+</script>
+
+<style type="text/tailwindcss">
+  /* ---------------------------------------------------------------
+     Custom layer: only what utilities genuinely cannot express.
+     The site commits to a single light identity by design — every
+     surface and text colour is painted explicitly so the page holds
+     on any host background.
+  ----------------------------------------------------------------*/
+  @layer base {
+    html { scroll-behavior: smooth; }
+    /* Offset anchor targets so the sticky header never covers a heading */
+    section[id] { scroll-margin-top: 5.5rem; }
+    body { @apply bg-white text-gray-700 font-sans antialiased; }
+    ::selection { @apply bg-brand-500 text-white; }
+    :focus-visible { @apply outline-none ring-2 ring-brand-600 ring-offset-2 ring-offset-white rounded-sm; }
+    .on-dark :focus-visible { @apply ring-lime-500 ring-offset-navy-900; }
+  }
+
+  @layer components {
+    /* Scroll-triggered reveal, driven by IntersectionObserver in main.js */
+    .reveal { opacity: 0; transform: translateY(18px); transition: opacity .7s ease, transform .7s ease; }
+    .reveal.is-visible { opacity: 1; transform: none; }
+
+    /* Uppercase eyebrow label used above every section heading */
+    .eyebrow { @apply text-xs font-semibold uppercase tracking-[0.18em]; }
+
+    /* Hairline that separates a card's header from its body */
+    .rule-teal { @apply w-10 h-px bg-brand-500; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .reveal { opacity: 1; transform: none; transition: none; }
+    *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
+  }
+</style>
+</head>
+
+<body id="top">
+
+<!-- Scroll-reveal starts hidden and is un-hidden by main.js; without JS it must never stay invisible. -->
+<noscript><style>.reveal{opacity:1 !important;transform:none !important;}</style></noscript>
+
+<!-- Keyboard users land here first -->
+<a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:m-3 focus:rounded focus:bg-navy-900 focus:px-4 focus:py-2 focus:text-white">Skip to main content</a>
+
+<!-- ============================================================
+     01 · UTILITY BAR — corporate status line, hidden on mobile
+============================================================ -->
+<div class="hidden bg-navy-900 text-gray-300 md:block on-dark">
+  <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-2 text-xs">
+    <p class="tracking-wide">Public Health Corporation &middot; Founded 2023 &middot; Bayam&oacute;n, Puerto Rico</p>
+    <div class="flex items-center gap-5">
+      <a href="mailto:global.epi.consulting@gmail.com" class="transition-colors hover:text-lime-500">global.epi.consulting@gmail.com</a>
+      <a href="index.html#contact" class="transition-colors hover:text-lime-500">LinkedIn</a>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     02 · STICKY HEADER — logo, primary nav, consultation CTA
+============================================================ -->
+<header id="site-header" class="sticky top-0 z-40 border-b border-gray-200 bg-white/90 backdrop-blur-md transition-shadow">
+  <nav class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4" aria-label="Primary">
+
+    <!-- Wordmark: placeholder monogram, swap the SVG for the final logo file -->
+    <a href="index.html" class="flex items-center gap-3" aria-label="Global Epi — home">
+      <svg class="h-9 w-auto shrink-0" viewBox="0 0 27 29" role="img" aria-hidden="true">
+        <circle cx="16" cy="18" r="10" fill="#B4C908" />
+        <g fill="#A3A3A3">
+          <circle cx="13" cy="15.5" r="3.8" /><circle cx="22" cy="23" r="3" />
+          <circle cx="14.5" cy="3.5" r="2.5" /><circle cx="23.5" cy="11.5" r="2.5" />
+          <circle cx="3" cy="14" r="2" /><circle cx="5" cy="2.5" r="1.8" />
+          <circle cx="23" cy="17" r="1" /><circle cx="2" cy="20" r="1" />
+        </g>
+      </svg>
+      <span class="leading-tight">
+        <span class="block font-display text-xl font-bold tracking-tight text-brand-500">Global Epi</span>
+        <span class="block text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-500">Public Health Corporation</span>
+      </span>
+    </a>
+
+    <!-- Desktop navigation -->
+    <ul class="hidden items-center gap-8 lg:flex">
+      <li><a href="index.html#about" class="text-sm font-medium text-gray-600 transition-colors hover:text-brand-700">About</a></li>
+      <li><a href="index.html#approach" class="text-sm font-medium text-gray-600 transition-colors hover:text-brand-700">Approach</a></li>
+      <li><a href="index.html#values" class="text-sm font-medium text-gray-600 transition-colors hover:text-brand-700">Values</a></li>
+      <li><a href="services.html" class="text-sm font-medium text-gray-600 transition-colors hover:text-brand-700">Services</a></li>
+      <li><a href="index.html#determinants" class="text-sm font-medium text-gray-600 transition-colors hover:text-brand-700">Determinants</a></li>
+    </ul>
+
+    <div class="flex items-center gap-3">
+      <a href="index.html#contact" class="hidden rounded-md bg-brand-500 px-5 py-2.5 text-sm font-semibold text-navy-900 shadow-sm transition-colors hover:bg-brand-400 sm:inline-block">Request a Consultation</a>
+
+      <!-- Mobile menu trigger -->
+      <button id="nav-toggle" type="button" class="rounded-md p-2 text-navy-900 lg:hidden" aria-expanded="false" aria-controls="mobile-nav" aria-label="Open navigation menu">
+        <svg id="icon-open" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16" /></svg>
+        <svg id="icon-close" class="hidden h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" d="M6 6l12 12M18 6L6 18" /></svg>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Mobile navigation panel -->
+  <div id="mobile-nav" class="hidden border-t border-gray-200 bg-white lg:hidden">
+    <ul class="mx-auto max-w-7xl space-y-1 px-6 py-4">
+      <li><a href="index.html#about"        class="block rounded-md px-3 py-2.5 font-medium text-gray-700 hover:bg-gray-50 hover:text-brand-700">About</a></li>
+      <li><a href="index.html#approach"     class="block rounded-md px-3 py-2.5 font-medium text-gray-700 hover:bg-gray-50 hover:text-brand-700">Approach</a></li>
+      <li><a href="index.html#values"       class="block rounded-md px-3 py-2.5 font-medium text-gray-700 hover:bg-gray-50 hover:text-brand-700">Values</a></li>
+      <li><a href="services.html" class="block rounded-md px-3 py-2.5 font-medium text-gray-700 hover:bg-gray-50 hover:text-brand-700">Services</a></li>
+      <li><a href="index.html#determinants" class="block rounded-md px-3 py-2.5 font-medium text-gray-700 hover:bg-gray-50 hover:text-brand-700">Determinants</a></li>
+      <li class="pt-2"><a href="index.html#contact" class="block rounded-md bg-brand-500 px-3 py-3 text-center font-semibold text-navy-900">Request a Consultation</a></li>
+    </ul>
+  </div>
+</header>
+
+<main id="main">
+
+<!-- ============================================================
+     PAGE HERO
+============================================================ -->
+<section class="relative overflow-hidden bg-navy-900 on-dark" aria-labelledby="page-title">
+  <div class="pointer-events-none absolute inset-0 opacity-[0.35]" aria-hidden="true"
+       style="background-image:linear-gradient(to right,#123A5C 1px,transparent 1px),linear-gradient(to bottom,#123A5C 1px,transparent 1px);background-size:72px 72px;">
+  </div>
+
+  <div class="relative mx-auto max-w-7xl px-6 py-14 md:py-20">
+    <nav aria-label="Breadcrumb" class="mb-7">
+      <ol class="flex items-center gap-2 text-sm text-gray-400">
+        <li><a href="index.html" class="transition-colors hover:text-lime-500">Home</a></li>
+        <li aria-hidden="true" class="text-navy-700">/</li>
+        <li><span class="text-gray-200" aria-current="page">Terms of Use</span></li>
+      </ol>
+    </nav>
+
+    <p class="eyebrow mb-4 flex items-center gap-3 text-lime-500">
+      <span class="h-px w-8 bg-lime-500"></span>
+      Legal
+    </p>
+
+    <h1 id="page-title" class="max-w-3xl font-display text-3xl font-extrabold leading-[1.12] tracking-tight text-white text-balance sm:text-4xl lg:text-5xl">
+      Terms of Use
+    </h1>
+
+    <p class="mt-5 max-w-content leading-relaxed text-gray-300">The terms that govern your use of this website.</p>
+
+    <p class="mt-7 text-sm text-gray-400">
+      Last updated <time datetime="2026-08-22">22 August 2026</time>
+    </p>
+  </div>
+</section>
+
+<!-- ============================================================
+     DOCUMENT — table of contents beside one readable column
+============================================================ -->
+<div class="mx-auto max-w-7xl px-6 py-16 md:py-20">
+  <div class="grid gap-12 lg:grid-cols-12 lg:gap-16">
+
+    <nav class="lg:col-span-3" aria-label="On this page">
+      <div class="lg:sticky lg:top-28">
+        <p class="eyebrow mb-4 text-gray-500">On this page</p>
+        <ol class="border-l border-gray-200">
+            <li><a href="#agreement-to-these-terms" class="block border-l-2 border-transparent -ml-px pl-4 py-1 text-sm leading-snug text-gray-600 transition-colors hover:border-brand-600 hover:text-brand-700">Agreement to these terms</a></li>
+            <li><a href="#no-professional-relationship-is-created" class="block border-l-2 border-transparent -ml-px pl-4 py-1 text-sm leading-snug text-gray-600 transition-colors hover:border-brand-600 hover:text-brand-700">No professional relationship is created</a></li>
+            <li><a href="#the-content-here-is-informational" class="block border-l-2 border-transparent -ml-px pl-4 py-1 text-sm leading-snug text-gray-600 transition-colors hover:border-brand-600 hover:text-brand-700">The content here is informational</a></li>
+            <li><a href="#intellectual-property" class="block border-l-2 border-transparent -ml-px pl-4 py-1 text-sm leading-snug text-gray-600 transition-colors hover:border-brand-600 hover:text-brand-700">Intellectual property</a></li>
+            <li><a href="#acceptable-use" class="block border-l-2 border-transparent -ml-px pl-4 py-1 text-sm leading-snug text-gray-600 transition-colors hover:border-brand-600 hover:text-brand-700">Acceptable use</a></li>
+            <li><a href="#links-to-other-sites" class="block border-l-2 border-transparent -ml-px pl-4 py-1 text-sm leading-snug text-gray-600 transition-colors hover:border-brand-600 hover:text-brand-700">Links to other sites</a></li>
+            <li><a href="#disclaimer-of-warranties" class="block border-l-2 border-transparent -ml-px pl-4 py-1 text-sm leading-snug text-gray-600 transition-colors hover:border-brand-600 hover:text-brand-700">Disclaimer of warranties</a></li>
+            <li><a href="#limitation-of-liability" class="block border-l-2 border-transparent -ml-px pl-4 py-1 text-sm leading-snug text-gray-600 transition-colors hover:border-brand-600 hover:text-brand-700">Limitation of liability</a></li>
+            <li><a href="#indemnification" class="block border-l-2 border-transparent -ml-px pl-4 py-1 text-sm leading-snug text-gray-600 transition-colors hover:border-brand-600 hover:text-brand-700">Indemnification</a></li>
+            <li><a href="#governing-law" class="block border-l-2 border-transparent -ml-px pl-4 py-1 text-sm leading-snug text-gray-600 transition-colors hover:border-brand-600 hover:text-brand-700">Governing law</a></li>
+            <li><a href="#changes-to-these-terms" class="block border-l-2 border-transparent -ml-px pl-4 py-1 text-sm leading-snug text-gray-600 transition-colors hover:border-brand-600 hover:text-brand-700">Changes to these terms</a></li>
+            <li><a href="#contact-us" class="block border-l-2 border-transparent -ml-px pl-4 py-1 text-sm leading-snug text-gray-600 transition-colors hover:border-brand-600 hover:text-brand-700">Contact us</a></li>
+        </ol>
+      </div>
+    </nav>
+
+    <article class="max-w-content space-y-10 lg:col-span-9">
+      <section id="agreement-to-these-terms" class="scroll-mt-28 border-t border-gray-200 pt-10">
+        <h2 class="font-display text-xl font-bold tracking-tight text-navy-900 text-balance sm:text-2xl">Agreement to these terms</h2>
+        <p class="mt-4 leading-relaxed text-gray-600">By using this website you agree to these terms. If you do not agree with them, please do not use the site.</p>
+        <p class="mt-4 leading-relaxed text-gray-600">These terms govern the website. They do not govern consulting work, which is covered by the separate written agreement signed for that engagement. Where the two differ, the signed agreement controls.</p>
+      </section>
+
+      <section id="no-professional-relationship-is-created" class="scroll-mt-28 border-t border-gray-200 pt-10">
+        <h2 class="font-display text-xl font-bold tracking-tight text-navy-900 text-balance sm:text-2xl">No professional relationship is created</h2>
+        <div class="mt-5 rounded-lg border border-gray-200 border-l-4 border-l-brand-600 bg-gray-50 p-5 leading-relaxed text-gray-700">Browsing this site, or sending an inquiry through it, <strong>does not create a consulting, advisory, or professional relationship</strong> between you and GLOBAL EPI LLC. That relationship begins only when both parties sign a written agreement.</div>
+        <p class="mt-4 leading-relaxed text-gray-600">Until then, please do not send us anything confidential that you would not want to share with a party you have no agreement with.</p>
+      </section>
+
+      <section id="the-content-here-is-informational" class="scroll-mt-28 border-t border-gray-200 pt-10">
+        <h2 class="font-display text-xl font-bold tracking-tight text-navy-900 text-balance sm:text-2xl">The content here is informational</h2>
+        <p class="mt-4 leading-relaxed text-gray-600">Everything on this site describes the services we offer and the frameworks we work within. It is general information about professional practice.</p>
+        <p class="mt-4 leading-relaxed text-gray-600">It is not medical advice, legal advice, or a clinical or public health recommendation for any specific situation, population, or person. Do not act on it as though it were. Decisions about a real program, policy, or population need analysis of that specific context.</p>
+        <p class="mt-4 leading-relaxed text-gray-600">We work to keep the content accurate and current, but we do not warrant that it is free of error or omission.</p>
+      </section>
+
+      <section id="intellectual-property" class="scroll-mt-28 border-t border-gray-200 pt-10">
+        <h2 class="font-display text-xl font-bold tracking-tight text-navy-900 text-balance sm:text-2xl">Intellectual property</h2>
+        <p class="mt-4 leading-relaxed text-gray-600">The content, design, text, graphics, and code of this website are owned by GLOBAL EPI LLC or used with permission, and are protected by copyright and other applicable laws. The GLOBAL EPI name and logo are our marks.</p>
+        <p class="mt-4 leading-relaxed text-gray-600">You may read, print, and share pages for your own informational or internal organizational use. You may not republish, sell, or present our material as your own, or use our name or logo to imply endorsement or partnership without our written permission.</p>
+      </section>
+
+      <section id="acceptable-use" class="scroll-mt-28 border-t border-gray-200 pt-10">
+        <h2 class="font-display text-xl font-bold tracking-tight text-navy-900 text-balance sm:text-2xl">Acceptable use</h2>
+        <p class="mt-4 leading-relaxed text-gray-600">When using this site, please do not:</p>
+        <ul class="mt-4 space-y-3">
+          <li class="flex gap-3 leading-relaxed text-gray-600"><span aria-hidden="true" class="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-600"></span><span>Use it for any unlawful purpose, or in violation of any applicable regulation</span></li>
+          <li class="flex gap-3 leading-relaxed text-gray-600"><span aria-hidden="true" class="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-600"></span><span>Attempt to gain unauthorized access to the site, its hosting, or any connected system</span></li>
+          <li class="flex gap-3 leading-relaxed text-gray-600"><span aria-hidden="true" class="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-600"></span><span>Interfere with the site&rsquo;s operation or availability</span></li>
+          <li class="flex gap-3 leading-relaxed text-gray-600"><span aria-hidden="true" class="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-600"></span><span>Submit anything false, misleading, abusive, or infringing through the inquiry form</span></li>
+          <li class="flex gap-3 leading-relaxed text-gray-600"><span aria-hidden="true" class="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-600"></span><span>Use automated means to scrape the site or flood the form with submissions</span></li>
+          <li class="flex gap-3 leading-relaxed text-gray-600"><span aria-hidden="true" class="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-600"></span><span>Send protected health information or other sensitive personal data through the form</span></li>
+        </ul>
+      </section>
+
+      <section id="links-to-other-sites" class="scroll-mt-28 border-t border-gray-200 pt-10">
+        <h2 class="font-display text-xl font-bold tracking-tight text-navy-900 text-balance sm:text-2xl">Links to other sites</h2>
+        <p class="mt-4 leading-relaxed text-gray-600">Where we link to an external site, we do so because it is useful — a standards body, a framework, a public dataset. We do not control those sites and are not responsible for their content, accuracy, or privacy practices. A link is not an endorsement.</p>
+      </section>
+
+      <section id="disclaimer-of-warranties" class="scroll-mt-28 border-t border-gray-200 pt-10">
+        <h2 class="font-display text-xl font-bold tracking-tight text-navy-900 text-balance sm:text-2xl">Disclaimer of warranties</h2>
+        <p class="mt-4 leading-relaxed text-gray-600">This website is provided &ldquo;as is&rdquo; and &ldquo;as available.&rdquo; To the fullest extent permitted by law, we disclaim all warranties, express or implied, including warranties of merchantability, fitness for a particular purpose, and non-infringement.</p>
+        <p class="mt-4 leading-relaxed text-gray-600">We do not warrant that the site will be uninterrupted, timely, secure, or error-free, or that any inquiry submitted through it will be received. If a matter is time-sensitive, contact us by phone or email as well.</p>
+      </section>
+
+      <section id="limitation-of-liability" class="scroll-mt-28 border-t border-gray-200 pt-10">
+        <h2 class="font-display text-xl font-bold tracking-tight text-navy-900 text-balance sm:text-2xl">Limitation of liability</h2>
+        <p class="mt-4 leading-relaxed text-gray-600">To the fullest extent permitted by law, GLOBAL EPI LLC and its officers, employees, and contractors will not be liable for any indirect, incidental, special, consequential, or punitive damages, or for any loss of profits, data, or goodwill, arising out of your use of or inability to use this website.</p>
+        <p class="mt-4 leading-relaxed text-gray-600">Some jurisdictions do not allow certain limitations of liability, so parts of this section may not apply to you.</p>
+      </section>
+
+      <section id="indemnification" class="scroll-mt-28 border-t border-gray-200 pt-10">
+        <h2 class="font-display text-xl font-bold tracking-tight text-navy-900 text-balance sm:text-2xl">Indemnification</h2>
+        <p class="mt-4 leading-relaxed text-gray-600">You agree to hold GLOBAL EPI LLC harmless from claims arising out of your misuse of this website or your violation of these terms.</p>
+      </section>
+
+      <section id="governing-law" class="scroll-mt-28 border-t border-gray-200 pt-10">
+        <h2 class="font-display text-xl font-bold tracking-tight text-navy-900 text-balance sm:text-2xl">Governing law</h2>
+        <p class="mt-4 leading-relaxed text-gray-600">These terms are governed by the laws of the Commonwealth of Puerto Rico and applicable United States federal law, without regard to conflict-of-law principles. Disputes relating to this website will be brought in the courts located in Puerto Rico.</p>
+      </section>
+
+      <section id="changes-to-these-terms" class="scroll-mt-28 border-t border-gray-200 pt-10">
+        <h2 class="font-display text-xl font-bold tracking-tight text-navy-900 text-balance sm:text-2xl">Changes to these terms</h2>
+        <p class="mt-4 leading-relaxed text-gray-600">We may update these terms. The date at the top of this page shows when they last changed, and continued use of the site after a change means you accept the revised terms.</p>
+      </section>
+
+      <section id="contact-us" class="scroll-mt-28 border-t border-gray-200 pt-10">
+        <h2 class="font-display text-xl font-bold tracking-tight text-navy-900 text-balance sm:text-2xl">Contact us</h2>
+        <p class="mt-4 leading-relaxed text-gray-600">Questions about these terms:</p>
+        <ul class="mt-4 space-y-3">
+          <li class="flex gap-3 leading-relaxed text-gray-600"><span aria-hidden="true" class="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-600"></span><span>Email: <a class="font-medium text-brand-700 underline underline-offset-2 hover:text-navy-900" href="mailto:global.epi.consulting@gmail.com">global.epi.consulting@gmail.com</a></span></li>
+          <li class="flex gap-3 leading-relaxed text-gray-600"><span aria-hidden="true" class="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-600"></span><span>Phone: <a class="font-medium text-brand-700 underline underline-offset-2 hover:text-navy-900" href="tel:+19394014402">(939) 401-4402</a></span></li>
+          <li class="flex gap-3 leading-relaxed text-gray-600"><span aria-hidden="true" class="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-600"></span><span>Mail: GLOBAL EPI LLC, Sierra Bayam&oacute;n 81-37, Calle 68, Bayam&oacute;n, Puerto Rico 00961</span></li>
+        </ul>
+      </section>
+    </article>
+  </div>
+</div>
+
+</main>
+
+<!-- ============================================================
+     12 · FOOTER
+============================================================ -->
+<footer class="bg-navy-900 on-dark">
+  <div class="mx-auto max-w-7xl px-6 py-16">
+    <div class="grid gap-12 lg:grid-cols-12">
+
+      <div class="lg:col-span-5">
+        <div class="flex items-center gap-3">
+          <svg class="h-10 w-auto shrink-0" viewBox="0 0 27 29" role="img" aria-hidden="true">
+        <circle cx="16" cy="18" r="10" fill="#B4C908" />
+        <g fill="#A3A3A3">
+          <circle cx="13" cy="15.5" r="3.8" /><circle cx="22" cy="23" r="3" />
+          <circle cx="14.5" cy="3.5" r="2.5" /><circle cx="23.5" cy="11.5" r="2.5" />
+          <circle cx="3" cy="14" r="2" /><circle cx="5" cy="2.5" r="1.8" />
+          <circle cx="23" cy="17" r="1" /><circle cx="2" cy="20" r="1" />
+        </g>
+      </svg>
+          <span class="font-display text-xl font-bold tracking-tight text-brand-500">Global Epi</span>
+        </div>
+        <p class="mt-5 max-w-sm leading-relaxed text-gray-400">
+          A public health corporation delivering evidence-based services to communities and
+          populations — transforming access to health equity through data collection, analysis,
+          and translation.
+        </p>
+      </div>
+
+      <div class="lg:col-span-3">
+        <h2 class="eyebrow mb-5 text-gray-400">Services</h2>
+        <ul class="space-y-3 text-sm">
+          <li><a href="services.html#service-1" class="text-gray-300 transition-colors hover:text-lime-500">Research &amp; Development</a></li>
+          <li><a href="services.html#service-2" class="text-gray-300 transition-colors hover:text-lime-500">Program Development &amp; Evaluation</a></li>
+          <li><a href="services.html#service-3" class="text-gray-300 transition-colors hover:text-lime-500">Needs Assessment</a></li>
+          <li><a href="services.html#service-4" class="text-gray-300 transition-colors hover:text-lime-500">Policy Analysis &amp; Advocacy</a></li>
+          <li><a href="services.html#service-5" class="text-gray-300 transition-colors hover:text-lime-500">Capacity Building &amp; Training</a></li>
+          <li><a href="services.html#service-6" class="text-gray-300 transition-colors hover:text-lime-500">Health Communication</a></li>
+          <li><a href="services.html#service-7" class="text-gray-300 transition-colors hover:text-lime-500">Global Health Collaboration</a></li>
+        </ul>
+      </div>
+
+      <div class="lg:col-span-2">
+        <h2 class="eyebrow mb-5 text-gray-400">Company</h2>
+        <ul class="space-y-3 text-sm">
+          <li><a href="index.html#about" class="text-gray-300 transition-colors hover:text-lime-500">Mission &amp; Vision</a></li>
+          <li><a href="index.html#approach" class="text-gray-300 transition-colors hover:text-lime-500">Our Approach</a></li>
+          <li><a href="index.html#values" class="text-gray-300 transition-colors hover:text-lime-500">Core Values</a></li>
+          <li><a href="index.html#determinants" class="text-gray-300 transition-colors hover:text-lime-500">Determinants</a></li>
+          <li><a href="index.html#contact" class="text-gray-300 transition-colors hover:text-lime-500">Contact</a></li>
+        </ul>
+      </div>
+
+      <div class="lg:col-span-2">
+        <h2 class="eyebrow mb-5 text-gray-400">Get in Touch</h2>
+        <ul class="space-y-3 text-sm">
+          <li><a href="mailto:global.epi.consulting@gmail.com" class="break-all text-gray-300 transition-colors hover:text-lime-500">global.epi.consulting@gmail.com</a></li>
+          <li><a href="tel:+19394014402" class="text-gray-300 transition-colors hover:text-lime-500">(939) 401-4402</a></li>
+          <li>
+            <address class="not-italic leading-relaxed text-gray-300">
+              Sierra Bayam&oacute;n 81-37, Calle 68<br />
+              Bayam&oacute;n, Puerto Rico 00961
+            </address>
+          </li>
+          <li class="pt-1"><a href="index.html#contact" class="inline-block rounded-md bg-brand-500 px-4 py-2 font-semibold text-navy-900 transition-colors hover:bg-brand-400">Request a Consultation</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="mt-14 flex flex-col gap-4 border-t border-navy-700 pt-8 text-sm text-gray-400 sm:flex-row sm:items-center sm:justify-between">
+      <p>&copy; <span id="year">2026</span> GLOBAL EPI LLC. All rights reserved.</p>
+      <ul class="flex gap-6">
+        <li><a href="privacy.html" class="transition-colors hover:text-lime-500">Privacy Policy</a></li>
+        <li><a href="terms.html" class="transition-colors hover:text-lime-500">Terms of Use</a></li>
+        <li><a href="accessibility.html" class="transition-colors hover:text-lime-500">Accessibility</a></li>
+      </ul>
+    </div>
+  </div>
+</footer>
+
+<!-- ============================================================
+     BEHAVIOUR — shared across every page, vanilla JS, no dependencies
+============================================================ -->
+<script src="assets/js/main.js" defer></script>
+
+</body>
+</html>
