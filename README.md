@@ -22,6 +22,7 @@ privacy.html          Privacy Policy
 terms.html            Terms of Use
 accessibility.html    Accessibility Statement
 assets/logo.svg       Full lockup, vectorised from the supplied artwork
+assets/*.jpg          Founder portraits, cropped square for a round frame
 assets/favicon.svg    The mark alone, cells clipped to the disc
 assets/js/main.js     Shared behaviour for every page
 README.md
@@ -94,8 +95,7 @@ the inquiry form, lifted from the homepage so the two cannot drift · what happe
 - [x] The inquiry form posts to Formspree (`FORM_ENDPOINT` in `assets/js/main.js`) and
       delivery to the inbox is confirmed end to end. If the request fails the visitor
       still gets a `mailto:` draft, so no inquiry is silently lost.
-- [ ] Founder portraits. The profile cards use initials medallions; an `<img>` drops
-      straight into that slot
+- [x] Founder portraits are in place, cropped to circles in `assets/`
 - [x] The service-to-EPHS mapping is confirmed by the founder. Research & Development
       gained EPHS 4, Needs Assessment gained 7, Capacity Building gained 9
 - [x] The four engagement models are confirmed as how the firm contracts
