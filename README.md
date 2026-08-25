@@ -27,7 +27,7 @@ assets/favicon.svg    The mark alone, cells clipped to the disc
 assets/og-image.png   Social sharing card, 1200x630
 assets/js/main.js     Shared behaviour for every page
 field-app/            EPI Collect — offline field data collection (pilot)
-study-design/         Algoritmo de Diseño de Investigación — study design wizard
+study-design/         Research Design Algorithm — study design wizard
 README.md
 ```
 
@@ -188,7 +188,7 @@ becomes true in one edit rather than in fifteen.
 so this must not be used for PHI. The app states this on its About screen. The page is
 `noindex` and is deliberately not linked from the marketing site.
 
-## Algoritmo de Diseño de Investigación (`study-design/`)
+## Research Design Algorithm (`study-design/`)
 
 A single self-contained page — no build, no dependencies, no external requests beyond
 the two Google Fonts families, which fall back cleanly — that walks a researcher through
@@ -201,6 +201,18 @@ the test tree from *Statistical Test by Variable*. The second document is flatte
 artwork with no extractable text, so its three flowcharts were read from rendered
 images, and the A–D evidence classes were recovered by sampling the fill colour of every
 terminal box against the Class Key rather than judged by eye.
+
+**It looks like the rest of GLOBAL EPI because it uses the same tokens, not similar
+ones.** The palette carries the same names and the same hex values as the
+`tailwind.config` block on every page of the site and as the custom properties in
+`field-app/index.html`, and it loads the same Google Fonts request the marketing site
+makes, so a visitor arriving from globalepillc.com already has Inter and Plus Jakarta
+Sans cached. It is deliberately single-theme: the site and EPI Collect are both light
+only, and a tool that flipped to a dark palette for a viewer whose system is dark would
+stop looking like the rest of the firm. Every colour is painted explicitly, background
+included. Unlike the marketing pages it has no CDN dependency at all — the type
+degrades to the system stack and the layout is hand-written CSS, so it renders correctly
+even where the Play CDN is unreachable.
 
 **Logic is separated from rendering, as a file boundary rather than a convention.** The
 first half of the script holds two decision graphs as data plus pure functions over them
