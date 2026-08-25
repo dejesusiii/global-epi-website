@@ -26,8 +26,37 @@ assets/*.jpg          Founder portraits, cropped square for a round frame
 assets/favicon.svg    The mark alone, cells clipped to the disc
 assets/og-image.png   Social sharing card, 1200x630
 assets/js/main.js     Shared behaviour for every page
+field-app/            EPI Collect — offline field data collection (pilot)
 README.md
 ```
+
+## EPI Collect (`field-app/`)
+
+An installable, offline-first data collection client for field teams, served at
+`/field-app/`. It is a working pilot, not the platform described in the reference
+architecture.
+
+**What is real.** Starts and runs with no network — every asset is precached by a
+service worker and there are no third-party requests at all, not even a font host.
+Records are encrypted on the device with AES-256-GCM under a key derived from the
+collector's passphrase via PBKDF2; the key is never stored. Each operation carries a
+UUIDv7 idempotency key and an HMAC signature. History is append-only: a correction
+adds a version, nothing is overwritten. Divergent edits are flagged for a human
+rather than resolved automatically. An operation leaves the outbox only after a
+durable acknowledgement.
+
+**What is simulated.** The server is a local IndexedDB store, so the protocol can be
+exercised end to end without a backend. Replacing it is one function, `transmit`.
+
+**Scope.** Non-identifying data only. There are no BAAs and no server-side controls,
+so this must not be used for PHI. The app states this on its About screen and the
+instrument requires an attestation before a record can be saved. The page is
+`noindex` and is deliberately not linked from the marketing site.
+
+Instruments are JSON in `field-app/instruments/`. The renderer supports text with
+input masks, integers with ranges and cross-field limits, single and multi select
+with a selection cap, 1-5 scales, geopoints, checkboxes, and conditional visibility;
+answers hidden by conditional logic are pruned before save.
 
 Brand tokens and the custom `@layer` block stay inline in each page's `<head>` —
 with the Play CDN they must be parsed before first paint. Behaviour is shared: every
