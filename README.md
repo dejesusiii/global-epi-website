@@ -222,6 +222,37 @@ it walks the graph to find the longest branch still ahead, which is why it stays
 on a tree whose paths run from four questions to eight — including the real cycle where
 a descriptive study that compares groups is sent back to question 3.
 
+**Accounts, on the same model as EPI Collect.** A researcher can save a study — the
+answers given, plus the study name, principal investigator, population and notes — and
+reopen it later to change one answer and re-issue the report. Each account derives an
+AES-256-GCM key from its passphrase via PBKDF2 at 250k iterations, and every saved study
+is stored as ciphertext: a study protocol names the client and the question under
+investigation, which is confidential even though it is not PHI. The passphrase is never
+stored, so losing it loses that account's studies. Accounts back up and restore as a
+file, refusing a merge whose key material differs.
+
+None of that is required. The unlock screen offers a third door — **use without an
+account** — because a researcher checking one design should not have to enrol first, and
+the PDF needs no account at all. If storage is unavailable (a private window, site data
+switched off), the tool drops straight into the wizard rather than blocking.
+
+**The PDF is written by hand, with no library.** A PDF is a text-based container, so the
+page assembles one directly: objects, a cross-reference table, content streams, and text
+set in the base-14 Helvetica faces that every reader has built in. It carries the real
+Adobe glyph metrics rather than an average width, which is what makes lines wrap where
+they actually end, and it maps the typographic characters WinAnsi puts in the 0x80–0x9F
+range so an em dash does not silently become a question mark. The GLOBAL EPI mark on the
+first page is drawn from `assets/logo.svg` as Bézier arcs, reflected through the artwork
+height because SVG counts y downward and PDF counts it upward.
+
+The result is a two-page report with selectable text — study identification, the
+recommended design and its evidence class, the answer path as justification, the
+variable structure, the design's failure points, the statistical test, and the
+investigator's own notes — that a researcher can file, email or attach to a protocol.
+Saving routes through the host in the claude.ai artifact viewer, where a sandboxed frame
+cannot download on its own, and names the one refusal worth naming: PDF belongs to an
+extended file set some views do not enable.
+
 **What the result gives the researcher**, beyond the design name: the evidence class in
 the source's own colours, the path of answers as the justification, the variable
 structure (independent/exposure, dependent/outcome, confounders with typical candidates,
