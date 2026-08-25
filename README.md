@@ -169,8 +169,19 @@ passphrase separates clients on one device; it is not a login. Accounts that fol
 client across devices need a hosted backend — a different build, not a setting. The app
 says this on its About screen rather than leaving it to be discovered.
 
-**What is simulated.** The server is a local IndexedDB store, so the protocol can be
-exercised end to end without a backend. Replacing it is one function, `transmit`.
+**What is simulated, and what the app says about it.** There is no collection server.
+`transmit()` writes to an object store in the same browser so the delivery protocol —
+signatures, duplicate rejection, conflict detection — can be exercised end to end
+without a backend.
+
+That is useful in development and dishonest in the field. A collector who reads "Synced"
+concludes the response is off the phone and safe, and then trusts a device that is in
+fact the only copy. So no screen claims a delivery that did not happen: responses are
+tagged **On this device**, the responses screen carries "Nothing here has left this
+device" with the reason, the sync button reads **Run delivery check**, and the save toast
+says **Saved on this device** and nothing more. One constant, `SERVER_IS_REAL`, drives
+every one of those strings, so the day `transmit()` posts to a real endpoint the wording
+becomes true in one edit rather than in fifteen.
 
 **Scope.** Non-identifying data only. There are no BAAs and no server-side controls,
 so this must not be used for PHI. The app states this on its About screen. The page is

@@ -2,7 +2,7 @@
    A field tool must not depend on the network to start, so every asset is
    precached on install and served cache-first. There are no third-party
    requests at all: no font host, no CDN, no analytics. */
-const CACHE = 'epi-collect-v6';
+const CACHE = 'epi-collect-v7';
 const ASSETS = [
   './',
   './index.html',

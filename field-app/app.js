@@ -134,6 +134,17 @@ const DB = {
   },
 };
 
+/* ── Is there a server? ──────────────────────────────────────────
+   No. transmit() writes to an object store in this same browser so the
+   delivery protocol can be exercised end to end without a backend. That
+   is useful for development and dishonest in the field: a collector who
+   reads "Synced" concludes the response is off the phone and safe, and
+   then trusts a device that is in fact the only copy. Every word the
+   interface uses about delivery is driven from here, so the day
+   transmit() posts to a real endpoint the wording becomes true in one
+   edit rather than in fifteen. */
+const SERVER_IS_REAL = false;
+
 /* ── Durability ──────────────────────────────────────────────────
    IndexedDB survives closing the browser, but by default it is
    "best-effort": the browser may evict it under storage pressure, and
@@ -905,7 +916,6 @@ async function loadIdentity() {
 /* ── Library (home) ──────────────────────────────────────────────── */
 async function renderHome() {
   const subs = await submissions();
-  const outbox = await DB.all('outbox');
   await Store.read();
   const backup = await unbackedUp();
   const conflicts = subs.filter((s) => s.conflict).length;
@@ -920,7 +930,7 @@ async function renderHome() {
     <div class="stats">
       <div class="stat"><b>${State.instruments.length}</b><span>Surveys</span></div>
       <div class="stat"><b>${subs.length}</b><span>Responses</span></div>
-      <div class="stat"><b>${outbox.length}</b><span>Pending</span></div>
+      <div class="stat"><b>${backup.since}</b><span>Not backed up</span></div>
     </div>
 
     <div>
@@ -975,7 +985,7 @@ async function renderHome() {
     </div>
     <div class="row">
       <button class="btn ghost sm" id="go-import">Import file</button>
-      <button class="btn ghost sm" id="go-queue">Responses${outbox.length ? ` (${outbox.length} pending)` : ''}</button>
+      <button class="btn ghost sm" id="go-queue">Responses${subs.length ? ` (${subs.length})` : ''}</button>
       <button class="btn ghost sm" id="go-about">About</button>
     </div>
     ${conflicts ? `<div class="notice risk"><b>${conflicts} conflict${conflicts > 1 ? 's' : ''} to resolve</b><span>Two versions share a parent. Open Responses to review.</span></div>` : ''}
@@ -1916,7 +1926,8 @@ async function saveRecord() {
   toast('Saved on this device');
   if (navigator.onLine) {
     const r = await syncOutbox();
-    if (r.sent) toast(`Saved and transmitted${r.conflicts ? ' — conflict flagged' : ''}`);
+    if (r.sent && SERVER_IS_REAL) toast(`Saved and transmitted${r.conflicts ? ' — conflict flagged' : ''}`);
+    else if (r.conflicts) toast('Saved — conflict flagged');
   }
   await renderHome(); show('home');
 }
@@ -1928,24 +1939,33 @@ async function renderQueue() {
   $('scr-queue').innerHTML = `
     <div><p class="eyebrow">Responses</p>
       <h2 style="margin-top:4px">${subs.length} for ${esc(State.ws.name)}</h2>
-      <p class="muted" style="margin-top:6px">${outbox.length} waiting to transmit. A response leaves the outbox only after the server confirms a durable write.</p></div>
+      <p class="muted" style="margin-top:6px">${SERVER_IS_REAL
+        ? `${outbox.length} waiting to transmit. A response leaves the outbox only after the server confirms a durable write.`
+        : 'Every one of these is on this phone and nowhere else.'}</p></div>
+    ${SERVER_IS_REAL ? '' : `<div class="notice warn">
+      <b>Nothing here has left this device</b>
+      <span>No collection server is connected. The delivery protocol below runs against a stand-in inside this browser — it checks signatures, rejects duplicates and flags conflicts, but it moves nothing anywhere. Responses leave this phone only in a backup file or a CSV you export.</span></div>`}
     ${subs.length === 0 ? '<div class="notice"><b>Nothing collected yet</b><span>Completed interviews appear here.</span></div>' : ''}
     <div class="list">
       ${subs.map((s) => `
         <button class="item ${s.conflict ? 'conflict' : s.synced ? 'synced' : 'pending'}" data-sub="${s.id}">
           <div class="item-top"><strong>${esc(s.label)}</strong>
-            <span class="tag ${s.conflict ? 'conflict' : s.synced ? 'synced' : 'pending'}">${s.conflict ? 'Conflict' : s.synced ? 'Synced' : 'Pending'}</span></div>
+            <span class="tag ${s.conflict ? 'conflict' : s.synced ? 'synced' : 'pending'}">${s.conflict ? 'Conflict'
+              : SERVER_IS_REAL ? (s.synced ? 'Synced' : 'Pending')
+              : 'On this device'}</span></div>
           <span class="muted" style="font-size:.82rem">${esc(s.instrumentTitle)}</span>
           <span class="muted mono">v${s.version} · ${s.events.length} event${s.events.length > 1 ? 's' : ''} · ${new Date(s.capturedAt).toLocaleString()}</span>
         </button>`).join('')}
     </div>`;
   setActions(`<button class="btn ghost" id="q-back">Back</button>
-    <button class="btn" id="q-sync"${outbox.length ? '' : ' disabled'}>Transmit ${outbox.length || ''}</button>`);
+    <button class="btn" id="q-sync"${outbox.length ? '' : ' disabled'}>${SERVER_IS_REAL ? 'Transmit' : 'Run delivery check'} ${outbox.length || ''}</button>`);
   $('q-back').onclick = async () => { await renderHome(); show('home'); };
   $('q-sync').onclick = async () => {
-    $('q-sync').disabled = true; $('q-sync').textContent = 'Transmitting…';
+    $('q-sync').disabled = true; $('q-sync').textContent = SERVER_IS_REAL ? 'Transmitting…' : 'Checking…';
     const r = await syncOutbox();
-    toast(`${r.sent} sent · ${r.dupes} duplicate${r.dupes === 1 ? '' : 's'} ignored${r.conflicts ? ` · ${r.conflicts} conflict` : ''}`);
+    toast(SERVER_IS_REAL
+      ? `${r.sent} sent · ${r.dupes} duplicate${r.dupes === 1 ? '' : 's'} ignored${r.conflicts ? ` · ${r.conflicts} conflict` : ''}`
+      : `${r.sent} checked against the local stand-in${r.conflicts ? ` · ${r.conflicts} conflict flagged` : ''} — still only on this device`);
     await renderQueue();
   };
   $('scr-queue').querySelectorAll('[data-sub]').forEach((b) => b.onclick = async () => {
@@ -1969,7 +1989,9 @@ async function renderRecord(id) {
       <div class="list">
         ${s.events.map((e) => `<div class="item ${e.synced ? 'synced' : 'pending'}" style="cursor:default">
           <div class="item-top"><strong>Version ${e.version}</strong>
-            <span class="tag ${e.synced ? 'synced' : 'pending'}">${e.synced ? 'seq ' + e.server_seq : 'Pending'}</span></div>
+            <span class="tag ${e.synced ? 'synced' : 'pending'}">${e.synced
+              ? (SERVER_IS_REAL ? 'seq ' + e.server_seq : 'checked')
+              : (SERVER_IS_REAL ? 'Pending' : 'not checked')}</span></div>
           <span class="muted mono">op ${esc(e.op_id.slice(0, 18))}… · parent ${e.parent_version ?? '—'}</span></div>`).join('')}
       </div></div>
     <div class="card"><h3>Answers</h3><p class="muted">Decrypted in memory for display only.</p>
@@ -2016,7 +2038,8 @@ async function renderAbout() {
         <li>Divergent edits are flagged for a human, never resolved automatically</li>
       </ul></div>
     <div class="card"><h3>What is simulated</h3>
-      <p class="muted">The server is a local store, so the protocol can be demonstrated end to end without a backend. Swapping it for a real API is one function, <span class="mono">transmit</span>.</p></div>
+      <p class="muted"><b style="color:var(--navy-900)">There is no collection server.</b> <span class="mono">transmit</span> writes to an object store inside this same browser, so the delivery protocol — signatures, duplicate rejection, conflict detection — can be exercised end to end without a backend. Nothing it does moves a response off this device.</p>
+      <p class="muted">Because of that, no screen in this app claims a response was transmitted or synced. Responses leave this phone in exactly two ways: a backup file, or a CSV you export. Swapping the stand-in for a real API is one function.</p></div>
     <div class="card"><h3>This client workspace</h3>
       <p class="muted"><b style="color:var(--navy-900)">${esc(State.ws.name)}</b> — opened with its own passphrase, encrypted under its own key. ${State.workspaces.length - 1
         ? `${State.workspaces.length - 1} other client workspace${State.workspaces.length === 2 ? '' : 's'} on this device ${State.workspaces.length === 2 ? 'is' : 'are'} locked and unreadable from here: a different passphrase means a different key, not a filter.`
