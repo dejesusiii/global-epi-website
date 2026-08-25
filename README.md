@@ -32,41 +32,40 @@ README.md
 
 ## EPI Collect (`field-app/`)
 
-An installable, offline-first data collection client for field teams, served at
-`/field-app/`. It is a working pilot, not the platform described in the reference
-architecture.
+A survey tool, not an app with a survey inside it. Anyone can build an instrument —
+sections, question types, validation rules, conditional logic — preview it exactly as
+an interviewer will see it, and then run it in the field with no connectivity.
+Installable to a phone home screen from `/field-app/`.
 
-**What is real.** Starts and runs with no network — every asset is precached by a
-service worker and there are no third-party requests at all, not even a font host.
-Records are encrypted on the device with AES-256-GCM under a key derived from the
-collector's passphrase via PBKDF2; the key is never stored. Each operation carries a
-UUIDv7 idempotency key and an HMAC signature. History is append-only: a correction
-adds a version, nothing is overwritten. Divergent edits are flagged for a human
-rather than resolved automatically. An operation leaves the outbox only after a
-durable acknowledgement.
+**The builder.** Ten question types: short and long text, whole number, decimal,
+choose one, choose many, rating scale, date, confirmation, location. Per question you
+set wording, hint, required, and the rules that fit its type — input masks, ranges,
+character and selection limits, a cap against an earlier numeric answer, and scale end
+labels. Conditional visibility is offered only against questions that come earlier, so
+a rule can never depend on an answer that has not been given. Sections and questions
+reorder with up and down controls, which work on touch and by keyboard.
+
+A survey cannot be run until every question is answerable; the library shows it as a
+draft and lists what is missing. Surveys export and import as JSON, so they move
+between devices without a server.
+
+**Collection.** Works with no network — every asset is precached and there are no
+third-party requests at all, not even a font host. Responses are encrypted on the
+device with AES-256-GCM under a key derived from the user's passphrase via PBKDF2;
+the key is never stored. Each operation carries a UUIDv7 idempotency key and an HMAC
+signature. History is append-only: a correction adds a version, nothing is
+overwritten. Divergent edits are flagged for a human rather than resolved
+automatically. An operation leaves the outbox only after a durable acknowledgement.
 
 **What is simulated.** The server is a local IndexedDB store, so the protocol can be
 exercised end to end without a backend. Replacing it is one function, `transmit`.
 
 **Scope.** Non-identifying data only. There are no BAAs and no server-side controls,
-so this must not be used for PHI. The app states this on its About screen and the
-instrument requires an attestation before a record can be saved. The page is
+so this must not be used for PHI. The app states this on its About screen. The page is
 `noindex` and is deliberately not linked from the marketing site.
 
-Instruments are JSON in `field-app/instruments/`. The renderer supports text with
-input masks, integers with ranges and cross-field limits, single and multi select
-with a selection cap, 1-5 scales, geopoints, checkboxes, and conditional visibility;
-answers hidden by conditional logic are pruned before save.
-
-Brand tokens and the custom `@layer` block stay inline in each page's `<head>` —
-with the Play CDN they must be parsed before first paint. Behaviour is shared: every
-module in `main.js` guards on the presence of its own markup, so a page without a
-form (or tab list, or canvas) simply skips that block.
-
-**Adding a page:** copy the `<head>`, utility bar, header and footer from an existing
-page verbatim, change only the `<title>`/description and the nav's `aria-current`,
-and load `assets/js/main.js` at the end. The two existing pages are byte-identical
-across those regions apart from hrefs.
+`instruments/chna-screener.json` seeds the library on first run as a worked example.
+It is an ordinary survey: editable, duplicable and deletable like any other.
 
 ## Brand tokens
 
