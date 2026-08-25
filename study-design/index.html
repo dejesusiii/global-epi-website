@@ -51,6 +51,10 @@
 }
 
 *, *::before, *::after { box-sizing: border-box; }
+/* Any author rule that sets `display` beats the user-agent rule for
+   [hidden], so an element like .progress — which is display:grid —
+   stays on screen after hidden is set. This puts that back. */
+[hidden] { display: none !important; }
 html { -webkit-text-size-adjust: 100%; }
 body {
   margin: 0;
@@ -233,6 +237,50 @@ main { max-width: var(--wrap); margin: 0 auto; padding: 34px 24px 72px; }
 .stat-result .why strong { color: var(--brand-500); font-weight: 600; }
 .statq { font-family: var(--display); font-weight: 700; color: var(--navy-900); font-size: 1rem; margin-top: 5px; }
 
+/* ── Forms: account, and the study details on the report ────────── */
+.field { display: grid; gap: 5px; margin-top: 16px; }
+.fieldrow { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 560px) { .fieldrow { grid-template-columns: 1fr; gap: 0; } }
+.flabel { font-weight: 600; color: var(--navy-900); font-size: .88rem; }
+.fhint { font-size: .82rem; color: var(--gray-500); }
+input[type=text], input[type=password], textarea {
+  font: inherit; width: 100%; padding: 11px 13px; border-radius: 8px;
+  border: 1.5px solid var(--gray-300); background: #FFFFFF; color: var(--gray-800);
+}
+textarea { resize: vertical; line-height: 1.5; min-height: 76px; }
+input:focus, textarea:focus { border-color: var(--brand-600); outline: none; box-shadow: 0 0 0 3px rgba(6,189,149,.16); }
+.err { font-size: .86rem; color: #A8342C; font-weight: 500; margin-top: 10px; }
+.saveform { display: grid; gap: 0; margin-bottom: 6px; }
+.linkbtn { background: none; border: 0; padding: 0; color: var(--brand-700); font-weight: 600; cursor: pointer; text-decoration: underline; }
+.divider { height: 1px; background: var(--gray-200); margin: 22px 0 18px; }
+
+/* ── Which account is open ──────────────────────────────────────── */
+.acctbar {
+  background: var(--navy-900); color: var(--gray-200); border-radius: 8px;
+  padding: 10px 12px 10px 16px; font-size: .86rem;
+  display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+}
+.acctbar b { color: var(--brand-500); font-weight: 700; }
+.acctbar .btn.sm, .studyrow .btn.sm { padding: 7px 13px; font-size: .82rem; }
+
+/* ── Saved studies ──────────────────────────────────────────────── */
+.studyrow {
+  background: #FFFFFF; border: 1px solid var(--gray-200); border-radius: 8px;
+  display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: center; gap: 10px;
+  padding: 12px 12px 12px 16px;
+}
+.studyrow .grab { display: grid; gap: 3px; min-width: 0; text-align: left; background: none; border: 0; padding: 0; cursor: pointer; }
+.studyrow .grab strong { color: var(--navy-900); font-size: .95rem; font-weight: 600; line-height: 1.3; }
+.studyrow .grab span { font-size: .8rem; color: var(--gray-500); }
+.studyrow .ctrls { display: flex; gap: 6px; flex: none; }
+.iconbtn {
+  min-width: 38px; height: 34px; padding: 0 9px; border-radius: 7px; border: 1px solid var(--gray-300);
+  background: #FFFFFF; color: var(--gray-600); font-size: .76rem; font-weight: 600; cursor: pointer;
+}
+.iconbtn:hover { border-color: var(--brand-600); color: var(--brand-700); }
+.iconbtn.del { color: #A8342C; border-color: #E9C9C6; }
+.list { display: grid; gap: 10px; }
+
 /* ── Help dialog ────────────────────────────────────────────────── */
 dialog {
   border: 1px solid var(--gray-200); border-radius: 12px; padding: 0; max-width: 34rem; width: calc(100% - 32px);
@@ -289,9 +337,10 @@ footer a { color: var(--brand-700); }
       <strong>Research Design Algorithm</strong>
       <span>Global Epi · Methodology</span>
     </div>
-    <button class="topbtn" id="btn-restart" type="button">Start over</button>
+    <button class="topbtn" id="btn-home" type="button" hidden>My studies</button>
+    <button class="topbtn" id="btn-restart" type="button" hidden>Start over</button>
   </div>
-  <div class="progress">
+  <div class="progress" id="progress-wrap" hidden>
     <div class="progress-rail"><i id="bar" style="width:0%"></i></div>
     <div class="progress-meta">
       <span id="progress-label">Question 1</span>
@@ -1465,11 +1514,567 @@ function wrapText(text, width, indent) {
 
 
 /* ═════════════════════════════════════════════════════════════════════
+   ACCOUNTS AND SAVED STUDIES
+   ---------------------------------------------------------------------
+   The same shape as EPI Collect, deliberately: an account holds a
+   passphrase-derived key, and everything stored under it is ciphertext.
+   A study protocol names the client, the population and the question
+   under investigation, which is confidential even though it is not PHI.
+
+   Nothing here is required to use the tool. The unlock screen offers a
+   third door — work without an account — because a researcher checking
+   one design should not have to enrol first, and the PDF needs no
+   account at all.
+   ═════════════════════════════════════════════════════════════════════ */
+
+const enc = new TextEncoder();
+const dec = new TextDecoder();
+const b64 = (buf) => btoa(String.fromCharCode(...new Uint8Array(buf)));
+const unb64 = (str) => Uint8Array.from(atob(str), (c) => c.charCodeAt(0));
+
+function uuid() {
+  const b = crypto.getRandomValues(new Uint8Array(16));
+  b[6] = (b[6] & 0x0f) | 0x40; b[8] = (b[8] & 0x3f) | 0x80;
+  const h = [...b].map((x) => x.toString(16).padStart(2, '0')).join('');
+  return `${h.slice(0,8)}-${h.slice(8,12)}-${h.slice(12,16)}-${h.slice(16,20)}-${h.slice(20)}`;
+}
+
+/* Same parameters as EPI Collect: PBKDF2-SHA256 at 250k iterations into
+   an AES-256-GCM key. The key is never stored, so a forgotten
+   passphrase loses that account's studies and nothing can recover them. */
+const Vault = {
+  key: null,
+  async derive(passphrase, saltB64) {
+    const salt = unb64(saltB64);
+    const base = await crypto.subtle.importKey('raw', enc.encode(passphrase), 'PBKDF2', false, ['deriveBits']);
+    const bits = await crypto.subtle.deriveBits(
+      { name: 'PBKDF2', salt, iterations: 250000, hash: 'SHA-256' }, base, 256);
+    const raw = new Uint8Array(bits);
+    this.key = await crypto.subtle.importKey('raw', raw, 'AES-GCM', false, ['encrypt', 'decrypt']);
+    return b64(await crypto.subtle.digest('SHA-256', raw));
+  },
+  async encrypt(obj) {
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, this.key, enc.encode(JSON.stringify(obj)));
+    return { iv: b64(iv), ct: b64(ct) };
+  },
+  async decrypt(payload) {
+    const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: unb64(payload.iv) }, this.key, unb64(payload.ct));
+    return JSON.parse(dec.decode(pt));
+  },
+  lock() { this.key = null; }
+};
+
+const DB = {
+  db: null,
+  open() {
+    return new Promise((res, rej) => {
+      const r = indexedDB.open('epi-study-design', 1);
+      r.onupgradeneeded = () => {
+        const d = r.result;
+        if (!d.objectStoreNames.contains('meta')) d.createObjectStore('meta', { keyPath: 'k' });
+        if (!d.objectStoreNames.contains('studies')) d.createObjectStore('studies', { keyPath: 'id' });
+      };
+      r.onsuccess = () => { this.db = r.result; res(true); };
+      r.onerror = () => rej(r.error);
+    });
+  },
+  req(r) { return new Promise((res, rej) => { r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); },
+  tx(store, mode) { return this.db.transaction(store, mode || 'readonly').objectStore(store); },
+  allRaw(store) { return this.req(this.tx(store).getAll()); },
+  putRaw(store, value) { return this.req(this.tx(store, 'readwrite').put(value)); },
+  delRaw(store, key) { return this.req(this.tx(store, 'readwrite').delete(key)); },
+  async meta(k, v) {
+    if (v === undefined) { const r = await this.req(this.tx('meta').get(k)); return r ? r.v : null; }
+    return this.putRaw('meta', { k, v });
+  }
+};
+
+const Accounts = {
+  list: [],
+  current: null,
+  async load() { this.list = (await DB.meta('accounts')) || []; return this.list; },
+  save() { return DB.meta('accounts', this.list); },
+  async create(name, passphrase) {
+    const salt = b64(crypto.getRandomValues(new Uint8Array(16)));
+    const verifier = await Vault.derive(passphrase, salt);
+    Vault.lock();
+    const account = { id: uuid(), name, salt, verifier, createdAt: new Date().toISOString() };
+    this.list.push(account);
+    await this.save();
+    return account;
+  },
+  async open(account, passphrase) {
+    if (await Vault.derive(passphrase, account.salt) !== account.verifier) { Vault.lock(); return false; }
+    this.current = account;
+    await DB.meta('last_account', account.id);
+    return true;
+  },
+  close() { Vault.lock(); this.current = null; }
+};
+
+/* A saved study is one row of ciphertext stamped with its account. The
+   account id is in the clear because the list has to be filtered before
+   any key exists; everything a reader would care about is inside. */
+const Studies = {
+  async list() {
+    if (!Accounts.current) return [];
+    const rows = (await DB.allRaw('studies')).filter((r) => r.acct === Accounts.current.id);
+    const out = [];
+    for (const r of rows) {
+      try { out.push({ ...(await Vault.decrypt(r.enc)), id: r.id }); } catch { /* another account's key */ }
+    }
+    return out.sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt)));
+  },
+  async save(study) {
+    const record = { ...study, updatedAt: new Date().toISOString() };
+    if (!record.id) { record.id = uuid(); record.createdAt = record.updatedAt; }
+    await DB.putRaw('studies', { id: record.id, acct: Accounts.current.id, enc: await Vault.encrypt(record) });
+    return record;
+  },
+  async remove(id) {
+    const row = await DB.req(DB.tx('studies').get(id));
+    if (row && row.acct === Accounts.current.id) await DB.delRaw('studies', id);
+  }
+};
+
+/* Backup carries one account and its studies, still as ciphertext, with
+   the salt and verifier so the same passphrase opens it elsewhere. The
+   passphrase is in neither the file nor the app. */
+const BACKUP_KIND = 'epi-study-design-backup';
+
+async function buildBackup() {
+  const a = Accounts.current;
+  return {
+    kind: BACKUP_KIND, v: 1, exported_at: new Date().toISOString(),
+    account: { id: a.id, name: a.name, salt: a.salt, verifier: a.verifier, createdAt: a.createdAt },
+    studies: (await DB.allRaw('studies')).filter((r) => r.acct === a.id)
+  };
+}
+
+async function restoreBackup(obj) {
+  if (!obj || obj.kind !== BACKUP_KIND) return { error: 'That file is not a Research Design Algorithm backup.' };
+  const a = obj.account;
+  if (!a || !a.salt || !a.verifier || !a.id) return { error: 'That backup is missing its key material and cannot be opened.' };
+  await Accounts.load();
+  const existing = Accounts.list.find((x) => x.id === a.id)
+    || Accounts.list.find((x) => x.name.toLowerCase() === String(a.name || '').toLowerCase());
+  if (existing && existing.verifier !== a.verifier) {
+    return { error: `This backup was made under a different passphrase than the "${existing.name}" account on this device. Restoring it would leave studies nothing here could decrypt.` };
+  }
+  let target = existing;
+  if (!target) {
+    target = { id: a.id, name: a.name || 'Restored account', salt: a.salt, verifier: a.verifier,
+      createdAt: a.createdAt || new Date().toISOString() };
+    Accounts.list.push(target);
+    await Accounts.save();
+  }
+  const seen = new Set((await DB.allRaw('studies')).map((r) => r.id));
+  let added = 0;
+  for (const row of obj.studies || []) {
+    if (seen.has(row.id)) continue;
+    await DB.putRaw('studies', { ...row, acct: target.id });
+    added += 1;
+  }
+  return { id: target.id, name: target.name, added };
+}
+
+
+/* ═════════════════════════════════════════════════════════════════════
+   PDF WRITER — no library, no network
+   ---------------------------------------------------------------------
+   A PDF is a text-based container, so one can be assembled by hand. That
+   matters here: this page loads no script from anywhere, and a report
+   the researcher can file, email or attach to a protocol should not
+   depend on a CDN being up.
+
+   Text is set in the base-14 Helvetica faces, which every reader has
+   built in, so nothing needs embedding. Glyph widths are the real
+   Adobe metrics rather than an average, which is what lets lines wrap
+   where they actually end.
+   ═════════════════════════════════════════════════════════════════════ */
+
+const PDF = {
+  W: 612, H: 792,            /* US Letter, in points */
+  M: 56,                     /* margin */
+
+  /* Helvetica and Helvetica-Bold advance widths, ASCII 32..126, per
+     1000 units of em. Anything outside the range falls back to the
+     average, which only affects an accented name in a title. */
+  wReg: [278,278,355,556,556,889,667,191,333,333,389,584,278,333,278,278,
+         556,556,556,556,556,556,556,556,556,556,278,278,584,584,584,556,
+         1015,667,667,722,722,667,611,778,722,278,500,667,556,833,722,778,
+         667,778,722,667,611,722,667,944,667,667,611,278,278,278,469,556,
+         333,556,556,500,556,556,278,556,556,222,222,500,222,833,556,556,
+         556,556,333,500,278,556,500,722,500,500,500,334,260,334,584],
+  wBold: [278,333,474,556,556,889,722,238,333,333,389,584,278,333,278,278,
+          556,556,556,556,556,556,556,556,556,556,333,333,584,584,584,611,
+          975,722,722,722,722,667,611,778,722,278,556,722,611,833,722,778,
+          667,778,722,667,611,722,667,944,667,667,611,333,278,333,584,556,
+          333,556,611,556,611,556,333,611,611,278,278,556,278,889,611,611,
+          611,611,389,556,333,611,556,778,556,556,500,389,280,389,584],
+
+  /* WinAnsiEncoding places a handful of typographic characters in the
+     0x80-0x9F range that Latin-1 leaves empty. Without this map an em
+     dash silently becomes a question mark. */
+  winAnsi: { 0x2018:0x91, 0x2019:0x92, 0x201C:0x93, 0x201D:0x94,
+             0x2013:0x96, 0x2014:0x97, 0x2026:0x85, 0x2022:0x95, 0x2122:0x99 },
+
+  width(text, size, bold) {
+    const table = bold ? this.wBold : this.wReg;
+    let w = 0;
+    for (const ch of String(text)) {
+      const c = ch.codePointAt(0);
+      w += (c >= 32 && c <= 126) ? table[c - 32] : (bold ? 611 : 556);
+    }
+    return (w * size) / 1000;
+  },
+
+  /* Greedy wrap on real metrics. A single word longer than the column
+     is broken rather than allowed to run off the page. */
+  wrap(text, size, bold, maxW) {
+    const out = [];
+    for (const para of String(text).split('\n')) {
+      const words = para.split(/\s+/).filter(Boolean);
+      if (!words.length) { out.push(''); continue; }
+      let line = '';
+      for (const word of words) {
+        const trial = line ? line + ' ' + word : word;
+        if (this.width(trial, size, bold) <= maxW) { line = trial; continue; }
+        if (line) out.push(line);
+        if (this.width(word, size, bold) <= maxW) { line = word; continue; }
+        let chunk = '';
+        for (const ch of word) {
+          if (this.width(chunk + ch, size, bold) > maxW) { out.push(chunk); chunk = ch; }
+          else chunk += ch;
+        }
+        line = chunk;
+      }
+      if (line) out.push(line);
+    }
+    return out;
+  },
+
+  esc(text) {
+    let out = '';
+    for (const ch of String(text)) {
+      const c = ch.codePointAt(0);
+      const mapped = this.winAnsi[c] !== undefined ? this.winAnsi[c] : (c <= 0xFF ? c : 0x3F);
+      const b = String.fromCharCode(mapped);
+      out += (b === '(' || b === ')' || b === '\\') ? '\\' + b : b;
+    }
+    return out;
+  },
+
+  /* Four Bezier arcs make a circle; the GLOBAL EPI mark is nothing but
+     circles, so the logo is drawn rather than rasterised. */
+  circle(cx, cy, r) {
+    const k = 0.5523 * r;
+    return `${cx - r} ${cy} m ` +
+      `${cx - r} ${cy + k} ${cx - k} ${cy + r} ${cx} ${cy + r} c ` +
+      `${cx + k} ${cy + r} ${cx + r} ${cy + k} ${cx + r} ${cy} c ` +
+      `${cx + r} ${cy - k} ${cx + k} ${cy - r} ${cx} ${cy - r} c ` +
+      `${cx - k} ${cy - r} ${cx - r} ${cy - k} ${cx - r} ${cy} c f\n`;
+  },
+
+  /* Assemble objects, cross-reference table and trailer. Offsets are
+     counted in bytes, not characters, which is why the whole document is
+     built as a byte array from the start. */
+  assemble(pages) {
+    const bytes = [];
+    const push = (str) => { for (const ch of str) bytes.push(ch.charCodeAt(0) & 0xFF); };
+    const offsets = [0];
+    const obj = (n, body) => { offsets[n] = bytes.length; push(`${n} 0 obj\n${body}\nendobj\n`); };
+
+    push('%PDF-1.4\n%\xE2\xE3\xCF\xD3\n');
+
+    const kids = pages.map((_, i) => `${5 + i * 2} 0 R`).join(' ');
+    obj(1, '<< /Type /Catalog /Pages 2 0 R >>');
+    obj(2, `<< /Type /Pages /Kids [${kids}] /Count ${pages.length} >>`);
+    obj(3, '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>');
+    obj(4, '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>');
+
+    pages.forEach((content, i) => {
+      const pageNum = 5 + i * 2;
+      obj(pageNum, `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${this.W} ${this.H}] ` +
+        `/Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents ${pageNum + 1} 0 R >>`);
+      let len = 0;
+      for (const ch of content) len += 1;
+      obj(pageNum + 1, `<< /Length ${len} >>\nstream\n${content}endstream`);
+    });
+
+    const total = 5 + pages.length * 2;
+    const xref = bytes.length;
+    push(`xref\n0 ${total}\n0000000000 65535 f \n`);
+    for (let n = 1; n < total; n++) {
+      push(String(offsets[n] || 0).padStart(10, '0') + ' 00000 n \n');
+    }
+    push(`trailer\n<< /Size ${total} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF\n`);
+    return new Uint8Array(bytes);
+  },
+
+  /* ── Layout ───────────────────────────────────────────────────────
+     Walks a list of blocks, wrapping and paginating as it goes. The
+     caller describes what the report says; this decides where it sits. */
+  render(blocks, meta) {
+    const colW = this.W - this.M * 2;
+    const pages = [];
+    let ops = '';
+    let y = 0;
+    let pageIndex = 0;
+
+    const NAVY = '0.024 0.102 0.180';
+    const BRAND = '0.016 0.475 0.388';
+    const GRAY = '0.412 0.451 0.435';
+    const LINE = '0.871 0.898 0.886';
+    const LIME = '0.706 0.788 0.031';
+    const DOT = '0.639 0.639 0.639';
+
+    const text = (str, x, yy, size, bold, colour) =>
+      `BT ${colour} rg /${bold ? 'F2' : 'F1'} ${size} Tf ${x} ${yy} Td (${this.esc(str)}) Tj ET\n`;
+
+    const startPage = () => {
+      ops = '';
+      pageIndex += 1;
+      if (pageIndex === 1) {
+        /* Masthead: navy band, drawn mark, title. */
+        ops += `${NAVY} rg 0 ${this.H - 104} ${this.W} 104 re f\n`;
+        /* The mark, transcribed from assets/logo.svg. SVG counts y
+           downward and PDF counts it upward, so every circle is
+           reflected through the artwork height rather than nudged. */
+        const bx = this.M, by = this.H - 56, baseY = this.H - 104 + 33, ART_H = 29;
+        const mark = (x, sy, r) => this.circle(bx + x, baseY + (ART_H - sy), r);
+        ops += `${LIME} rg ` + mark(16, 18, 10);
+        ops += `${DOT} rg ` + mark(13, 15.5, 3.8) + mark(22, 23, 3) + mark(14.5, 3.5, 2.5)
+             + mark(23.5, 11.5, 2.5) + mark(3, 14, 2) + mark(5, 2.5, 1.8);
+        ops += text('GLOBAL EPI', bx + 36, by + 6, 13, true, '1 1 1');
+        ops += text('Research Design Algorithm', bx + 36, by - 9, 9, false, '0.024 0.741 0.584');
+        ops += text(meta.date, this.W - this.M - this.width(meta.date, 8, false), by - 9, 8, false, '0.773 0.812 0.796');
+        y = this.H - 140;
+      } else {
+        y = this.H - this.M;
+      }
+    };
+
+    const endPage = () => {
+      const foot = `GLOBAL EPI LLC  ·  Research Design Algorithm  ·  page ${pageIndex}`;
+      ops += `${LINE} RG 0.6 w ${this.M} 48 m ${this.W - this.M} 48 l S\n`;
+      ops += text(foot, this.M, 34, 7.5, false, GRAY);
+      pages.push(ops);
+    };
+
+    const room = (needed) => {
+      if (y - needed >= 64) return;
+      endPage();
+      startPage();
+    };
+
+    startPage();
+
+    for (const b of blocks) {
+      if (b.t === 'space') { y -= b.h; continue; }
+
+      if (b.t === 'rule') {
+        room(14);
+        ops += `${LINE} RG 0.6 w ${this.M} ${y} m ${this.W - this.M} ${y} l S\n`;
+        y -= 14;
+        continue;
+      }
+
+      if (b.t === 'h') {
+        room(34);
+        y -= 8;
+        ops += text(b.text.toUpperCase(), this.M, y, 8.5, true, BRAND);
+        y -= 16;
+        continue;
+      }
+
+      if (b.t === 'title') {
+        const lines = this.wrap(b.text, 19, true, colW);
+        room(lines.length * 23 + 12);
+        for (const ln of lines) { ops += text(ln, this.M, y, 19, true, NAVY); y -= 23; }
+        y -= 4;
+        if (b.sub) {
+          ops += text(b.sub, this.M, y, 9, false, GRAY);
+          y -= 16;
+        }
+        continue;
+      }
+
+      if (b.t === 'p') {
+        const size = b.small ? 8.5 : 9.5;
+        const lines = this.wrap(b.text, size, !!b.bold, colW);
+        for (const ln of lines) {
+          room(size + 4);
+          ops += text(ln, this.M, y, size, !!b.bold, b.mute ? GRAY : '0.224 0.255 0.243');
+          y -= size + 4;
+        }
+        y -= 5;
+        continue;
+      }
+
+      if (b.t === 'kv') {
+        const labelW = 132;
+        const kLines = this.wrap(b.k, 8.5, true, labelW - 10);
+        const vLines = this.wrap(b.v, 9.5, false, colW - labelW);
+        const need = Math.max(kLines.length * 12, vLines.length * 13) + 10;
+        room(need);
+        let ky = y;
+        for (const ln of kLines) { ops += text(ln, this.M, ky, 8.5, true, NAVY); ky -= 12; }
+        let vy = y;
+        for (const ln of vLines) { ops += text(ln, this.M + labelW, vy, 9.5, false, '0.224 0.255 0.243'); vy -= 13; }
+        y = Math.min(ky, vy) - 4;
+        continue;
+      }
+
+      if (b.t === 'num') {
+        const indent = 22;
+        const qLines = this.wrap(b.text, 9, false, colW - indent);
+        const aLines = b.sub ? this.wrap(b.sub, 9, true, colW - indent) : [];
+        room(qLines.length * 12 + aLines.length * 12 + 12);
+        ops += text(String(b.n) + '.', this.M, y, 8.5, false, GRAY);
+        for (const ln of qLines) { ops += text(ln, this.M + indent, y, 9, false, GRAY); y -= 12; }
+        for (const ln of aLines) { ops += text(ln, this.M + indent, y, 9, true, BRAND); y -= 12; }
+        y -= 6;
+        continue;
+      }
+
+      if (b.t === 'tags') {
+        const joined = b.items.join('   ·   ');
+        const lines = this.wrap(joined, 8.5, false, colW - 10);
+        room(lines.length * 12 + 8);
+        for (const ln of lines) { ops += text(ln, this.M + 10, y, 8.5, false, GRAY); y -= 12; }
+        y -= 4;
+        continue;
+      }
+
+      if (b.t === 'note') {
+        const lines = this.wrap(b.text, 8.5, false, colW - 24);
+        const boxH = lines.length * 12 + 30;
+        room(boxH + 8);
+        ops += `0.910 0.984 0.961 rg ${this.M} ${y - boxH + 14} ${colW} ${boxH} re f\n`;
+        ops += `${BRAND} rg ${this.M} ${y - boxH + 14} 3 ${boxH} re f\n`;
+        ops += text(b.title, this.M + 14, y, 8.5, true, NAVY);
+        y -= 15;
+        for (const ln of lines) { ops += text(ln, this.M + 14, y, 8.5, false, '0.224 0.255 0.243'); y -= 12; }
+        y -= 16;
+        continue;
+      }
+
+      if (b.t === 'badge') {
+        room(26);
+        const label = b.text;
+        const w = this.width(label, 8.5, true) + 20;
+        ops += `${b.rgb} rg ${this.M} ${y - 5} ${w} 17 re f\n`;
+        ops += text(label, this.M + 10, y, 8.5, true, NAVY);
+        y -= 26;
+        continue;
+      }
+    }
+
+    endPage();
+    return this.assemble(pages);
+  }
+};
+
+/* The report as blocks. Pure: it reads the same catalogues the screen
+   reads, so the PDF and the page can never drift apart. */
+function reportBlocks(designAnswers, statAnswers, study) {
+  const walk = Algo.walk(DESIGN_NODES, 'q1', designAnswers);
+  const result = DESIGN_RESULTS[walk.current];
+  const B = [];
+  const now = new Date();
+  if (!result) return B;
+
+  const CLASS_RGB = { A: '0.024 0.741 0.584', B: '0.706 0.788 0.031',
+                      C: '0.655 0.678 0.471', D: '0.639 0.639 0.639', '—': '0.773 0.812 0.796' };
+
+  if (study && study.name) {
+    B.push({ t: 'h', text: 'Study' });
+    B.push({ t: 'title', text: study.name, sub: [study.pi ? 'Principal investigator: ' + study.pi : '',
+      study.population ? 'Population: ' + study.population : ''].filter(Boolean).join('   ·   ') });
+  }
+
+  B.push({ t: 'h', text: 'Recommended design' });
+  B.push({ t: 'title', text: result.name });
+  B.push({ t: 'badge', text: 'Evidence class ' + result.evidenceClass, rgb: CLASS_RGB[result.evidenceClass] || CLASS_RGB['—'] });
+  B.push({ t: 'p', text: EVIDENCE_CLASSES[result.evidenceClass] || '', mute: true, small: true });
+  B.push({ t: 'p', text: result.definition });
+  B.push({ t: 'p', text: result.strength, mute: true });
+
+  B.push({ t: 'rule' });
+  B.push({ t: 'h', text: 'Justification · path of answers' });
+  walk.steps.forEach((s, i) => B.push({ t: 'num', n: i + 1, text: s.node.text, sub: s.option.label + (s.option.sub ? '  —  ' + s.option.sub : '') }));
+
+  B.push({ t: 'rule' });
+  B.push({ t: 'h', text: 'Variable structure' });
+  const v = result.variables;
+  B.push({ t: 'kv', k: 'Independent · exposure', v: v.independent });
+  B.push({ t: 'kv', k: 'Dependent · outcome', v: v.dependent });
+  B.push({ t: 'kv', k: 'Confounding · adjustment', v: v.confounders });
+  B.push({ t: 'tags', items: v.covariates });
+  B.push({ t: 'kv', k: 'Measure of association', v: v.effect });
+  B.push({ t: 'kv', k: 'Unit of analysis', v: v.unit });
+
+  B.push({ t: 'rule' });
+  B.push({ t: 'h', text: 'Critical points for this design' });
+  result.watch.forEach((w, i) => B.push({ t: 'num', n: i + 1, text: w }));
+
+  if (statAnswers && statAnswers.length) {
+    const sw = Algo.walk(STAT_NODES, 's1', statAnswers);
+    const sr = STAT_RESULTS[sw.current];
+    if (sr) {
+      B.push({ t: 'rule' });
+      B.push({ t: 'h', text: 'Statistical test' });
+      B.push({ t: 'p', text: sr.name, bold: true });
+      if (sr.why) B.push({ t: 'p', text: sr.why, mute: true, small: true });
+      if (sr.numeric) B.push({ t: 'kv', k: 'Numerical', v: sr.numeric });
+      if (sr.graphical) B.push({ t: 'kv', k: 'Graphical', v: sr.graphical });
+      sw.steps.forEach((s, i) => B.push({ t: 'num', n: i + 1, text: s.node.text, sub: s.option.label }));
+      if (sr.sourceNote) B.push({ t: 'note', title: 'Source note', text: sr.sourceNote });
+    }
+  }
+
+  if (study && study.notes) {
+    B.push({ t: 'rule' });
+    B.push({ t: 'h', text: 'Investigator notes' });
+    B.push({ t: 'p', text: study.notes });
+  }
+
+  if (result.sourceNote) {
+    B.push({ t: 'rule' });
+    B.push({ t: 'h', text: 'Methodological note on the source' });
+    B.push({ t: 'note', title: 'This node is worth a review', text: result.sourceNote });
+  }
+
+  B.push({ t: 'rule' });
+  B.push({ t: 'p', small: true, mute: true, text:
+    'Design algorithm adapted from ADA (2010), following "Study Design for Public Health Research" (GLOBAL EPI LLC). ' +
+    'Statistical test selection follows "Statistical Test by Variable" (GLOBAL EPI LLC).' });
+  B.push({ t: 'p', small: true, mute: true, text:
+    'This report orients the choice of design. It does not replace the principal investigator, the ethics committee, or the study statistician.' });
+
+  B.meta = { date: now.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) };
+  return B;
+}
+
+function buildPdf(designAnswers, statAnswers, study) {
+  const blocks = reportBlocks(designAnswers, statAnswers, study);
+  return PDF.render(blocks, blocks.meta || { date: '' });
+}
+
+
+/* ═════════════════════════════════════════════════════════════════════
    2. VIEW — reads the logic and draws. No decision rule lives here; if
    the algorithm changes above, this follows without being touched.
    ═════════════════════════════════════════════════════════════════════ */
 
 const State = {
+  phase: 'unlock',       // unlock | create | library | wizard
+  pickedAccount: null,
+  anonymous: false,      // working without an account
+  studies: [],
+  study: null,           // { id, name, pi, population, notes } once saved or named
   design: [],
   stat: [],
   statOpen: false,
@@ -1487,6 +2092,54 @@ function toast(msg) {
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
 }
+
+/* Saving a file takes two different paths. On a normal web page an
+   anchor does it. Inside the claude.ai artifact viewer the frame is
+   sandboxed and an anchor does nothing at all, so the save has to go
+   through the host, which asks the viewer first and can refuse. The
+   refusal worth naming is PDF: it belongs to an extended file set that
+   some views do not enable, and a silent no-op there would look like a
+   broken button. */
+let Downloads = null;
+let downloadsAsked = false;
+
+async function hostDownloads() {
+  if (!(window.claude && typeof window.claude.use === 'function')) return null;
+  if (!downloadsAsked) {
+    downloadsAsked = true;
+    try { Downloads = await window.claude.use('downloads'); } catch { Downloads = null; }
+  }
+  return Downloads;
+}
+
+async function download(filename, data, mime) {
+  const host = await hostDownloads();
+  if (host) {
+    try {
+      await host.save({ filename, data });
+      return { ok: true };
+    } catch (e) {
+      const code = e && e.code;
+      if (code === 'declined') return { ok: false, quiet: true };
+      if (code === 'extension_not_enabled' || code === 'rejected_extension') {
+        return { ok: false, msg: 'This preview cannot save ' + filename.split('.').pop().toUpperCase() +
+          ' files. Open the tool at globalepillc.com/study-design/ to download it.' };
+      }
+      if (code === 'rate_limited') return { ok: false, msg: 'A save prompt is already open — finish that one first.' };
+      if (code === 'too_large') return { ok: false, msg: 'The file is too large to save from this preview.' };
+      return { ok: false, msg: 'The file could not be saved from this preview.' };
+    }
+  }
+  const blob = new Blob([data], { type: mime });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1500);
+  return { ok: true };
+}
+
+const slug = (str) => String(str || 'study').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 48) || 'study';
 
 function renderProgress() {
   const p = Algo.progress(DESIGN_NODES, 'q1', State.design);
@@ -1693,8 +2346,20 @@ function renderResult(result, steps) {
           '</div>' +
         '</div>' +
 
+        '<div class="section">' +
+          '<h3>Report for the investigator</h3>' +
+          '<p class="lede" style="margin-bottom:14px">Name the study and these details appear on the first page of the PDF. All of it is optional — the report generates either way.</p>' +
+          renderSaveForm() +
+          '<div class="navrow" style="border-top:0;padding-top:4px;margin-top:8px">' +
+            '<button class="btn" type="button" id="btn-pdf">Download the PDF report</button>' +
+            (Accounts.current
+              ? '<button class="btn ghost" type="button" id="btn-save">' + (State.study && State.study.id ? 'Update this study' : 'Save this study') + '</button>'
+              : '<span class="lede" style="align-self:center">Sign in to save this study for later.</span>') +
+          '</div>' +
+        '</div>' +
+
         '<div class="navrow">' +
-          '<button class="btn" type="button" id="btn-copy">Copy report</button>' +
+          '<button class="btn ghost" type="button" id="btn-copy">Copy report text</button>' +
           '<button class="btn ghost" type="button" id="btn-toggle-report">' + (State.showReport ? 'Hide' : 'View') + ' report text</button>' +
           '<button class="btn ghost" type="button" id="btn-back">Back</button>' +
           '<button class="btn ghost" type="button" id="btn-reset-inline">Start over</button>' +
@@ -1714,7 +2379,22 @@ function wireResult() {
   byId('btn-back', goBack);
   byId('btn-reset-inline', reset);
   byId('btn-copy', copyReport);
-  byId('btn-toggle-report', () => { State.showReport = !State.showReport; render(); });
+  byId('btn-pdf', () => savePdf(State.design, State.stat.length ? State.stat : [], readSaveForm()));
+  byId('btn-save', async () => {
+    const err = $('s-err'); err.hidden = true;
+    const form = readSaveForm();
+    if (!form.name) { err.textContent = 'Give the study a name before saving it.'; err.hidden = false; return; }
+    const saved = await Studies.save({ ...(State.study || {}), ...form, design: [...State.design], stat: [...State.stat] });
+    State.study = saved;
+    State.studies = await Studies.list();
+    render();
+    toast('Study saved');
+  });
+  byId('btn-toggle-report', () => {
+    if (!State.showReport) State.study = { ...(State.study || {}), ...readSaveForm() };
+    State.showReport = !State.showReport;
+    render();
+  });
 
   byId('stat-open', () => { State.statOpen = true; render(); });
   byId('stat-close', () => { State.statOpen = false; render(); });
@@ -1735,6 +2415,7 @@ function goBack() {
 }
 
 function reset() {
+  State.study = null;
   State.design = [];
   State.stat = [];
   State.statOpen = false;
@@ -1762,7 +2443,270 @@ async function copyReport() {
   }
 }
 
+/* ── Account screens ────────────────────────────────────────────── */
+function renderUnlock() {
+  const list = Accounts.list;
+  const creating = State.phase === 'create' || list.length === 0;
+  const picked = creating ? null : list.find((a) => a.id === State.pickedAccount);
+  $('stage').className = 'stage';
+  setChrome(false);
+
+  if (creating) {
+    $('stage').innerHTML =
+      '<section class="card">' +
+        '<p class="eyebrow">' + (list.length ? 'New account' : 'Set up this device') + '</p>' +
+        '<h1 class="question" style="margin:6px 0 10px">' + (list.length ? 'Add an account' : 'Create an account') + '</h1>' +
+        '<p class="lede">An account keeps your saved studies on this device, encrypted under its own passphrase. It is not required — you can use the algorithm without one and still download the PDF.</p>' +
+        '<div class="field"><label class="flabel" for="a-name">Your name or team</label>' +
+          '<input id="a-name" type="text" placeholder="Epidemiology unit" autocomplete="off" /></div>' +
+        '<div class="field"><label class="flabel" for="a-pass">Passphrase</label>' +
+          '<p class="fhint">Never stored and not recoverable. Losing it loses the studies saved under it.</p>' +
+          '<input id="a-pass" type="password" autocomplete="new-password" /></div>' +
+        '<div class="field"><label class="flabel" for="a-pass2">Confirm passphrase</label>' +
+          '<input id="a-pass2" type="password" autocomplete="new-password" /></div>' +
+        '<p class="err" id="a-err" hidden></p>' +
+        '<div class="navrow" style="margin-top:6px">' +
+          '<button class="btn" type="button" id="a-create">Create and continue</button>' +
+          (list.length ? '<button class="btn ghost" type="button" id="a-cancel">Cancel</button>' : '') +
+          '<button class="btn ghost" type="button" id="a-skip">Use without an account</button>' +
+        '</div>' +
+        (list.length ? '' :
+          '<div class="divider"></div>' +
+          '<p class="lede">Already have a backup? <button class="linkbtn" type="button" id="a-restore">Restore it</button></p>' +
+          '<p class="err" id="r-err" hidden></p>' +
+          '<input type="file" id="r-file" accept="application/json,.json" hidden />') +
+      '</section>';
+
+    $('a-create').onclick = async () => {
+      const err = $('a-err'); err.hidden = true;
+      const fail = (m) => { err.textContent = m; err.hidden = false; };
+      const name = $('a-name').value.trim();
+      const pass = $('a-pass').value;
+      if (!name) return fail('Give the account a name.');
+      if (Accounts.list.some((a) => a.name.toLowerCase() === name.toLowerCase())) return fail('There is already an account with that name on this device.');
+      if (pass.length < 8) return fail('Use at least 8 characters.');
+      if (pass !== $('a-pass2').value) return fail('The two passphrases do not match.');
+      const account = await Accounts.create(name, pass);
+      await Accounts.open(account, pass);
+      State.pickedAccount = null; State.anonymous = false;
+      await goLibrary();
+      toast('Account ready');
+    };
+    if ($('a-cancel')) $('a-cancel').onclick = () => { State.phase = 'unlock'; render(); };
+    $('a-skip').onclick = () => { State.anonymous = true; startNewStudy(); };
+    if ($('a-restore')) wireRestore();
+    return;
+  }
+
+  if (picked) {
+    $('stage').innerHTML =
+      '<section class="card">' +
+        '<p class="eyebrow">Account</p>' +
+        '<h1 class="question" style="margin:6px 0 10px">' + esc(picked.name) + '</h1>' +
+        '<p class="lede">This releases the key that decrypts the studies saved under this account. It opens nothing else on this device.</p>' +
+        '<div class="field"><label class="flabel" for="a-pass">Passphrase</label>' +
+          '<input id="a-pass" type="password" autocomplete="current-password" /></div>' +
+        '<p class="err" id="a-err" hidden></p>' +
+        '<div class="navrow" style="margin-top:6px">' +
+          '<button class="btn" type="button" id="a-unlock">Unlock</button>' +
+          '<button class="btn ghost" type="button" id="a-back">Choose another</button>' +
+        '</div>' +
+      '</section>';
+    $('a-back').onclick = () => { State.pickedAccount = null; render(); };
+    $('a-unlock').onclick = async () => {
+      const err = $('a-err'); err.hidden = true;
+      const pass = $('a-pass').value;
+      if (pass.length < 8) { err.textContent = 'Use at least 8 characters.'; err.hidden = false; return; }
+      if (!(await Accounts.open(picked, pass))) {
+        err.textContent = 'That passphrase does not open this account.'; err.hidden = false; return;
+      }
+      State.pickedAccount = null; State.anonymous = false;
+      await goLibrary();
+    };
+    $('a-pass').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('a-unlock').click(); });
+    $('a-pass').focus();
+    return;
+  }
+
+  $('stage').innerHTML =
+    '<section class="card">' +
+      '<p class="eyebrow">Research Design Algorithm</p>' +
+      '<h1 class="question" style="margin:6px 0 10px">Choose an account</h1>' +
+      '<p class="lede">Each account keeps its own saved studies, encrypted under its own passphrase. One account cannot open another.</p>' +
+      '<div class="list" style="margin-top:18px">' +
+        Accounts.list.map((a) => (
+          '<button class="option" type="button" data-acct="' + esc(a.id) + '">' +
+            '<span class="label">' + esc(a.name) +
+              '<span class="sub">since ' + new Date(a.createdAt).toLocaleDateString() + '</span>' +
+            '</span>' +
+          '</button>'
+        )).join('') +
+      '</div>' +
+      '<div class="navrow">' +
+        '<button class="btn ghost" type="button" id="a-new">Add an account</button>' +
+        '<button class="btn ghost" type="button" id="a-restore">Restore a backup</button>' +
+        '<button class="btn ghost" type="button" id="a-skip">Use without an account</button>' +
+      '</div>' +
+      '<p class="err" id="r-err" hidden></p>' +
+      '<input type="file" id="r-file" accept="application/json,.json" hidden />' +
+    '</section>';
+
+  $('stage').querySelectorAll('[data-acct]').forEach((b) => b.onclick = () => {
+    State.pickedAccount = b.dataset.acct; render();
+  });
+  $('a-new').onclick = () => { State.phase = 'create'; render(); };
+  $('a-skip').onclick = () => { State.anonymous = true; startNewStudy(); };
+  wireRestore();
+}
+
+function wireRestore() {
+  $('a-restore').onclick = () => $('r-file').click();
+  $('r-file').onchange = async (e) => {
+    const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+    const err = $('r-err'); err.hidden = true;
+    let obj; try { obj = JSON.parse(await f.text()); } catch { obj = null; }
+    const r = await restoreBackup(obj);
+    if (r.error) { err.textContent = r.error; err.hidden = false; return; }
+    toast('Restored ' + r.added + ' stud' + (r.added === 1 ? 'y' : 'ies') + ' into ' + r.name);
+    State.phase = 'unlock'; State.pickedAccount = r.id;
+    render();
+  };
+}
+
+/* ── Library of saved studies ───────────────────────────────────── */
+async function goLibrary() {
+  State.phase = 'library';
+  State.studies = await Studies.list();
+  render();
+}
+
+function renderLibrary() {
+  $('stage').className = 'stage';
+  setChrome(false);
+  const list = State.studies;
+  $('stage').innerHTML =
+    '<section class="card">' +
+      '<div class="acctbar">' +
+        '<span>Account · <b>' + esc(Accounts.current.name) + '</b></span>' +
+        '<button class="btn ghost sm" type="button" id="l-switch">Sign out</button>' +
+      '</div>' +
+      '<p class="eyebrow" style="margin-top:22px">Saved studies</p>' +
+      '<h1 class="question" style="margin:6px 0 10px">' + (list.length ? list.length + ' stud' + (list.length === 1 ? 'y' : 'ies') : 'No studies yet') + '</h1>' +
+      '<p class="lede">Each study keeps the answers you gave, so you can reopen it, change one answer and re-issue the report.</p>' +
+      (list.length ? '<div class="list" style="margin-top:18px">' +
+        list.map((st) => {
+          const walk = Algo.walk(DESIGN_NODES, 'q1', st.design || []);
+          const res = DESIGN_RESULTS[walk.current];
+          return '<div class="studyrow">' +
+            '<button class="grab" type="button" data-open="' + esc(st.id) + '">' +
+              '<strong>' + esc(st.name) + '</strong>' +
+              '<span>' + (res ? esc(res.name) + ' · class ' + esc(res.evidenceClass) : 'Incomplete') +
+                ' · updated ' + new Date(st.updatedAt).toLocaleDateString() + '</span>' +
+            '</button>' +
+            '<div class="ctrls">' +
+              '<button class="iconbtn" type="button" data-pdf="' + esc(st.id) + '" aria-label="Download the PDF report">PDF</button>' +
+              '<button class="iconbtn del" type="button" data-del="' + esc(st.id) + '" aria-label="Delete this study">✕</button>' +
+            '</div>' +
+          '</div>';
+        }).join('') + '</div>' : '') +
+      '<div class="navrow">' +
+        '<button class="btn" type="button" id="l-new">Start a new study</button>' +
+        '<button class="btn ghost" type="button" id="l-backup">Download a backup</button>' +
+      '</div>' +
+    '</section>';
+
+  $('l-switch').onclick = () => { Accounts.close(); State.phase = 'unlock'; State.studies = []; render(); };
+  $('l-new').onclick = () => startNewStudy();
+  $('l-backup').onclick = async () => {
+    const stamp = new Date().toISOString().slice(0, 10);
+    const r = await download('epi-study-design-' + slug(Accounts.current.name) + '-' + stamp + '.json',
+      JSON.stringify(await buildBackup()), 'application/json');
+    if (r.ok) toast('Backup saved — keep it somewhere other than this device');
+    else if (!r.quiet) toast(r.msg);
+  };
+  $('stage').querySelectorAll('[data-open]').forEach((b) => b.onclick = () => {
+    const st = State.studies.find((x) => x.id === b.dataset.open);
+    if (!st) return;
+    State.study = st; State.design = [...(st.design || [])]; State.stat = [...(st.stat || [])];
+    State.statOpen = State.stat.length > 0; State.showReport = false;
+    State.phase = 'wizard';
+    render();
+  });
+  $('stage').querySelectorAll('[data-pdf]').forEach((b) => b.onclick = () => {
+    const st = State.studies.find((x) => x.id === b.dataset.pdf);
+    if (st) savePdf(st.design || [], st.stat || [], st);
+  });
+  $('stage').querySelectorAll('[data-del]').forEach((b) => b.onclick = async () => {
+    const st = State.studies.find((x) => x.id === b.dataset.del);
+    if (!st || !confirm('Delete "' + st.name + '"? This cannot be undone.')) return;
+    await Studies.remove(st.id);
+    await goLibrary();
+    toast('Study deleted');
+  });
+}
+
+function startNewStudy() {
+  State.study = null;
+  State.design = []; State.stat = []; State.statOpen = false; State.showReport = false;
+  State.phase = 'wizard';
+  render();
+}
+
+/* ── The PDF, wherever it is asked for ──────────────────────────── */
+async function savePdf(design, stat, study) {
+  let bytes;
+  try {
+    bytes = buildPdf(design, stat, study);
+  } catch (e) {
+    toast('The report could not be generated: ' + e.message);
+    return;
+  }
+  const name = 'research-design-' + slug(study && study.name ? study.name : 'report') + '.pdf';
+  const r = await download(name, bytes, 'application/pdf');
+  if (r.ok) toast('PDF report saved');
+  else if (!r.quiet) toast(r.msg);
+}
+
+/* ── Saving the study now on screen ─────────────────────────────── */
+function renderSaveForm() {
+  const st = State.study || {};
+  return '<div class="saveform" id="saveform">' +
+    '<div class="field"><label class="flabel" for="s-name">Study name</label>' +
+      '<input id="s-name" type="text" value="' + esc(st.name || '') + '" placeholder="Diabetes care access in Northern Bayamón" /></div>' +
+    '<div class="fieldrow">' +
+      '<div class="field"><label class="flabel" for="s-pi">Principal investigator</label>' +
+        '<input id="s-pi" type="text" value="' + esc(st.pi || '') + '" /></div>' +
+      '<div class="field"><label class="flabel" for="s-pop">Population</label>' +
+        '<input id="s-pop" type="text" value="' + esc(st.population || '') + '" /></div>' +
+    '</div>' +
+    '<div class="field"><label class="flabel" for="s-notes">Notes for the report</label>' +
+      '<textarea id="s-notes" rows="3" placeholder="Recruitment, timing, anything the reader of this report should know.">' + esc(st.notes || '') + '</textarea></div>' +
+    '<p class="err" id="s-err" hidden></p>' +
+    '</div>';
+}
+
+function readSaveForm() {
+  return {
+    name: ($('s-name') ? $('s-name').value : '').trim(),
+    pi: ($('s-pi') ? $('s-pi').value : '').trim(),
+    population: ($('s-pop') ? $('s-pop').value : '').trim(),
+    notes: ($('s-notes') ? $('s-notes').value : '').trim()
+  };
+}
+
+/* ── Header chrome depends on where we are ──────────────────────── */
+function setChrome(inWizard) {
+  $('progress-wrap').hidden = !inWizard;
+  $('btn-restart').hidden = !inWizard;
+  const home = $('btn-home');
+  home.hidden = State.anonymous || !Accounts.current || State.phase === 'unlock' || State.phase === 'create';
+}
+
 function render() {
+  if (State.phase === 'unlock' || State.phase === 'create') { renderUnlock(); window.scrollTo(0, 0); return; }
+  if (State.phase === 'library') { renderLibrary(); window.scrollTo(0, 0); return; }
+
+  setChrome(true);
   const walk = Algo.walk(DESIGN_NODES, 'q1', State.design);
   renderProgress();
   if (walk.finished) {
@@ -1776,6 +2720,7 @@ function render() {
 }
 
 $('btn-restart').addEventListener('click', reset);
+$('btn-home').addEventListener('click', goLibrary);
 $('help-close').addEventListener('click', () => $('help').close());
 $('help').addEventListener('click', (e) => { if (e.target === $('help')) $('help').close(); });
 
@@ -1790,7 +2735,22 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Backspace') { goBack(); e.preventDefault(); }
 });
 
-render();
+/* Storage may be unavailable — a private window, or a browser with site
+   data switched off. The algorithm itself needs none of it, so failing
+   here drops straight into the wizard rather than blocking the tool. */
+async function boot() {
+  try {
+    await DB.open();
+    await Accounts.load();
+    State.phase = 'unlock';
+  } catch (e) {
+    State.anonymous = true;
+    State.phase = 'wizard';
+  }
+  hostDownloads();          // resolve early; the result is memoised
+  render();
+}
+boot();
 </script>
 </body>
 </html>
