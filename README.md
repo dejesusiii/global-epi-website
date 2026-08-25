@@ -111,6 +111,31 @@ signature. History is append-only: a correction adds a version, nothing is
 overwritten. Divergent edits are flagged for a human rather than resolved
 automatically. An operation leaves the outbox only after a durable acknowledgement.
 
+**One workspace per client.** A consulting firm runs surveys for several clients from
+one device, and commingling them is both a confidentiality problem and a contract
+problem. Each client gets a workspace with its own passphrase, so the key derived from
+it is a *different key*: Client A's passphrase does not decrypt Client B's responses or
+Client B's questionnaires. Two clients cannot even share a passphrase — the app refuses,
+because that would make the separation a label rather than a boundary.
+
+The isolation lives in the storage layer, not on the screens. Every row in `events`,
+`outbox`, `audit`, `instruments` and `server` is stamped with its workspace id, `DB.put`
+stamps it and `DB.all` filters by it, and with no workspace open those stores read empty
+— fail closed. A rule that depends on thirty call sites remembering a filter is not a
+rule, so there is exactly one place to get it right. Questionnaires are encrypted too,
+not merely scoped: a survey's wording tells you what the engagement is about.
+
+A backup covers one workspace and can only contain one, so it is safe to hand to that
+client. Erasing a workspace leaves the others untouched. Restoring a backup re-creates
+its workspace on a device that lacks it, and refuses to merge into a workspace whose key
+material differs.
+
+Client *names* are readable before anything is unlocked — they have to be, to offer the
+list — so the app says so and advises naming workspaces that give nothing away. Devices
+enrolled before workspaces existed migrate on first launch: the old salt and verifier
+become the first workspace, every existing record is stamped with it, plaintext
+questionnaires are re-saved encrypted, and the original passphrase still opens it.
+
 **Where the data lives, and how long it stays.** Responses are held in IndexedDB on the
 device that collected them, encrypted under the passphrase. That survives closing the
 browser and rebooting the phone — verified by driving a real browser profile, closing
@@ -139,9 +164,10 @@ Re-restoring the same file changes nothing. The home screen tracks how many resp
 exist beyond the last backup and says so.
 
 **There is no account.** Nothing to sign in to from another phone or computer: the data
-is on the device that collected it, and a backup file is how it moves. Accounts that
-follow a client across devices need a hosted backend — a different build, not a setting.
-The app says this on its About screen rather than leaving it to be discovered.
+is on the device that collected it, and a backup file is how it moves. A workspace
+passphrase separates clients on one device; it is not a login. Accounts that follow a
+client across devices need a hosted backend — a different build, not a setting. The app
+says this on its About screen rather than leaving it to be discovered.
 
 **What is simulated.** The server is a local IndexedDB store, so the protocol can be
 exercised end to end without a backend. Replacing it is one function, `transmit`.

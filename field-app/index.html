@@ -210,6 +210,13 @@ pre.dump {
   background:#fff; border:1.5px solid var(--g-300); border-radius:10px; padding:10px 12px; min-height:var(--tap);
 }
 .rankitem .pos { font-weight:700; color: var(--brand-700); font-variant-numeric:tabular-nums; width:1.4em; }
+/* Which client's workspace is open. Distinct from the preview banner:
+   the two mean different things and must not share a class. */
+.clientbar {
+  background: var(--navy-900); color:#fff; border-radius:10px; padding:10px 12px 10px 16px;
+  font-size:.86rem; display:flex; align-items:center; justify-content:space-between; gap:10px;
+}
+.clientbar b { color: var(--brand-500); font-weight:700; }
 .previewbanner {
   background: var(--navy-800); color:#fff; border-radius:10px; padding:12px 14px;
   font-size:.84rem; display:flex; align-items:center; justify-content:space-between; gap:10px;

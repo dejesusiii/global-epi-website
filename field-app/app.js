@@ -72,6 +72,8 @@ const Crypto = {
 };
 
 /* ── Storage ─────────────────────────────────────────────────────── */
+/* Stores whose rows belong to exactly one client workspace. */
+const SCOPED = ['events', 'outbox', 'audit', 'instruments', 'server'];
 const DB = {
   db: null,
   async open() {
@@ -96,10 +98,36 @@ const DB = {
   },
   tx(s, m = 'readonly') { return this.db.transaction(s, m).objectStore(s); },
   req(r) { return new Promise((res, rej) => { r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); },
-  get(s, k) { return this.req(this.tx(s).get(k)); },
-  all(s) { return this.req(this.tx(s).getAll()); },
-  put(s, v) { return this.req(this.tx(s, 'readwrite').put(v)); },
-  del(s, k) { return this.req(this.tx(s, 'readwrite').delete(k)); },
+
+  /* Everything a client owns is stamped with its workspace id, and every
+     read is filtered by the open one. Putting that here rather than at
+     each call site is deliberate: an isolation rule that depends on
+     thirty callers remembering a filter is not a rule, it is a hope.
+     With no workspace open these stores read empty — fail closed. */
+  allRaw(s) { return this.req(this.tx(s).getAll()); },
+  putRaw(s, v) { return this.req(this.tx(s, 'readwrite').put(v)); },
+  async all(s) {
+    const rows = await this.allRaw(s);
+    if (!SCOPED.includes(s)) return rows;
+    const ws = State.ws && State.ws.id;
+    return ws ? rows.filter((r) => r.ws === ws) : [];
+  },
+  async get(s, k) {
+    const r = await this.req(this.tx(s).get(k));
+    if (!r || !SCOPED.includes(s)) return r;
+    return State.ws && r.ws === State.ws.id ? r : undefined;
+  },
+  put(s, v) {
+    const val = SCOPED.includes(s) && State.ws ? { ...v, ws: State.ws.id } : v;
+    return this.req(this.tx(s, 'readwrite').put(val));
+  },
+  async del(s, k) {
+    if (SCOPED.includes(s)) {
+      const cur = await this.req(this.tx(s).get(k));
+      if (cur && (!State.ws || cur.ws !== State.ws.id)) return;   // not this client's to delete
+    }
+    return this.req(this.tx(s, 'readwrite').delete(k));
+  },
   async meta(k, v) {
     if (v === undefined) { const r = await this.get('meta', k); return r ? r.v : null; }
     return this.put('meta', { k, v });
@@ -133,15 +161,106 @@ const Store = {
 };
 const mb = (n) => (n === null || n === undefined ? '—' : n < 1048576 ? `${Math.round(n / 1024)} KB` : `${(n / 1048576).toFixed(1)} MB`);
 
-async function audit(action, detail) {
-  await DB.put('audit', { id: uuidv7(), at: new Date().toISOString(),
-    collector: State.collector, device: State.deviceId, action, detail: detail || '' });
+/* A failed unlock happens before a workspace is open, so the workspace
+   being attempted is passed in — otherwise the one audit entry that
+   matters most would be the one that goes nowhere. */
+async function audit(action, detail, wsId) {
+  await DB.putRaw('audit', { id: uuidv7(), ws: wsId || (State.ws && State.ws.id) || null,
+    at: new Date().toISOString(), collector: State.collector, device: State.deviceId,
+    action, detail: detail || '' });
+}
+
+/* ── Client workspaces ───────────────────────────────────────────
+   One workspace per client. Each carries its own salt, so the key
+   derived from its passphrase is a different key — Client A's
+   passphrase does not decrypt Client B's records, and no filter is
+   standing between them. Only the workspace list itself is device-wide,
+   because something has to be readable before anything is unlocked. */
+async function loadWorkspaces() {
+  State.workspaces = (await DB.meta('workspaces')) || [];
+  return State.workspaces;
+}
+const saveWorkspaces = () => DB.meta('workspaces', State.workspaces);
+
+/* A device enrolled before workspaces existed keeps its passphrase and
+   its data: the old salt and verifier become the first workspace, and
+   every existing record is stamped with it. */
+async function migrateToWorkspaces() {
+  if (await DB.meta('workspaces')) return false;
+  const salt = await DB.meta('salt');
+  if (!salt) { await DB.meta('workspaces', []); return false; }
+  const id = (await DB.meta('tenant_id')) || uuidv7();
+  await DB.meta('workspaces', [{
+    id, name: 'Default workspace', salt, verifier: await DB.meta('verifier'),
+    collector: (await DB.meta('collector')) || 'GE-USER-01',
+    created_at: new Date().toISOString(),
+  }]);
+  for (const store of SCOPED) {
+    for (const r of await DB.allRaw(store)) {
+      if (!r.ws) { r.ws = id; await DB.putRaw(store, r); }
+    }
+  }
+  return true;
+}
+
+async function createWorkspace(name, pass, collector) {
+  const salt = b64(crypto.getRandomValues(new Uint8Array(16)));
+  const verifier = await Crypto.derive(pass, salt);
+  Crypto.lock();                                   // derive left a key loaded; not open yet
+  const ws = { id: uuidv7(), name, salt, verifier,
+    collector: collector || 'GE-USER-01', created_at: new Date().toISOString() };
+  State.workspaces.push(ws);
+  await saveWorkspaces();
+  return ws;
+}
+
+async function openWorkspace(ws, pass) {
+  if (await Crypto.derive(pass, ws.salt) !== ws.verifier) { Crypto.lock(); return false; }
+  State.ws = ws;
+  State.tenantId = ws.id;                          // the tenant is the client, at last
+  State.collector = ws.collector || 'GE-USER-01';
+  State.deviceId = await DB.meta('device_id');
+  await DB.meta('last_workspace', ws.id);
+  await upgradeLegacyInstruments();
+  State.instruments = await loadInstruments();
+  return true;
+}
+
+function closeWorkspace() {
+  Crypto.lock();
+  State.ws = null; State.instruments = []; State.instrument = null;
+  State.draft = null; State.share = null; State.pickedWs = null;
+}
+
+/* ── Instruments, encrypted like everything else ──────────────────
+   A questionnaire is not neutral: its wording tells you what the
+   engagement is about. Scoping it to a workspace stops it appearing in
+   another client's library; encrypting it under that workspace's key is
+   what makes the separation hold when someone reads the database
+   directly. */
+async function loadInstruments() {
+  const out = [];
+  for (const r of await DB.all('instruments')) {
+    if (r.enc) {
+      try { out.push({ ...(await Crypto.decrypt(r.enc)), id: r.id }); } catch { /* another client's key */ }
+    } else if (Array.isArray(r.sections)) {
+      out.push(r);                                 // written before instruments were encrypted
+    }
+  }
+  return out;
+}
+const saveInstrument = async (inst) => DB.put('instruments', { id: inst.id, enc: await Crypto.encrypt(inst) });
+async function upgradeLegacyInstruments() {
+  for (const r of await DB.all('instruments')) {
+    if (!r.enc && Array.isArray(r.sections)) await saveInstrument(r);
+  }
 }
 
 /* ── State ───────────────────────────────────────────────────────── */
 const State = {
   instruments: [], instrument: null,
   deviceId: null, tenantId: null, collector: null,
+  ws: null, workspaces: [], pickedWs: null,
   answers: {}, section: 0, preview: false, shuffled: {}, analysisId: null, path: [],
   respond: false, share: null, lastResponse: null,
   submissionId: null, baseVersion: null,
@@ -457,12 +576,14 @@ async function importResponse(obj) {
 const BACKUP_KIND = 'epi-collect-backup';
 
 async function buildBackup() {
+  const w = State.ws;
   return {
-    kind: BACKUP_KIND, v: 1,
+    kind: BACKUP_KIND, v: 2,
     exported_at: new Date().toISOString(),
-    salt: await DB.meta('salt'), verifier: await DB.meta('verifier'),
-    device_id: await DB.meta('device_id'), tenant_id: await DB.meta('tenant_id'),
-    collector: await DB.meta('collector'),
+    workspace: { id: w.id, name: w.name, salt: w.salt, verifier: w.verifier, collector: w.collector,
+                 created_at: w.created_at },
+    device_id: await DB.meta('device_id'),
+    /* Scoped reads, so a backup can only ever contain this client. */
     instruments: await DB.all('instruments'),
     events: await DB.all('events'),
     outbox: await DB.all('outbox'),
@@ -473,29 +594,44 @@ async function buildBackup() {
 /* Merging a backup into a device holding ciphertext from a different
    passphrase would leave records nothing on that device can open, so
    that case is refused rather than half-completed. */
+/* A backup belongs to one client. Restoring it re-creates that client's
+   workspace if this device does not have it, and merges into it if it
+   does — but only when the key material matches, because merging under
+   a different key would leave records nothing here could ever open. */
 async function restoreBackup(obj) {
-  if (!obj || obj.kind !== BACKUP_KIND) return { error: 'That file is not a device backup.' };
-  if (!obj.salt || !obj.verifier) return { error: 'That backup is missing its key material and cannot be opened.' };
-  const mine = await DB.meta('salt');
-  if (mine && mine !== obj.salt) {
-    return { error: 'This backup was made under a different passphrase than this device uses. Restoring it would leave responses nothing here could decrypt. Erase this device first, or restore onto a fresh one.' };
+  if (!obj || obj.kind !== BACKUP_KIND) return { error: 'That file is not a workspace backup.' };
+  const w = obj.workspace;
+  if (!w || !w.salt || !w.verifier || !w.id) {
+    return { error: 'That backup is missing its key material and cannot be opened.' };
   }
-  if (!mine) {
-    await DB.meta('salt', obj.salt);
-    await DB.meta('verifier', obj.verifier);
-    await DB.meta('device_id', obj.device_id || uuidv7());
-    await DB.meta('tenant_id', obj.tenant_id || uuidv7());
-    await DB.meta('collector', obj.collector || 'GE-USER-01');
+  await loadWorkspaces();
+  const existing = State.workspaces.find((x) => x.id === w.id)
+    || State.workspaces.find((x) => x.name.toLowerCase() === String(w.name || '').toLowerCase());
+  if (existing && existing.verifier !== w.verifier) {
+    return { error: `This backup was made under a different passphrase than the “${existing.name}” workspace on this device. Restoring it would leave records nothing here could decrypt. Restore it onto a device that does not already hold this client.` };
   }
+  let target = existing;
+  if (!target) {
+    target = { id: w.id, name: w.name || 'Restored workspace', salt: w.salt, verifier: w.verifier,
+      collector: w.collector || 'GE-USER-01', created_at: w.created_at || new Date().toISOString() };
+    State.workspaces.push(target);
+    await saveWorkspaces();
+  }
+  if (!(await DB.meta('device_id'))) await DB.meta('device_id', obj.device_id || uuidv7());
+
+  /* Rows are written raw and stamped with the target workspace, because
+     restoring happens before that workspace is unlocked. */
+  const stamp = (r) => ({ ...r, ws: target.id });
+  const ours = (rows) => rows.filter((r) => r.ws === target.id);
   const counts = { instruments: 0, events: 0, outbox: 0 };
-  const seenEvents = new Set((await DB.all('events')).map((e) => e.op_id));
-  const seenInst = new Set((await DB.all('instruments')).map((i) => i.id));
-  const seenOut = new Set((await DB.all('outbox')).map((e) => e.op_id));
-  for (const i of obj.instruments || []) { if (!seenInst.has(i.id)) { await DB.put('instruments', i); counts.instruments++; } }
-  for (const e of obj.events || []) { if (!seenEvents.has(e.op_id)) { await DB.put('events', e); counts.events++; } }
-  for (const e of obj.outbox || []) { if (!seenOut.has(e.op_id)) { await DB.put('outbox', e); counts.outbox++; } }
-  for (const a of obj.audit || []) { await DB.put('audit', a); }
-  return { counts, adopted: !mine };
+  const seenEvents = new Set(ours(await DB.allRaw('events')).map((e) => e.op_id));
+  const seenInst = new Set(ours(await DB.allRaw('instruments')).map((i) => i.id));
+  const seenOut = new Set(ours(await DB.allRaw('outbox')).map((e) => e.op_id));
+  for (const i of obj.instruments || []) { if (!seenInst.has(i.id)) { await DB.putRaw('instruments', stamp(i)); counts.instruments++; } }
+  for (const e of obj.events || []) { if (!seenEvents.has(e.op_id)) { await DB.putRaw('events', stamp(e)); counts.events++; } }
+  for (const e of obj.outbox || []) { if (!seenOut.has(e.op_id)) { await DB.putRaw('outbox', stamp(e)); counts.outbox++; } }
+  for (const a of obj.audit || []) { await DB.putRaw('audit', stamp(a)); }
+  return { counts, id: target.id, name: target.name, created: !existing };
 }
 
 async function downloadBackup() {
@@ -504,16 +640,17 @@ async function downloadBackup() {
   const blob = new Blob([JSON.stringify(backup)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = `epi-collect-backup-${stamp}.json`;
+  const slug = (State.ws.name || 'workspace').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  a.download = `epi-collect-${slug}-${stamp}.json`;
   a.click(); URL.revokeObjectURL(a.href);
-  await DB.meta('last_backup', { at: new Date().toISOString(), events: backup.events.length });
+  await DB.meta(`last_backup:${State.ws.id}`, { at: new Date().toISOString(), events: backup.events.length });
   await audit('device.backup', `${backup.events.length} events`);
   return backup;
 }
 
 /* How many stored responses are not in the most recent backup. */
 async function unbackedUp() {
-  const last = await DB.meta('last_backup');
+  const last = await DB.meta(`last_backup:${State.ws.id}`);
   const total = (await DB.all('events')).length;
   return { total, since: Math.max(0, total - (last ? last.events : 0)), at: last ? last.at : null };
 }
@@ -605,8 +742,8 @@ function netStatus() {
 }
 async function saveDraft() {
   State.draft.updatedAt = new Date().toISOString();
-  await DB.put('instruments', State.draft);
-  State.instruments = await DB.all('instruments');
+  await saveInstrument(State.draft);
+  State.instruments = await loadInstruments();
   // A link carries a copy of the survey, so any edit makes the one on
   // screen stale. Drop it rather than let it be shared.
   if (State.share && State.share.id === State.draft.id) State.share = null;
@@ -614,87 +751,156 @@ async function saveDraft() {
 
 /* ── Unlock ──────────────────────────────────────────────────────── */
 async function renderUnlock() {
-  const salt = await DB.meta('salt');
-  const first = !salt;
-  $('scr-unlock').innerHTML = `
-    <div class="card">
-      <p class="eyebrow">${first ? 'Set up this device' : 'Unlock'}</p>
-      <h2>${first ? 'Create a device passphrase' : 'Enter your passphrase'}</h2>
-      <p class="muted">${first
-        ? 'Responses saved on this device are encrypted with a key derived from this passphrase. It is never stored and cannot be recovered.'
-        : 'This releases the key that decrypts responses held on this device.'}</p>
-      <div class="q"><label class="lbl" for="pass">Passphrase</label>
-        <input id="pass" type="password" autocomplete="current-password" />
-        <p class="err" id="pass-err" hidden></p></div>
-      ${first ? `
-      <div class="q"><label class="lbl" for="pass2">Confirm passphrase</label>
-        <input id="pass2" type="password" autocomplete="new-password" /></div>
-      <div class="q"><label class="lbl" for="collector">Your identifier</label>
-        <p class="hint">A staff code, not a name.</p>
-        <input id="collector" type="text" value="GE-USER-01" /></div>` : ''}
-      <button class="btn wide" id="do-unlock">${first ? 'Create and continue' : 'Unlock'}</button>
-    </div>
-    ${first ? `
-    <div class="card">
-      <h3>Already have a backup?</h3>
-      <p class="muted">Restoring brings back the surveys and responses from another device. You then unlock with the passphrase that device used — it is not in the file, and without it the backup cannot be opened.</p>
-      <button class="btn ghost wide sm" id="do-restore">Restore from a backup file</button>
-      <p class="err" id="restore-err" hidden></p>
-      <input type="file" id="restore-file" accept="application/json,.json" hidden />
-    </div>` : ''}
-    <div class="notice warn"><b>Pilot scope</b>
+  await loadWorkspaces();
+  const list = State.workspaces;
+  const creating = State.pickedWs === '__new' || list.length === 0;
+  const picked = creating ? null : list.find((w) => w.id === State.pickedWs);
+
+  const scopeNote = `<div class="notice warn"><b>Pilot scope</b>
       <span>Non-identifying data only. This is not a HIPAA-compliant system.</span></div>`;
-  setActions('');
-  if (first) {
-    $('do-restore').onclick = () => $('restore-file').click();
-    $('restore-file').onchange = async (e) => {
-      const f = e.target.files[0]; e.target.value = ''; if (!f) return;
-      const err = $('restore-err'); err.hidden = true;
-      let obj;
-      try { obj = JSON.parse(await f.text()); } catch { obj = null; }
-      const r = await restoreBackup(obj);
-      if (r.error) { err.textContent = r.error; err.hidden = false; return; }
-      await audit('device.restore', `${r.counts.events} events`);
-      toast(`Restored ${r.counts.events} response${r.counts.events === 1 ? '' : 's'}`);
-      await renderUnlock();   // the device is no longer new: ask for the passphrase
-    };
-  }
-  $('do-unlock').onclick = async () => {
-    const pass = $('pass').value, err = $('pass-err');
-    err.hidden = true;
-    if (pass.length < 8) { err.textContent = 'Use at least 8 characters.'; err.hidden = false; return; }
-    if (first) {
-      if (pass !== $('pass2').value) { err.textContent = 'The two passphrases do not match.'; err.hidden = false; return; }
-      const newSalt = b64(crypto.getRandomValues(new Uint8Array(16)));
-      await DB.meta('verifier', await Crypto.derive(pass, newSalt));
-      await DB.meta('salt', newSalt);
-      await DB.meta('device_id', uuidv7());
-      await DB.meta('tenant_id', uuidv7());
-      await DB.meta('collector', $('collector').value.trim() || 'GE-USER-01');
-      await loadIdentity();
-      await audit('device.enrol', State.deviceId);
-      toast('Device ready');
-    } else {
-      if (await Crypto.derive(pass, salt) !== await DB.meta('verifier')) {
-        Crypto.lock();
-        err.textContent = 'That passphrase does not match this device.'; err.hidden = false;
-        await audit('unlock.failed', ''); return;
+
+  if (creating) {
+    $('scr-unlock').innerHTML = `
+      <div class="card">
+        <p class="eyebrow">${list.length ? 'New client workspace' : 'Set up this device'}</p>
+        <h2>${list.length ? 'Add a client' : 'Create your first workspace'}</h2>
+        <p class="muted">A workspace holds one client's surveys and responses, encrypted under its own passphrase. Nothing you put here is reachable from another client's workspace on this device.</p>
+        <div class="q"><label class="lbl" for="ws-name">Client or project</label>
+          <p class="hint">This name is visible before anyone unlocks, so keep it plain.</p>
+          <input id="ws-name" type="text" placeholder="Northern Region" autocomplete="off" /></div>
+        <div class="q"><label class="lbl" for="pass">Passphrase for this client</label>
+          <p class="hint">It is never stored and cannot be recovered. Losing it loses this client's responses.</p>
+          <input id="pass" type="password" autocomplete="new-password" />
+          <p class="err" id="pass-err" hidden></p></div>
+        <div class="q"><label class="lbl" for="pass2">Confirm passphrase</label>
+          <input id="pass2" type="password" autocomplete="new-password" /></div>
+        <div class="q"><label class="lbl" for="collector">Your identifier</label>
+          <p class="hint">A staff code, not a name.</p>
+          <input id="collector" type="text" value="GE-USER-01" /></div>
+        <button class="btn wide" id="do-create">Create and continue</button>
+        ${list.length ? '<button class="btn ghost wide sm" id="ws-back">Cancel</button>' : ''}
+      </div>
+      ${list.length ? '' : `
+      <div class="card">
+        <h3>Already have a backup?</h3>
+        <p class="muted">Restoring brings a client's workspace onto this device. You then unlock it with the passphrase that workspace already uses — it is not in the file.</p>
+        <button class="btn ghost wide sm" id="ws-restore">Restore from a backup file</button>
+        <p class="err" id="restore-err" hidden></p>
+        <input type="file" id="restore-file" accept="application/json,.json" hidden />
+      </div>`}
+      ${scopeNote}`;
+    setActions('');
+    if ($('ws-back')) $('ws-back').onclick = async () => { State.pickedWs = null; await renderUnlock(); };
+    if ($('ws-restore')) wireRestorePicker();
+    $('do-create').onclick = async () => {
+      const err = $('pass-err'); err.hidden = true;
+      const name = $('ws-name').value.trim();
+      const pass = $('pass').value;
+      const fail = (m) => { err.textContent = m; err.hidden = false; };
+      if (!name) return fail('Give the workspace a name.');
+      if (State.workspaces.some((w) => w.name.toLowerCase() === name.toLowerCase())) return fail('There is already a workspace with that name.');
+      if (pass.length < 8) return fail('Use at least 8 characters.');
+      if (pass !== $('pass2').value) return fail('The two passphrases do not match.');
+      /* Two clients sharing one passphrase share one key, and the
+         separation would be a label rather than a boundary. */
+      for (const w of State.workspaces) {
+        if ((await Crypto.derive(pass, w.salt)) === w.verifier) {
+          Crypto.lock();
+          return fail('Another workspace on this device already uses that passphrase. Separate clients need separate passphrases, or the separation is only a label.');
+        }
       }
-      await loadIdentity();
-      await audit('unlock', '');
-    }
-    /* Ask now, while the passphrase screen is still the thing on screen:
-       Firefox prompts for this, and a prompt during an interview is a
-       prompt at the worst possible moment. */
-    await Store.request();
-    State.instruments = await DB.all('instruments');
-    await renderHome(); show('home');
+      Crypto.lock();
+      if (!(await DB.meta('device_id'))) await DB.meta('device_id', uuidv7());
+      const ws = await createWorkspace(name, pass, $('collector').value.trim());
+      await openWorkspace(ws, pass);
+      await audit('workspace.create', name);
+      toast(`${name} is ready`);
+      await Store.request();
+      State.pickedWs = null;
+      await renderHome(); show('home');
+    };
+    return;
+  }
+
+  if (picked) {
+    $('scr-unlock').innerHTML = `
+      <div class="card">
+        <p class="eyebrow">Client workspace</p>
+        <h2>${esc(picked.name)}</h2>
+        <p class="muted">This releases the key that decrypts this client's responses. It opens nothing else held on this device.</p>
+        <div class="q"><label class="lbl" for="pass">Passphrase</label>
+          <input id="pass" type="password" autocomplete="current-password" />
+          <p class="err" id="pass-err" hidden></p></div>
+        <button class="btn wide" id="do-unlock">Unlock</button>
+        <button class="btn ghost wide sm" id="ws-back">Choose another client</button>
+      </div>
+      ${scopeNote}`;
+    setActions('');
+    $('ws-back').onclick = async () => { State.pickedWs = null; await renderUnlock(); };
+    $('do-unlock').onclick = async () => {
+      const err = $('pass-err'); err.hidden = true;
+      const pass = $('pass').value;
+      if (pass.length < 8) { err.textContent = 'Use at least 8 characters.'; err.hidden = false; return; }
+      if (!(await openWorkspace(picked, pass))) {
+        err.textContent = 'That passphrase does not open this workspace.'; err.hidden = false;
+        await audit('unlock.failed', picked.name, picked.id);
+        return;
+      }
+      await audit('unlock', picked.name);
+      await Store.request();
+      State.pickedWs = null;
+      await renderHome(); show('home');
+    };
+    return;
+  }
+
+  /* The picker. */
+  $('scr-unlock').innerHTML = `
+    <div>
+      <p class="eyebrow">EPI Collect</p>
+      <h2 style="margin-top:4px">Choose a client</h2>
+      <p class="muted" style="margin-top:6px">Each client has its own passphrase and its own encryption key. One client's key does not open another's records — that is a different key, not a filter on a screen.</p>
+    </div>
+    <div class="list">
+      ${list.map((w) => `
+        <button class="item" data-ws="${w.id}">
+          <div class="item-top"><strong>${esc(w.name)}</strong><span class="tag">Locked</span></div>
+          <span class="muted mono">since ${new Date(w.created_at).toLocaleDateString()}</span>
+        </button>`).join('')}
+    </div>
+    <div class="row">
+      <button class="btn ghost sm" id="ws-new">Add a client</button>
+      <button class="btn ghost sm" id="ws-restore">Restore from a backup</button>
+    </div>
+    <p class="err" id="restore-err" hidden></p>
+    <input type="file" id="restore-file" accept="application/json,.json" hidden />
+    <div class="notice warn"><b>Client names show before anything is unlocked</b>
+      <span>They have to, to offer you this list — so name a workspace in a way that gives nothing away on its own. Everything inside it stays encrypted.</span></div>
+    ${scopeNote}`;
+  setActions('');
+  $('scr-unlock').querySelectorAll('[data-ws]').forEach((b) => b.onclick = async () => {
+    State.pickedWs = b.dataset.ws; await renderUnlock();
+  });
+  $('ws-new').onclick = async () => { State.pickedWs = '__new'; await renderUnlock(); };
+  wireRestorePicker();
+}
+
+/* Restore is offered both on an empty device and from the picker. */
+function wireRestorePicker() {
+  $('ws-restore').onclick = () => $('restore-file').click();
+  $('restore-file').onchange = async (e) => {
+    const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+    const err = $('restore-err'); err.hidden = true;
+    let obj; try { obj = JSON.parse(await f.text()); } catch { obj = null; }
+    const r = await restoreBackup(obj);
+    if (r.error) { err.textContent = r.error; err.hidden = false; return; }
+    toast(`Restored ${r.counts.events} response${r.counts.events === 1 ? '' : 's'} into ${r.name}`);
+    State.pickedWs = r.id;
+    await renderUnlock();
   };
 }
 async function loadIdentity() {
   State.deviceId = await DB.meta('device_id');
-  State.tenantId = await DB.meta('tenant_id');
-  State.collector = await DB.meta('collector');
 }
 /* ── Library (home) ──────────────────────────────────────────────── */
 async function renderHome() {
@@ -707,6 +913,10 @@ async function renderHome() {
   subs.forEach((s) => counts.set(s.latest.instrument_id, (counts.get(s.latest.instrument_id) || 0) + 1));
 
   $('scr-home').innerHTML = `
+    <div class="clientbar">
+      <span>Client · <b>${esc(State.ws.name)}</b></span>
+      <button class="btn ghost sm" id="go-switch">Switch client</button>
+    </div>
     <div class="stats">
       <div class="stat"><b>${State.instruments.length}</b><span>Surveys</span></div>
       <div class="stat"><b>${subs.length}</b><span>Responses</span></div>
@@ -800,6 +1010,11 @@ async function renderHome() {
     toast('Backup saved — keep it somewhere else than this device');
     await renderHome();
   };
+  $('go-switch').onclick = async () => {
+    await audit('workspace.close', State.ws.name);
+    closeWorkspace();
+    await renderUnlock(); show('unlock');
+  };
   $('go-queue').onclick = async () => { await renderQueue(); show('queue'); };
   $('go-about').onclick = async () => { await renderAbout(); show('about'); };
   $('go-import').onclick = () => $('import-file').click();
@@ -814,13 +1029,14 @@ async function renderHome() {
       if (obj && obj.kind === BACKUP_KIND) {
         const r = await restoreBackup(obj);
         if (r.error) rejected.push(r.error);
+        else if (r.id !== State.ws.id) rejected.push(`${f.name}: belongs to “${r.name}” — restored into that workspace, switch to it to see it`);
         else { surveys += r.counts.instruments; responses += r.counts.events; }
       } else if (obj && obj.kind === RESPONSE_KIND) {
         const why = await importResponse(obj);
         if (why) rejected.push(`${f.name}: ${why}`); else responses++;
       } else if (obj && Array.isArray(obj.sections)) {
         obj.id = uuidv7(); obj.updatedAt = new Date().toISOString();
-        await DB.put('instruments', obj);
+        await saveInstrument(obj);
         await audit('survey.import', obj.title || '');
         surveys++;
       } else {
@@ -828,7 +1044,7 @@ async function renderHome() {
       }
     }
     e.target.value = '';
-    State.instruments = await DB.all('instruments');
+    State.instruments = await loadInstruments();
     const done = [surveys ? `${surveys} survey${surveys === 1 ? '' : 's'}` : '', responses ? `${responses} response${responses === 1 ? '' : 's'}` : '']
       .filter(Boolean).join(' and ');
     toast(done ? `Imported ${done}` : rejected[0] || 'Nothing imported');
@@ -993,7 +1209,7 @@ function renderBuilder() {
   $('b-delete').onclick = async () => {
     if (!confirm('Delete this survey? Responses already collected are kept.')) return;
     await DB.del('instruments', d.id);
-    State.instruments = await DB.all('instruments');
+    State.instruments = await loadInstruments();
     await audit('survey.delete', d.id);
     await renderHome(); show('home');
   };
@@ -1711,7 +1927,7 @@ async function renderQueue() {
   const outbox = await DB.all('outbox');
   $('scr-queue').innerHTML = `
     <div><p class="eyebrow">Responses</p>
-      <h2 style="margin-top:4px">${subs.length} on this device</h2>
+      <h2 style="margin-top:4px">${subs.length} for ${esc(State.ws.name)}</h2>
       <p class="muted" style="margin-top:6px">${outbox.length} waiting to transmit. A response leaves the outbox only after the server confirms a durable write.</p></div>
     ${subs.length === 0 ? '<div class="notice"><b>Nothing collected yet</b><span>Completed interviews appear here.</span></div>' : ''}
     <div class="list">
@@ -1801,8 +2017,15 @@ async function renderAbout() {
       </ul></div>
     <div class="card"><h3>What is simulated</h3>
       <p class="muted">The server is a local store, so the protocol can be demonstrated end to end without a backend. Swapping it for a real API is one function, <span class="mono">transmit</span>.</p></div>
+    <div class="card"><h3>This client workspace</h3>
+      <p class="muted"><b style="color:var(--navy-900)">${esc(State.ws.name)}</b> — opened with its own passphrase, encrypted under its own key. ${State.workspaces.length - 1
+        ? `${State.workspaces.length - 1} other client workspace${State.workspaces.length === 2 ? '' : 's'} on this device ${State.workspaces.length === 2 ? 'is' : 'are'} locked and unreadable from here: a different passphrase means a different key, not a filter.`
+        : 'It is the only workspace on this device.'}</p>
+      <p class="muted">Surveys, responses, the outbox and this workspace's activity log are all stamped to it, and every read is filtered to the open workspace at the storage layer rather than at each screen.</p>
+      <button class="btn ghost wide sm" id="a-switch">Switch to another client</button></div>
+
     <div class="card"><h3>Where your data lives</h3>
-      <p class="muted">Everything is stored inside this browser on this device, encrypted under your passphrase. It stays there when you close the browser and when the device is offline. It is not on a server, so it is not reachable from another phone or computer — a backup file is how it moves.</p>
+      <p class="muted">Everything is stored inside this browser on this device, encrypted under this workspace's passphrase. It stays there when you close the browser and when the device is offline. It is not on a server, so it is not reachable from another phone or computer — a backup file is how it moves.</p>
       <div class="stats" style="grid-template-columns:repeat(2,1fr)">
         <div class="stat"><b>${backup.total}</b><span>Stored responses</span></div>
         <div class="stat"><b>${mb(Store.usage)}</b><span>of ${mb(Store.quota)} available</span></div>
@@ -1816,7 +2039,7 @@ async function renderAbout() {
       <p class="muted">${backup.at
         ? `Last backup ${new Date(backup.at).toLocaleString()}${backup.since ? ` · ${backup.since} response${backup.since === 1 ? '' : 's'} since then` : ' · nothing new since'}`
         : 'No backup has been made from this device.'}</p>
-      <p class="muted">The file holds your surveys and your responses as ciphertext. Your passphrase is not in it and is not stored anywhere, so the file is useless without you — and useless to you if the passphrase is forgotten.</p>
+      <p class="muted">A backup covers <b style="color:var(--navy-900)">${esc(State.ws.name)}</b> only — no other client can end up inside it, so it is safe to hand to that client. The file holds the surveys and responses as ciphertext. Your passphrase is not in it and is not stored anywhere, so the file is useless without you — and useless to you if the passphrase is forgotten.</p>
       <div class="row">
         <button class="btn sm" id="a-backup">Download a backup</button>
         <button class="btn ghost sm" id="a-restore">Restore from a backup</button>
@@ -1834,7 +2057,10 @@ async function renderAbout() {
         <div class="item-top"><strong>${esc(a.action)}</strong><span class="muted mono">${new Date(a.at).toLocaleTimeString()}</span></div>
         ${a.detail ? `<span class="muted mono">${esc(a.detail)}</span>` : ''}</div>`).join('')}</div></div>
     <div class="card"><h3>Danger zone</h3>
-      <p class="muted">Erasing destroys the local key, every survey and every response on this device. A backup taken before erasing is the only way any of it comes back.</p>
+      <p class="muted">Erasing a workspace destroys that client's surveys and responses and removes its key material. Other clients on this device are untouched. A backup taken beforehand is the only way any of it comes back.</p>
+      <button class="btn danger wide" id="a-wipe-ws">Erase “${esc(State.ws.name)}”</button>
+      <div class="divider"></div>
+      <p class="muted">Erasing the device destroys every workspace on it, for every client.</p>
       <button class="btn danger wide" id="a-wipe">Erase this device</button></div>`;
   setActions('<button class="btn ghost wide" id="a-back">Back</button>');
   $('a-back').onclick = async () => { await renderHome(); show('home'); };
@@ -1849,6 +2075,26 @@ async function renderAbout() {
     toast('Backup saved — keep it somewhere else than this device');
     await renderAbout();
   };
+  $('a-switch').onclick = async () => {
+    await audit('workspace.close', State.ws.name);
+    closeWorkspace();
+    await renderUnlock(); show('unlock');
+  };
+  $('a-wipe-ws').onclick = async () => {
+    const name = State.ws.name;
+    if (!confirm(`Erase “${name}” and everything collected for it? Other clients on this device are not affected.`)) return;
+    for (const store of SCOPED) {
+      for (const r of await DB.all(store)) {
+        await DB.del(store, store === 'events' || store === 'outbox' ? r.op_id : store === 'server' ? r.key : r.id);
+      }
+    }
+    State.workspaces = State.workspaces.filter((w) => w.id !== State.ws.id);
+    await saveWorkspaces();
+    await audit('workspace.erase', name, null);
+    closeWorkspace();
+    toast(`${name} erased`);
+    await renderUnlock(); show('unlock');
+  };
   $('a-restore').onclick = () => $('a-restore-file').click();
   $('a-restore-file').onchange = async (e) => {
     const f = e.target.files[0]; e.target.value = ''; if (!f) return;
@@ -1856,8 +2102,12 @@ async function renderAbout() {
     let obj; try { obj = JSON.parse(await f.text()); } catch { obj = null; }
     const r = await restoreBackup(obj);
     if (r.error) { err.textContent = r.error; err.hidden = false; return; }
-    State.instruments = await DB.all('instruments');
-    await audit('device.restore', `${r.counts.events} events`);
+    if (r.id !== State.ws.id) {
+      err.textContent = `That backup belongs to “${r.name}”, not to this workspace. It has been restored into its own workspace — switch to it to see it.`;
+      err.hidden = false; return;
+    }
+    State.instruments = await loadInstruments();
+    await audit('workspace.restore', `${r.counts.events} events`);
     toast(`Restored ${r.counts.events} response${r.counts.events === 1 ? '' : 's'} and ${r.counts.instruments} survey${r.counts.instruments === 1 ? '' : 's'}`);
     await renderAbout();
   };
@@ -1984,8 +2234,8 @@ async function boot() {
     await bootRespond(link[1]);
   } else {
     await DB.open();
+    await migrateToWorkspaces();
     await loadIdentity();
-    State.instruments = await DB.all('instruments');
     await renderUnlock();
     show('unlock');
   }
