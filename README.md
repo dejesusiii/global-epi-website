@@ -27,6 +27,7 @@ assets/favicon.svg    The mark alone, cells clipped to the disc
 assets/og-image.png   Social sharing card, 1200x630
 assets/js/main.js     Shared behaviour for every page
 field-app/            EPI Collect — offline field data collection (pilot)
+study-design/         Algoritmo de Diseño de Investigación — study design wizard
 README.md
 ```
 
@@ -186,6 +187,45 @@ becomes true in one edit rather than in fifteen.
 **Scope.** Non-identifying data only. There are no BAAs and no server-side controls,
 so this must not be used for PHI. The app states this on its About screen. The page is
 `noindex` and is deliberately not linked from the marketing site.
+
+## Algoritmo de Diseño de Investigación (`study-design/`)
+
+A single self-contained page — no build, no dependencies, no external requests beyond
+the two Google Fonts families, which fall back cleanly — that walks a researcher through
+GLOBAL EPI's own decision algorithms and hands back a study design, a variable
+structure, and the statistical test that fits.
+
+**The algorithms are transcribed, not invented.** The design tree comes from *Study
+Design for Public Health Research* (Research Design Algorithm, adapted from ADA 2010);
+the test tree from *Statistical Test by Variable*. The second document is flattened
+artwork with no extractable text, so its three flowcharts were read from rendered
+images, and the A–D evidence classes were recovered by sampling the fill colour of every
+terminal box against the Class Key rather than judged by eye.
+
+**Logic is separated from rendering, as a file boundary rather than a convention.** The
+first half of the script holds two decision graphs as data plus pure functions over them
+and touches no DOM; the second half reads them and draws, and contains no decision rule.
+Editing the algorithm means editing data. The progress bar is computed, not hardcoded:
+it walks the graph to find the longest branch still ahead, which is why it stays honest
+on a tree whose paths run from four questions to eight — including the real cycle where
+a descriptive study that compares groups is sent back to question 3.
+
+**What the result gives the researcher**, beyond the design name: the evidence class in
+the source's own colours, the path of answers as the justification, the variable
+structure (independent/exposure, dependent/outcome, confounders with typical candidates,
+effect measure, unit of analysis), the design's critical failure points, and an optional
+four-question sub-wizard for the statistical test. A plain-text report copies to the
+clipboard, with a visible textarea fallback for when the browser blocks it.
+
+**Two nodes are reproduced faithfully and flagged.** The source sends "subjects serve as
+their own controls → yes" to *Randomized Controlled Trial* where the literature would
+say crossover, and names the ordinal correlation *Pearson's rho* where the convention is
+Spearman's. Both are implemented exactly as drawn, each with a short sourced note on the
+result screen, so the tool matches the document while the reader is told where to look.
+
+Verified by a Playwright suite that walks all 20 terminal routes of the design tree
+against the diagram, checks each evidence class against the sampled Class Key, and
+confirms the progress bar reaches 100 % without ever moving backwards.
 
 ## Brand tokens
 

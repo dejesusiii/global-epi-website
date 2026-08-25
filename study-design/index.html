@@ -1,0 +1,1901 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Algoritmo de Diseño de Investigación</title>
+<meta name="description" content="Asistente que guía al investigador por el algoritmo de diseño de estudio y la selección de prueba estadística." />
+<meta name="theme-color" content="#061A2E" />
+<!-- Favicon incrustado: la página no depende de ningún archivo externo. -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 27 29'%3E%3Ccircle cx='16' cy='18' r='10' fill='%23B4C908'/%3E%3Cg fill='%23A3A3A3'%3E%3Ccircle cx='13' cy='15.5' r='3.8'/%3E%3Ccircle cx='22' cy='23' r='3'/%3E%3Ccircle cx='14.5' cy='3.5' r='2.5'/%3E%3Ccircle cx='23.5' cy='11.5' r='2.5'/%3E%3Ccircle cx='3' cy='14' r='2'/%3E%3Ccircle cx='5' cy='2.5' r='1.8'/%3E%3C/g%3E%3C/svg%3E" type="image/svg+xml" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" />
+
+<style>
+/* =====================================================================
+   Tokens. El bloque :root define la paleta clara completa; los dos
+   bloques siguientes redefinen SOLO tokens, nunca componentes, para que
+   los tres estados del visor (claro, oscuro, y "sistema" sin marcar)
+   resuelvan como un conjunto coherente.
+   ===================================================================== */
+:root {
+  --navy-900:#061A2E; --navy-800:#0A2540; --navy-700:#123A5C;
+  --teal-500:#06BD95; --teal-600:#059B7B; --teal-700:#047963; --teal-400:#2FD3AF;
+
+  /* Clases de evidencia — muestreadas del Class Key del documento fuente */
+  --class-a:#06BD95; --class-b:#B4C908; --class-c:#A7AD78; --class-d:#A3A3A3;
+
+  /* Neutros sesgados al verde de la marca: elegidos, no heredados */
+  --n-0:#FFFFFF; --n-50:#F6F8F7; --n-100:#EDF1EF; --n-200:#DEE5E2;
+  --n-300:#C5CFCB; --n-400:#87918D; --n-500:#69736F; --n-600:#4E5854;
+  --n-700:#39413E; --n-800:#272D2B;
+
+  --bg: var(--n-50);
+  --surface: var(--n-0);
+  --surface-2: var(--n-100);
+  --line: var(--n-200);
+  --line-strong: var(--n-300);
+  --text: var(--n-700);
+  --text-strong: var(--navy-900);
+  --text-mute: var(--n-500);
+  --accent: var(--teal-700);
+  --accent-fill: var(--teal-500);
+  --on-accent: var(--navy-900);
+  --band: var(--navy-900);
+  --on-band: #FFFFFF;
+  --warn-bg:#FBF3E2; --warn-line:#8A6410; --warn-text:#6E5010;
+  --shadow: 0 1px 2px rgba(6,26,46,.06), 0 8px 24px -12px rgba(6,26,46,.18);
+
+  --display: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --body: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  --wrap: 68rem;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --n-0:#0E1512;
+    --bg:#080D0B;
+    --surface:#0E1512;
+    --surface-2:#141C19;
+    --line:#1F2A26;
+    --line-strong:#2C3A35;
+    --text:#C9D3CE;
+    --text-strong:#EEF4F1;
+    --text-mute:#8B9791;
+    --accent:#2FD3AF;
+    --accent-fill:#06BD95;
+    --on-accent:#04150F;
+    --band:#0A1512;
+    --on-band:#EEF4F1;
+    --warn-bg:#241D0C; --warn-line:#C79A2E; --warn-text:#E4C578;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 30px -14px rgba(0,0,0,.7);
+  }
+}
+:root[data-theme="dark"] {
+  --n-0:#0E1512;
+  --bg:#080D0B;
+  --surface:#0E1512;
+  --surface-2:#141C19;
+  --line:#1F2A26;
+  --line-strong:#2C3A35;
+  --text:#C9D3CE;
+  --text-strong:#EEF4F1;
+  --text-mute:#8B9791;
+  --accent:#2FD3AF;
+  --accent-fill:#06BD95;
+  --on-accent:#04150F;
+  --band:#0A1512;
+  --on-band:#EEF4F1;
+  --warn-bg:#241D0C; --warn-line:#C79A2E; --warn-text:#E4C578;
+  --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 30px -14px rgba(0,0,0,.7);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 400 16px/1.6 var(--body);
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3, h4 { font-family: var(--display); color: var(--text-strong); margin: 0; text-wrap: balance; line-height: 1.2; }
+p { margin: 0; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; border-radius: 8px; }
+.sr { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0; }
+
+/* ── Cabecera y barra de progreso ───────────────────────────────── */
+.topbar {
+  position: sticky; top: 0; z-index: 30;
+  background: var(--band); color: var(--on-band);
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+.topbar-inner {
+  max-width: var(--wrap); margin: 0 auto; padding: 14px 24px;
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+}
+.mark { width: 30px; height: 32px; flex: none; }
+.brand { display: grid; gap: 1px; margin-right: auto; }
+.brand strong { font-family: var(--display); font-weight: 700; font-size: .98rem; letter-spacing: -.01em; color: var(--on-band); }
+.brand span { font-size: .66rem; letter-spacing: .18em; text-transform: uppercase; color: var(--teal-400); font-weight: 600; }
+.topbtn {
+  background: transparent; border: 1px solid rgba(255,255,255,.22); color: var(--on-band);
+  border-radius: 8px; padding: 7px 13px; font-size: .82rem; font-weight: 500; cursor: pointer;
+}
+.topbtn:hover { background: rgba(255,255,255,.09); }
+
+.progress { max-width: var(--wrap); margin: 0 auto; padding: 0 24px 14px; display: grid; gap: 7px; }
+.progress-rail { height: 5px; border-radius: 99px; background: rgba(255,255,255,.16); overflow: hidden; }
+.progress-rail i { display: block; height: 100%; background: var(--teal-500); border-radius: 99px; transition: width .35s cubic-bezier(.4,0,.2,1); }
+.progress-meta { display: flex; justify-content: space-between; gap: 12px; font-size: .74rem; color: rgba(255,255,255,.66); font-variant-numeric: tabular-nums; }
+
+/* ── Estructura ─────────────────────────────────────────────────── */
+main { max-width: var(--wrap); margin: 0 auto; padding: 34px 24px 80px; }
+.stage { display: grid; grid-template-columns: minmax(0, 1fr); gap: 26px; align-items: start; }
+@media (min-width: 940px) { .stage.with-trail { grid-template-columns: minmax(0,1fr) 268px; gap: 34px; } }
+
+.card {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 16px;
+  padding: 30px; box-shadow: var(--shadow);
+}
+@media (max-width: 560px) { .card { padding: 22px; border-radius: 14px; } }
+
+.eyebrow { font-size: .7rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--accent); }
+.lede { color: var(--text-mute); font-size: .95rem; }
+
+/* ── El paso: hexágono + pregunta ───────────────────────────────── */
+.step-head { display: flex; gap: 16px; align-items: flex-start; margin-bottom: 18px; }
+.hex {
+  width: 48px; height: 54px; flex: none; display: grid; place-items: center;
+  background: var(--navy-900); color: #fff;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  font-family: var(--display); font-weight: 700; font-size: .95rem;
+  font-variant-numeric: tabular-nums;
+}
+:root[data-theme="dark"] .hex, :root:not([data-theme="light"]) .hex { background: var(--teal-700); }
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) .hex { background: var(--navy-900); } }
+
+.step-head .titles { display: grid; gap: 6px; min-width: 0; }
+.stage-name { font-size: .74rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--text-mute); }
+.question { font-size: 1.42rem; font-weight: 700; letter-spacing: -.015em; }
+@media (max-width: 560px) { .question { font-size: 1.2rem; } }
+
+.helpbtn {
+  width: 27px; height: 27px; flex: none; border-radius: 50%;
+  border: 1.5px solid var(--line-strong); background: var(--surface); color: var(--text-mute);
+  font-family: var(--display); font-weight: 700; font-size: .84rem; line-height: 1; cursor: pointer;
+  display: inline-grid; place-items: center; vertical-align: middle; margin-left: 8px;
+  transition: border-color .15s, color .15s;
+}
+.helpbtn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ── Opciones de respuesta ──────────────────────────────────────── */
+.options { display: grid; gap: 11px; margin-top: 22px; }
+.options.binary { grid-template-columns: 1fr 1fr; }
+@media (max-width: 520px) { .options.binary { grid-template-columns: 1fr; } }
+.option {
+  display: flex; align-items: center; gap: 13px; width: 100%; text-align: left;
+  background: var(--surface); border: 1.5px solid var(--line-strong); border-radius: 12px;
+  padding: 15px 17px; cursor: pointer; min-height: 58px;
+  transition: border-color .14s, background .14s, transform .06s;
+}
+.option:hover { border-color: var(--accent); background: var(--surface-2); }
+.option:active { transform: translateY(1px); }
+.option .key {
+  width: 26px; height: 26px; flex: none; border-radius: 7px; display: grid; place-items: center;
+  background: var(--surface-2); border: 1px solid var(--line);
+  font-family: var(--mono); font-size: .72rem; font-weight: 600; color: var(--text-mute);
+}
+.option:hover .key { background: var(--accent-fill); color: var(--on-accent); border-color: transparent; }
+.option .label { font-weight: 600; color: var(--text-strong); line-height: 1.35; }
+.option .sub { display: block; font-weight: 400; font-size: .84rem; color: var(--text-mute); margin-top: 3px; }
+
+.navrow { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 22px; padding-top: 20px; border-top: 1px solid var(--line); }
+.btn {
+  border-radius: 10px; padding: 11px 20px; font-weight: 600; font-size: .92rem; cursor: pointer;
+  border: 1.5px solid transparent; background: var(--accent-fill); color: var(--on-accent);
+  transition: filter .14s;
+}
+.btn:hover { filter: brightness(1.06); }
+.btn.ghost { background: transparent; border-color: var(--line-strong); color: var(--text-strong); }
+.btn.ghost:hover { border-color: var(--accent); color: var(--accent); filter: none; }
+.btn[disabled] { opacity: .42; cursor: not-allowed; }
+
+/* ── Rastro: el camino recorrido ES la justificación ────────────── */
+.trail { display: grid; gap: 0; align-content: start; }
+.trail h2 { font-size: .72rem; font-weight: 700; letter-spacing: .15em; text-transform: uppercase; color: var(--text-mute); margin-bottom: 14px; }
+.trail-item { display: grid; grid-template-columns: 15px 1fr; gap: 12px; padding-bottom: 16px; position: relative; }
+.trail-item::before {
+  content: ""; position: absolute; left: 7px; top: 16px; bottom: 0; width: 1.5px; background: var(--line);
+}
+.trail-item:last-child::before { display: none; }
+.trail-dot { width: 15px; height: 15px; border-radius: 50%; border: 3px solid var(--accent-fill); background: var(--surface); margin-top: 3px; z-index: 1; }
+.trail-item.is-branch .trail-dot { border-color: var(--line-strong); }
+.trail-q { font-size: .82rem; color: var(--text-mute); line-height: 1.45; }
+.trail-a { font-size: .86rem; font-weight: 600; color: var(--text-strong); margin-top: 2px; }
+@media (max-width: 939px) {
+  .trail { border-top: 1px solid var(--line); padding-top: 22px; }
+}
+
+/* ── Resultado ──────────────────────────────────────────────────── */
+.result-band {
+  background: var(--band); color: var(--on-band); border-radius: 16px 16px 0 0;
+  padding: 28px 30px; display: grid; gap: 12px;
+}
+.result-band .eyebrow { color: var(--teal-400); }
+.result-band h2 { color: #fff; font-size: 1.85rem; letter-spacing: -.02em; }
+@media (max-width: 560px) { .result-band { padding: 22px; } .result-band h2 { font-size: 1.42rem; } }
+.result-band .en { font-size: .9rem; color: rgba(255,255,255,.62); font-style: italic; }
+
+.chip {
+  display: inline-flex; align-items: center; gap: 8px; border-radius: 99px;
+  padding: 5px 13px 5px 6px; font-size: .78rem; font-weight: 600;
+  background: rgba(255,255,255,.1); color: #fff; border: 1px solid rgba(255,255,255,.18);
+}
+.chip .dot { width: 17px; height: 17px; border-radius: 50%; display: grid; place-items: center;
+  font-family: var(--display); font-size: .66rem; font-weight: 800; color: #061A2E; }
+.chip[data-class="A"] .dot { background: var(--class-a); }
+.chip[data-class="B"] .dot { background: var(--class-b); }
+.chip[data-class="C"] .dot { background: var(--class-c); }
+.chip[data-class="D"] .dot { background: var(--class-d); }
+.chip[data-class="—"] .dot { background: var(--n-400); }
+
+.result-body {
+  background: var(--surface); border: 1px solid var(--line); border-top: 0;
+  border-radius: 0 0 16px 16px; padding: 4px 30px 30px;
+}
+@media (max-width: 560px) { .result-body { padding: 4px 22px 24px; } }
+
+.section { padding-top: 26px; }
+.section + .section { border-top: 1px solid var(--line); margin-top: 26px; }
+.section > h3 { font-size: .74rem; font-weight: 700; letter-spacing: .15em; text-transform: uppercase; color: var(--accent); margin-bottom: 12px; }
+.section p + p { margin-top: 11px; }
+
+.vartable { display: grid; gap: 0; margin-top: 4px; }
+.varrow { display: grid; grid-template-columns: 190px minmax(0,1fr); gap: 18px; padding: 14px 0; border-top: 1px solid var(--line); align-items: start; }
+.varrow:first-child { border-top: 0; padding-top: 4px; }
+@media (max-width: 620px) { .varrow { grid-template-columns: 1fr; gap: 5px; } }
+.varrow dt { font-weight: 600; color: var(--text-strong); font-size: .88rem; line-height: 1.4; }
+.varrow dd { margin: 0; font-size: .93rem; color: var(--text); }
+.varrow .role { display: block; font-size: .68rem; letter-spacing: .12em; text-transform: uppercase; color: var(--text-mute); font-weight: 700; margin-bottom: 3px; }
+
+/* Camino de respuestas: la pregunta arriba en tono secundario y la
+   respuesta debajo en acento. Leerlo de corrido es la justificación. */
+.steplist { display: grid; gap: 0; }
+.steprow { display: grid; grid-template-columns: 30px minmax(0,1fr); gap: 14px; padding: 13px 0; border-top: 1px solid var(--line); }
+.steprow:first-child { border-top: 0; padding-top: 4px; }
+.stepnum { font-family: var(--mono); font-size: .74rem; color: var(--text-mute); font-variant-numeric: tabular-nums; padding-top: 2px; }
+.stepq { font-size: .89rem; color: var(--text-mute); line-height: 1.5; }
+.stepa { font-weight: 600; color: var(--accent); font-size: .93rem; margin-top: 4px; }
+.stepa small { display: block; font-weight: 400; color: var(--text-mute); font-size: .84rem; margin-top: 1px; }
+
+.taglist { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 9px; }
+.tag {
+  font-size: .8rem; padding: 5px 11px; border-radius: 7px;
+  background: var(--surface-2); border: 1px solid var(--line); color: var(--text);
+}
+
+.note {
+  border-radius: 11px; padding: 15px 17px; font-size: .89rem; line-height: 1.55;
+  background: var(--warn-bg); border: 1px solid var(--warn-line); color: var(--warn-text);
+  display: grid; gap: 5px;
+}
+.note strong { color: var(--warn-text); }
+.note.plain { background: var(--surface-2); border-color: var(--line); color: var(--text); }
+.note.plain strong { color: var(--text-strong); }
+
+.classkey { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 12px; }
+.classkey div { display: flex; align-items: center; gap: 7px; font-size: .8rem; color: var(--text-mute); }
+.classkey i { width: 13px; height: 13px; border-radius: 4px; display: block; }
+
+/* ── Sub-asistente estadístico ──────────────────────────────────── */
+.statbox { border: 1px solid var(--line); border-radius: 13px; overflow: hidden; margin-top: 6px; }
+.stathead {
+  background: var(--surface-2); padding: 15px 18px; display: flex; align-items: center;
+  justify-content: space-between; gap: 14px; flex-wrap: wrap;
+}
+.stathead strong { font-family: var(--display); color: var(--text-strong); font-size: .96rem; }
+.statbody { padding: 18px; display: grid; gap: 14px; }
+.stat-result { display: grid; gap: 6px; padding: 17px; border-radius: 11px; background: var(--band); color: var(--on-band); }
+.stat-result .name { font-family: var(--display); font-weight: 700; font-size: 1.12rem; color: #fff; }
+.stat-result .why { font-size: .85rem; color: rgba(255,255,255,.72); }
+
+/* ── Diálogo de ayuda ───────────────────────────────────────────── */
+dialog {
+  border: 1px solid var(--line); border-radius: 15px; padding: 0; max-width: 34rem; width: calc(100% - 32px);
+  background: var(--surface); color: var(--text); box-shadow: 0 24px 60px -20px rgba(6,26,46,.5);
+}
+dialog::backdrop { background: rgba(6,26,46,.55); backdrop-filter: blur(2px); }
+.dlg-head { padding: 22px 24px 0; display: flex; gap: 14px; align-items: flex-start; justify-content: space-between; }
+.dlg-head h3 { font-size: 1.12rem; }
+.dlg-body { padding: 12px 24px 24px; display: grid; gap: 12px; font-size: .94rem; }
+.dlg-body dt { font-weight: 600; color: var(--text-strong); font-size: .88rem; }
+.dlg-body dd { margin: 3px 0 0; color: var(--text-mute); font-size: .89rem; }
+.closex {
+  border: 1px solid var(--line-strong); background: var(--surface); color: var(--text-mute);
+  width: 30px; height: 30px; border-radius: 8px; cursor: pointer; font-size: 1rem; line-height: 1; flex: none;
+}
+.closex:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ── Pie ────────────────────────────────────────────────────────── */
+footer {
+  max-width: var(--wrap); margin: 0 auto; padding: 0 24px 60px;
+  font-size: .8rem; color: var(--text-mute); display: grid; gap: 7px;
+}
+footer code { font-family: var(--mono); font-size: .92em; }
+
+.toast {
+  position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%) translateY(12px);
+  background: var(--navy-900); color: #fff; padding: 12px 20px; border-radius: 10px;
+  font-size: .88rem; font-weight: 500; z-index: 60; opacity: 0; pointer-events: none;
+  transition: opacity .22s, transform .22s; max-width: calc(100% - 32px); text-align: center;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+.reportarea {
+  width: 100%; min-height: 260px; font-family: var(--mono); font-size: .78rem; line-height: 1.6;
+  border: 1px solid var(--line); border-radius: 10px; padding: 14px; background: var(--surface-2);
+  color: var(--text); resize: vertical; margin-top: 12px;
+}
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+@media print {
+  .topbar, .navrow, .trail, footer, .toast { display: none !important; }
+  .card, .result-body { box-shadow: none; border-color: #ccc; }
+  main { padding: 0; }
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <svg class="mark" viewBox="0 0 27 29" aria-hidden="true">
+      <circle cx="16" cy="18" r="10" fill="#B4C908" />
+      <g fill="#A3A3A3">
+        <circle cx="13" cy="15.5" r="3.8" /><circle cx="22" cy="23" r="3" />
+        <circle cx="14.5" cy="3.5" r="2.5" /><circle cx="23.5" cy="11.5" r="2.5" />
+        <circle cx="3" cy="14" r="2" /><circle cx="5" cy="2.5" r="1.8" />
+      </g>
+    </svg>
+    <div class="brand">
+      <strong>Algoritmo de Diseño de Investigación</strong>
+      <span>Global Epi · Metodología</span>
+    </div>
+    <button class="topbtn" id="btn-restart" type="button">Reiniciar</button>
+  </div>
+  <div class="progress">
+    <div class="progress-rail"><i id="bar" style="width:0%"></i></div>
+    <div class="progress-meta">
+      <span id="progress-label">Pregunta 1</span>
+      <span id="progress-pct">0 %</span>
+    </div>
+  </div>
+</header>
+
+<main id="stage" class="stage"></main>
+
+<footer>
+  <p>Algoritmo de diseño adaptado de <strong>ADA (2010)</strong>, según el documento <em>Study Design for Public Health Research</em> de GLOBAL EPI LLC. Selección de prueba estadística según <em>Statistical Test by Variable</em> (GLOBAL EPI LLC).</p>
+  <p>Esta herramienta orienta la elección de diseño; no sustituye la revisión del investigador principal, del comité de ética ni del estadístico del estudio.</p>
+</footer>
+
+<dialog id="help">
+  <div class="dlg-head">
+    <h3 id="help-title">Definición</h3>
+    <button class="closex" id="help-close" type="button" aria-label="Cerrar">✕</button>
+  </div>
+  <div class="dlg-body" id="help-body"></div>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+'use strict';
+/* =====================================================================
+   GLOBAL EPI — Algoritmo de Diseño de Investigación
+   ---------------------------------------------------------------------
+   El archivo tiene dos mitades que no se tocan:
+
+     1. LÓGICA   — grafos de decisión y catálogos de resultados, más
+                   funciones puras sobre ellos. Ni una referencia al DOM.
+     2. INTERFAZ — lee la lógica y dibuja. Ni una regla de decisión.
+
+   Cambiar el algoritmo es editar datos en la primera mitad; la interfaz
+   se adapta sola, incluida la barra de progreso, que mide la profundidad
+   real que falta recorriendo el grafo.
+   ===================================================================== */
+
+
+/* ═════════════════════════════════════════════════════════════════════
+   1. LÓGICA — GRAFO DE DISEÑO DE ESTUDIO
+   Transcrito del diagrama "Research Design Algorithm" (ADA, 2010).
+   Cada nodo: { id, stage, text, help, options:[{ id, label, sub, to }] }
+   ═════════════════════════════════════════════════════════════════════ */
+
+const DESIGN_NODES = {
+
+  /* ── Las cuatro preguntas maestras ──────────────────────────────── */
+  q1: {
+    id: 'q1', stage: 'Pregunta maestra 1',
+    text: '¿El propósito del estudio es determinar el efecto de una intervención específica (por ejemplo, un protocolo, método o tratamiento) manejada por el investigador?',
+    help: {
+      title: 'Intervención manejada por el investigador',
+      terms: [
+        ['Intervención', 'Cualquier exposición que el equipo de investigación asigna, administra o controla deliberadamente: un tratamiento, un programa educativo, un protocolo de tamizaje, un cambio de política implementado a propósito para el estudio.'],
+        ['Manejada por el investigador', 'La clave no es que exista una intervención, sino quién decide quién la recibe. Si el investigador asigna la exposición, el estudio es experimental. Si solo observa quién ya estaba expuesto, es observacional.'],
+        ['Ejemplo de "sí"', 'Asignar a un grupo de participantes a un taller de manejo de diabetes y a otro a cuidado usual.'],
+        ['Ejemplo de "no"', 'Comparar el control glucémico de quienes por su cuenta asistieron a talleres frente a quienes no.']
+      ]
+    },
+    options: [
+      { id: 'yes', label: 'Sí', sub: 'Seguir el algoritmo de ensayo experimental', to: 'e1' },
+      { id: 'no', label: 'No', sub: 'Continuar a la pregunta 2', to: 'q2' }
+    ]
+  },
+
+  q2: {
+    id: 'q2', stage: 'Pregunta maestra 2',
+    text: '¿El propósito del estudio es describir y comprender algún fenómeno en su contexto natural?',
+    help: {
+      title: 'Estudio descriptivo',
+      terms: [
+        ['Describir en contexto natural', 'El objetivo es caracterizar qué ocurre, a quién y en qué circunstancias, sin manipular nada y sin que la meta principal sea contrastar una asociación entre variables.'],
+        ['Frente a analítico', 'Un estudio descriptivo responde "¿qué está pasando aquí?". Uno analítico responde "¿esto se asocia con aquello?". Si su pregunta ya nombra una exposición y un resultado que quiere relacionar, probablemente no es descriptivo.'],
+        ['Ojo', 'Un descriptivo que sí compara unidades, exposiciones o resultados vuelve a la pregunta 3: la comparación lo empuja al terreno observacional analítico.']
+      ]
+    },
+    options: [
+      { id: 'yes', label: 'Sí', sub: 'Seguir el algoritmo de estudio descriptivo', to: 'd1' },
+      { id: 'no', label: 'No', sub: 'Continuar a la pregunta 3', to: 'q3' }
+    ]
+  },
+
+  q3: {
+    id: 'q3', stage: 'Pregunta maestra 3',
+    text: '¿El propósito del estudio es buscar una asociación entre variables, estudiando la situación sin manejar ninguna intervención?',
+    help: {
+      title: 'Estudio observacional o epidemiológico',
+      terms: [
+        ['Asociación', 'Una relación estadística entre una exposición y un resultado. Asociación no es causalidad: el diseño, la temporalidad y el control de confusión son lo que permite acercarse a una inferencia causal.'],
+        ['Sin manejar intervención', 'El investigador mide lo que ocurre naturalmente. La exposición la determinan la conducta, el entorno o la política, no el protocolo del estudio.'],
+        ['Por qué importa', 'Sin asignación por parte del investigador no hay aleatorización posible, y todo el peso de la validez recae sobre la temporalidad y el control de variables de confusión.']
+      ]
+    },
+    options: [
+      { id: 'yes', label: 'Sí', sub: 'Seguir el algoritmo observacional o epidemiológico', to: 'o1' },
+      { id: 'no', label: 'No', sub: 'Continuar a la pregunta 4', to: 'q4' }
+    ]
+  },
+
+  q4: {
+    id: 'q4', stage: 'Pregunta maestra 4',
+    text: '¿El propósito del estudio es validar una prueba, instrumento o método diagnóstico?',
+    help: {
+      title: 'Validez y confiabilidad',
+      terms: [
+        ['Validez', 'Grado en que un instrumento mide lo que dice medir. En pruebas diagnósticas se cuantifica con sensibilidad, especificidad, valores predictivos y razones de verosimilitud contra un estándar de referencia.'],
+        ['Confiabilidad', 'Consistencia de la medición al repetirla: entre observadores (kappa, CCI), en el tiempo (test-retest) o entre reactivos (alfa de Cronbach).'],
+        ['Estándar de referencia', 'La mejor prueba disponible contra la cual se compara la prueba en evaluación. Sin un estándar definido a priori, un estudio de validez diagnóstica no es interpretable.']
+      ]
+    },
+    options: [
+      { id: 'yes', label: 'Sí', sub: 'Estudio diagnóstico, de validez o de confiabilidad', to: 'R_diagnostic' },
+      { id: 'no', label: 'No', sub: 'Consultar con el investigador principal', to: 'R_consult_q4' }
+    ]
+  },
+
+  /* ── Rama experimental ──────────────────────────────────────────── */
+  e1: {
+    id: 'e1', stage: 'Ensayo experimental',
+    text: '¿Se usa comparación o control?',
+    help: {
+      title: 'Grupo de comparación o control',
+      terms: [
+        ['Grupo control', 'Un conjunto de participantes que no recibe la intervención en estudio, o que recibe el cuidado usual, un placebo o una intervención alterna, y contra el cual se mide el efecto.'],
+        ['Por qué es decisivo', 'Sin comparación no hay contrafactual: se puede describir qué pasó tras la intervención, pero no atribuirlo a la intervención. Cualquier mejoría podría deberse a la historia natural, a regresión a la media o al efecto de participar.'],
+        ['El control puede ser interno', 'Si los mismos sujetos actúan como su propio control en otro período, eso cuenta como comparación.']
+      ]
+    },
+    options: [
+      { id: 'no', label: 'No', sub: 'Sin grupo de comparación', to: 'R_noncontrolled_open' },
+      { id: 'yes', label: 'Sí', sub: 'Hay comparación o control', to: 'e2' }
+    ]
+  },
+
+  e2: {
+    id: 'e2', stage: 'Ensayo experimental',
+    text: '¿La asignación de la intervención fue aleatorizada?',
+    help: {
+      title: 'Aleatorización',
+      terms: [
+        ['Aleatorización', 'Asignar la intervención por un mecanismo de azar, de modo que cada participante tenga una probabilidad conocida de recibir cada condición.'],
+        ['Qué compra', 'Equilibra en promedio los factores de confusión conocidos y también los desconocidos. Es la única herramienta de diseño que hace eso; el ajuste estadístico solo puede corregir lo que usted midió.'],
+        ['No confundir con', 'Asignación alterna, por día de la semana, por número de expediente o por conveniencia del clínico. Eso es asignación sistemática, no aleatorización, y es predecible.'],
+        ['Ocultamiento de la asignación', 'Distinto del enmascaramiento. Significa que quien enrola no puede saber qué le tocará al siguiente participante. Sin esto, la aleatorización se puede subvertir.']
+      ]
+    },
+    options: [
+      { id: 'yes', label: 'Sí', sub: 'Asignación aleatorizada', to: 'e3r' },
+      { id: 'no', label: 'No', sub: 'Asignación no aleatorizada', to: 'e3n' }
+    ]
+  },
+
+  e3n: {
+    id: 'e3n', stage: 'Ensayo experimental · sin aleatorizar',
+    text: '¿Los sujetos sirven como sus propios controles?',
+    help: {
+      title: 'Sujeto como su propio control',
+      terms: [
+        ['Diseño intra-sujeto', 'Cada participante pasa por dos o más condiciones y se compara consigo mismo. El diseño clásico es el cruzado (crossover).'],
+        ['Qué controla', 'Todo lo que no cambia dentro de la persona: genética, historia, rasgos estables. La confusión entre sujetos desaparece por construcción.'],
+        ['Qué introduce', 'Efecto de arrastre (carryover) de un período al siguiente, efecto de período o de secuencia, y desgaste. Exige un período de lavado adecuado.'],
+        ['Cuándo no sirve', 'Cuando la condición cambia de forma irreversible, cuando la intervención cura, o cuando el resultado no vuelve a su nivel basal.']
+      ]
+    },
+    options: [
+      { id: 'yes', label: 'Sí', sub: 'Diseño cruzado intra-sujeto', to: 'R_nonrand_crossover' },
+      { id: 'no', label: 'No', sub: 'Comparación entre sujetos', to: 'R_noncontrolled_between' }
+    ]
+  },
+
+  e3r: {
+    id: 'e3r', stage: 'Ensayo experimental · aleatorizado',
+    text: '¿Los sujetos sirven como sus propios controles?',
+    help: {
+      title: 'Sujeto como su propio control',
+      terms: [
+        ['Diseño intra-sujeto', 'Cada participante pasa por dos o más condiciones y se compara consigo mismo.'],
+        ['En el algoritmo fuente', 'Este nodo del diagrama de ADA (2010) conduce a "Randomized Controlled Trial". Vea la nota metodológica que aparece en el resultado.'],
+        ['Qué controla', 'La variabilidad entre personas, lo que suele traducirse en mayor poder estadístico con menos participantes.']
+      ]
+    },
+    options: [
+      { id: 'yes', label: 'Sí', sub: 'Los sujetos son su propio control', to: 'R_rct' },
+      { id: 'no', label: 'No', sub: 'Comparación entre grupos distintos', to: 'e4' }
+    ]
+  },
+
+  e4: {
+    id: 'e4', stage: 'Ensayo experimental · aleatorizado',
+    text: '¿Se aleatorizaron sitios o conglomerados?',
+    help: {
+      title: 'Aleatorización por conglomerados',
+      terms: [
+        ['Conglomerado (cluster)', 'La unidad de asignación es un grupo completo — una clínica, una escuela, un municipio, una comunidad — y no la persona.'],
+        ['Cuándo se usa', 'Cuando la intervención se aplica necesariamente al grupo (una campaña, un cambio de flujo de trabajo) o cuando aleatorizar por persona provocaría contaminación entre brazos.'],
+        ['Consecuencia estadística obligatoria', 'Las personas dentro de un conglomerado se parecen entre sí. Hay que estimar el coeficiente de correlación intraclase, inflar el tamaño de muestra por el efecto de diseño y analizar con modelos que reconozcan el agrupamiento. Analizarlo como si fueran individuos independientes infla el error tipo I.']
+      ]
+    },
+    options: [
+      { id: 'yes', label: 'Sí', sub: 'La unidad de asignación es el sitio o grupo', to: 'R_cluster' },
+      { id: 'no', label: 'No', sub: 'La unidad de asignación es el individuo', to: 'e5' }
+    ]
+  },
+
+  e5: {
+    id: 'e5', stage: 'Ensayo experimental · aleatorizado',
+    text: '¿Se aleatorizó el tratamiento (la secuencia de condiciones)?',
+    help: {
+      title: 'Aleatorización de la secuencia',
+      terms: [
+        ['Secuencia aleatorizada', 'El orden en que cada participante recibe las condiciones se asigna al azar, para separar el efecto de la intervención del efecto del período.'],
+        ['Diseño cruzado aleatorizado', 'Cada participante recibe todas las condiciones en orden aleatorio, con lavado entre ellas.'],
+        ['Si la respuesta es no', 'El diagrama fuente envía este caso a consulta con el investigador principal: hay aleatorización declarada, pero no de la unidad, ni del sitio, ni de la secuencia, y conviene aclarar qué se aleatorizó exactamente.']
+      ]
+    },
+    options: [
+      { id: 'yes', label: 'Sí', sub: 'Secuencia de condiciones aleatorizada', to: 'R_rand_crossover' },
+      { id: 'no', label: 'No', sub: 'Requiere aclaración con el IP', to: 'R_consult_e5' }
+    ]
+  },
+
+  /* ── Rama descriptiva ───────────────────────────────────────────── */
+  d1: {
+    id: 'd1', stage: 'Estudio descriptivo',
+    text: '¿Se comparan unidades medidas, exposiciones o resultados?',
+    help: {
+      title: 'Comparación en un estudio descriptivo',
+      terms: [
+        ['Comparar', 'Contrastar dos o más grupos, momentos o niveles de exposición con la intención de establecer una diferencia o una asociación.'],
+        ['Por qué reenvía a la pregunta 3', 'En cuanto un estudio compara sistemáticamente, deja de ser puramente descriptivo y entra al terreno observacional analítico, que tiene su propio algoritmo.'],
+        ['Descripción sin comparación', 'Reportar prevalencias, características de una serie de pacientes o la distribución de un evento, sin un grupo de contraste.']
+      ]
+    },
+    options: [
+      { id: 'yes', label: 'Sí', sub: 'Volver a la pregunta 3 (rama observacional)', to: 'q3' },
+      { id: 'no', label: 'No', sub: 'Descripción sin comparación', to: 'd2' }
+    ]
+  },
+
+  d2: {
+    id: 'd2', stage: 'Estudio descriptivo',
+    text: '¿Se trata de una descripción de caso en profundidad?',
+    help: {
+      title: 'Estudio de caso y serie de casos',
+      terms: [
+        ['Estudio de caso', 'Descripción detallada de un solo paciente, evento, programa o unidad, generalmente por ser inusual, nueva o instructiva.'],
+        ['Serie de casos', 'Varios casos que comparten una característica, descritos sin grupo de comparación.'],
+        ['Valor y límite', 'Sirve para generar hipótesis, documentar lo inesperado y alertar sobre eventos emergentes. No permite estimar riesgo ni establecer asociación, porque no hay denominador ni contraste.']
+      ]
+    },
+    options: [
+      { id: 'yes', label: 'Sí', sub: 'Caso único o serie de casos', to: 'R_case_study' },
+      { id: 'no', label: 'No', sub: 'Otro estudio descriptivo', to: 'R_other_desc' }
+    ]
+  },
+
+  /* ── Rama observacional ─────────────────────────────────────────── */
+  o1: {
+    id: 'o1', stage: 'Estudio observacional',
+    text: '¿Hay recolección repetida de datos?',
+    help: {
+      title: 'Recolección repetida y temporalidad',
+      terms: [
+        ['Recolección repetida', 'Se mide en más de un momento en el tiempo, sea a las mismas personas o a muestras sucesivas de la misma población.'],
+        ['Temporalidad', 'El orden en el tiempo entre exposición y resultado. Es el requisito que más pesa para argumentar causalidad y el que una sola medición no puede dar.'],
+        ['Medición única', 'Exposición y resultado se captan a la vez. Eso produce un estudio transversal y deja abierta la ambigüedad temporal: no se sabe qué vino primero.']
+      ]
+    },
+    options: [
+      { id: 'no', label: 'No', sub: 'Una sola medición en el tiempo', to: 'R_cross_sectional' },
+      { id: 'yes', label: 'Sí', sub: 'Se mide en varios momentos', to: 'o2' }
+    ]
+  },
+
+  o2: {
+    id: 'o2', stage: 'Estudio observacional',
+    text: '¿Se mide a los mismos sujetos en cada ocasión?',
+    help: {
+      title: 'Mismos sujetos frente a muestras sucesivas',
+      terms: [
+        ['Mismos sujetos', 'Se sigue a las mismas personas a lo largo del tiempo. Permite estimar cambio individual e incidencia.'],
+        ['Muestras sucesivas', 'Se toma una muestra distinta de la misma población en cada ronda. Describe el cambio poblacional, no el individual.'],
+        ['Falacia ecológica', 'Con muestras sucesivas, una tendencia poblacional no autoriza conclusiones sobre individuos.']
+      ]
+    },
+    options: [
+      { id: 'no', label: 'No', sub: 'Muestras distintas en cada ronda', to: 'R_trend' },
+      { id: 'yes', label: 'Sí', sub: 'Se sigue a las mismas personas', to: 'o3' }
+    ]
+  },
+
+  o3: {
+    id: 'o3', stage: 'Estudio observacional',
+    text: '¿Se observa un procedimiento, experiencia o evento discreto?',
+    help: {
+      title: 'Evento discreto',
+      terms: [
+        ['Evento discreto', 'Algo que ocurre en un momento identificable y que divide el seguimiento en un antes y un después: una cirugía, un huracán, la entrada en vigor de una política, un alta hospitalaria.'],
+        ['Frente a exposición continua', 'Fumar, vivir en una zona con cierta contaminación o tener determinada dieta son exposiciones sostenidas, no eventos discretos.'],
+        ['Por qué importa aquí', 'Un evento discreto permite anclar las mediciones alrededor de un punto común y abre los diseños de antes-y-después o de series temporales.']
+      ]
+    },
+    options: [
+      { id: 'yes', label: 'Sí', sub: 'Hay un evento que marca antes y después', to: 'o4' },
+      { id: 'no', label: 'No', sub: 'Exposición sostenida o seguimiento general', to: 'o5' }
+    ]
+  },
+
+  o4: {
+    id: 'o4', stage: 'Estudio observacional',
+    text: '¿Hay múltiples mediciones antes Y después del evento?',
+    help: {
+      title: 'Series temporales frente a antes-y-después',
+      terms: [
+        ['Múltiples mediciones', 'Varios puntos antes y varios después, no uno de cada lado.'],
+        ['Qué compra', 'Permite estimar la tendencia previa. Sin ella, cualquier cambio observado puede ser la continuación de una trayectoria que ya venía ocurriendo, y no efecto del evento.'],
+        ['Series de tiempo interrumpidas', 'El análisis correspondiente modela nivel y pendiente antes y después, y debe corregir autocorrelación y estacionalidad.'],
+        ['Antes-y-después simple', 'Una medición de cada lado. Muy vulnerable a regresión a la media, tendencia secular y maduración.']
+      ]
+    },
+    options: [
+      { id: 'yes', label: 'Sí', sub: 'Varias mediciones a cada lado del evento', to: 'R_time' },
+      { id: 'no', label: 'No', sub: 'Una medición antes y una después', to: 'R_before_after' }
+    ]
+  },
+
+  o5: {
+    id: 'o5', stage: 'Estudio observacional',
+    text: '¿Los grupos se definen con base en el resultado (outcome)?',
+    help: {
+      title: 'Muestreo por resultado',
+      terms: [
+        ['Definir por resultado', 'Se identifican primero quienes tienen la condición (casos) y quienes no (controles), y después se indaga la exposición pasada. Ese es el diseño de casos y controles.'],
+        ['Definir por exposición', 'Se identifican primero expuestos y no expuestos, y se observa quién desarrolla el resultado. Ese es el diseño de cohorte.'],
+        ['Consecuencia directa', 'Muestrear por resultado impide estimar incidencia y por tanto riesgo relativo. La medida propia es la razón de momios (odds ratio).'],
+        ['Selección de controles', 'Los controles deben provenir de la misma población base que generó los casos. Es el punto donde este diseño falla con más frecuencia.']
+      ]
+    },
+    options: [
+      { id: 'yes', label: 'Sí', sub: 'Casos y controles definidos por el resultado', to: 'R_case_control' },
+      { id: 'no', label: 'No', sub: 'Los grupos no se definen por el resultado', to: 'o6' }
+    ]
+  },
+
+  o6: {
+    id: 'o6', stage: 'Estudio observacional',
+    text: '¿Los sujetos se enrolan y se siguen hacia adelante en el tiempo?',
+    help: {
+      title: 'Dirección del seguimiento',
+      terms: [
+        ['Prospectivo', 'El investigador enrola, define las mediciones y espera a que ocurra el resultado. Controla la calidad de la medición de la exposición desde el inicio.'],
+        ['Retrospectivo', 'El resultado ya ocurrió cuando comienza el estudio; la exposición se reconstruye a partir de registros existentes. También llamado de cohorte histórica.'],
+        ['La diferencia no es el diseño sino el momento', 'Ambos son cohortes: parten de la exposición y van hacia el resultado. Lo que cambia es cuándo se para el investigador en esa línea de tiempo, y con ello la calidad y la completitud de los datos.']
+      ]
+    },
+    options: [
+      { id: 'yes', label: 'Sí', sub: 'Seguimiento hacia adelante', to: 'R_prospective' },
+      { id: 'no', label: 'No', sub: 'Reconstrucción a partir de registros', to: 'R_retrospective' }
+    ]
+  }
+};
+
+
+/* ═════════════════════════════════════════════════════════════════════
+   CATÁLOGO DE RESULTADOS DE DISEÑO
+   evidenceClass viene del "Class Key" del documento fuente.
+   ═════════════════════════════════════════════════════════════════════ */
+
+const DESIGN_RESULTS = {
+
+  R_rct: {
+    id: 'R_rct', name: 'Ensayo Controlado Aleatorizado', en: 'Randomized Controlled Trial',
+    evidenceClass: 'A',
+    definition: 'Los participantes se asignan al azar a la intervención o al comparador, y el efecto se estima contrastando los grupos así formados.',
+    strength: 'La aleatorización equilibra en promedio los factores de confusión conocidos y desconocidos. Es el único diseño que controla lo que usted no midió.',
+    watch: [
+      'Ocultamiento de la asignación: sin él, la aleatorización se puede subvertir en el momento del enrolamiento.',
+      'Análisis por intención de tratar como análisis principal; el por protocolo, como secundario.',
+      'Pérdidas diferenciales entre brazos: rompen el equilibrio que la aleatorización había creado.',
+      'Registro prospectivo del protocolo y del desenlace primario antes de enrolar.'
+    ],
+    variables: {
+      independent: 'Brazo de asignación (intervención frente a comparador), como variable dicotómica o politómica definida por el protocolo.',
+      dependent: 'Desenlace primario, uno solo y especificado antes de enrolar, con su definición operacional y su ventana de medición.',
+      confounders: 'La aleratorización las controla por diseño. El ajuste se reserva para las variables de estratificación del propio esquema de aleatorización y, si acaso, para desbalance basal documentado.',
+      covariates: ['Variables de estratificación', 'Sitio (si es multicéntrico)', 'Valor basal del desenlace', 'Adherencia (análisis secundario)'],
+      effect: 'Diferencia de medias, diferencia de riesgos, riesgo relativo o razón de momios, con intervalo de confianza de 95 %.',
+      unit: 'El individuo, tanto para la asignación como para el análisis.'
+    },
+    statHint: { purpose: 'differences', note: 'Comparación de un desenlace entre brazos asignados.' },
+    sourceNote: 'El diagrama fuente llega a este resultado por la vía "¿Los sujetos sirven como sus propios controles? Sí". En la literatura metodológica corriente, que los sujetos sean su propio control describe un diseño cruzado (crossover), mientras que el ensayo controlado aleatorizado clásico compara grupos paralelos distintos. Se reproduce la ruta tal como está trazada en el documento de origen; conviene revisar ese nodo con el investigador principal antes de fijar el protocolo.'
+  },
+
+  R_cluster: {
+    id: 'R_cluster', name: 'Ensayo Aleatorizado por Conglomerados', en: 'Cluster Randomized Trial',
+    evidenceClass: 'A',
+    definition: 'La unidad que se asigna al azar es un grupo completo — clínica, escuela, comunidad — y no la persona, aunque el desenlace se mida en individuos.',
+    strength: 'Permite evaluar intervenciones que solo existen a nivel de grupo y evita la contaminación entre brazos cuando los participantes conviven.',
+    watch: [
+      'Estime el coeficiente de correlación intraclase e infle el tamaño de muestra por el efecto de diseño; omitirlo deja el estudio sin poder.',
+      'Analice con modelos que reconozcan el agrupamiento (mixtos o GEE). Tratar a los individuos como independientes infla el error tipo I.',
+      'Con pocos conglomerados, el desbalance basal entre brazos es probable: considere aleatorización restringida o por pares.',
+      'El consentimiento suele operar en dos niveles: el del conglomerado y el del individuo.'
+    ],
+    variables: {
+      independent: 'Brazo asignado al conglomerado. Es una variable de nivel de grupo aunque se analice con datos de individuos.',
+      dependent: 'Desenlace medido en el individuo, con la pertenencia a su conglomerado registrada explícitamente.',
+      confounders: 'La aleatorización opera sobre los conglomerados, no sobre las personas. Con pocos conglomerados quedan desbalances individuales que sí conviene ajustar.',
+      covariates: ['Identificador de conglomerado (obligatorio)', 'Tamaño del conglomerado', 'Características basales agregadas del sitio', 'Composición sociodemográfica individual'],
+      effect: 'Diferencia de medias o de proporciones ajustada por agrupamiento, con intervalos que incorporen el efecto de diseño.',
+      unit: 'Asignación en el conglomerado; medición en el individuo; análisis que respeta ambos niveles.'
+    },
+    statHint: { purpose: 'differences', note: 'Comparación entre brazos con estructura jerárquica.' }
+  },
+
+  R_rand_crossover: {
+    id: 'R_rand_crossover', name: 'Ensayo Cruzado Aleatorizado', en: 'Randomized Crossover Trial',
+    evidenceClass: 'A',
+    definition: 'Cada participante recibe todas las condiciones en estudio, en un orden asignado al azar, con un período de lavado entre ellas.',
+    strength: 'Cada persona es su propio control, de modo que la variabilidad entre individuos desaparece del contraste. Suele alcanzar el mismo poder con muchos menos participantes.',
+    watch: [
+      'Período de lavado suficiente: sin él, el efecto de arrastre contamina la segunda condición.',
+      'Separe el efecto de período del efecto de tratamiento; para eso existe la aleatorización de la secuencia.',
+      'No sirve si la condición cambia de forma irreversible o si la intervención cura.',
+      'El abandono en el segundo período rompe el emparejamiento y no es equivalente a una pérdida en un diseño paralelo.'
+    ],
+    variables: {
+      independent: 'Condición recibida en cada período, registrada junto con el número de período y la secuencia asignada.',
+      dependent: 'Desenlace medido al final de cada período, en la misma escala y ventana en todos ellos.',
+      confounders: 'Todo lo estable dentro de la persona se controla por construcción. Lo que queda vivo es el período, la secuencia y el arrastre.',
+      covariates: ['Período', 'Secuencia asignada', 'Valor basal de cada período', 'Duración del lavado'],
+      effect: 'Diferencia intra-sujeto de medias, con intervalo de confianza de 95 %.',
+      unit: 'La observación por período, anidada dentro del participante.'
+    },
+    statHint: { purpose: 'differences', note: 'Muestras relacionadas: cada sujeto aporta dos o más mediciones.' }
+  },
+
+  R_nonrand_crossover: {
+    id: 'R_nonrand_crossover', name: 'Ensayo Cruzado No Aleatorizado', en: 'Non-Randomized Crossover Trial',
+    evidenceClass: 'C',
+    definition: 'Cada participante recibe todas las condiciones y sirve como su propio control, pero el orden no se asignó al azar.',
+    strength: 'Conserva el control de la variabilidad entre personas que da el diseño intra-sujeto.',
+    watch: [
+      'Sin aleatorización de la secuencia, el efecto de período y el de tratamiento quedan confundidos entre sí.',
+      'Si el orden lo decidió el clínico o la conveniencia, hay confusión por indicación.',
+      'Documente y modele el efecto de período; no basta con mencionarlo en la discusión.',
+      'Reporte explícitamente cómo se decidió el orden: es el punto débil del diseño y el lector lo buscará.'
+    ],
+    variables: {
+      independent: 'Condición recibida en cada período, con el orden documentado.',
+      dependent: 'Desenlace medido al cierre de cada período.',
+      confounders: 'Lo estable de la persona queda controlado; el período, la secuencia y el motivo por el que se eligió ese orden no.',
+      covariates: ['Período', 'Orden de las condiciones', 'Motivo de la asignación del orden', 'Valor basal por período'],
+      effect: 'Diferencia intra-sujeto de medias, presentada junto con el análisis del efecto de período.',
+      unit: 'La observación por período, anidada dentro del participante.'
+    },
+    statHint: { purpose: 'differences', note: 'Muestras relacionadas.' }
+  },
+
+  R_noncontrolled_between: {
+    id: 'R_noncontrolled_between', name: 'Ensayo No Controlado', en: 'Non-Controlled Trial',
+    evidenceClass: 'C',
+    definition: 'Hay una intervención administrada por el investigador y existe alguna comparación declarada, pero ni se aleatorizó la asignación ni los sujetos actúan como su propio control.',
+    strength: 'Permite documentar el desempeño de una intervención en condiciones reales cuando aleatorizar no es viable.',
+    watch: [
+      'La comparación es susceptible de confusión por indicación: quien recibió la intervención probablemente difería de entrada.',
+      'Describa con precisión cómo se formó cada grupo; sin eso el lector no puede juzgar la comparabilidad.',
+      'Considere métodos de ajuste por puntaje de propensión, sabiendo que solo corrigen lo que se midió.',
+      'Presente la tabla de características basales por grupo antes que cualquier resultado.'
+    ],
+    variables: {
+      independent: 'Recepción de la intervención, con el mecanismo de asignación descrito en detalle.',
+      dependent: 'Desenlace de interés, definido y medido igual en todos los grupos.',
+      confounders: 'Aquí sí son el problema central. Deben identificarse a priori, preferiblemente con un diagrama causal, y medirse antes de la intervención.',
+      covariates: ['Edad', 'Sexo', 'Gravedad o riesgo basal', 'Comorbilidad', 'Nivel socioeconómico', 'Acceso a servicios', 'Indicación clínica'],
+      effect: 'Diferencia ajustada de medias o de riesgos, presentada siempre junto a la estimación cruda.',
+      unit: 'El individuo.'
+    },
+    statHint: { purpose: 'differences', note: 'Comparación entre grupos independientes.' }
+  },
+
+  R_noncontrolled_open: {
+    id: 'R_noncontrolled_open', name: 'Ensayo No Controlado', en: 'Non-Controlled Trial',
+    evidenceClass: 'D',
+    definition: 'Se administra una intervención y se mide el desenlace, sin grupo de comparación de ninguna clase.',
+    strength: 'Sirve para explorar viabilidad, aceptabilidad, seguridad preliminar y señales tempranas de efecto antes de invertir en un ensayo comparativo.',
+    watch: [
+      'Sin contrafactual, la mejoría observada no puede atribuirse a la intervención.',
+      'Regresión a la media: si se enroló a quienes estaban peor, mejorarán en promedio aunque nada funcione.',
+      'Presente el estudio como generador de hipótesis y evite el lenguaje causal en el resumen y en las conclusiones.',
+      'Es un paso legítimo hacia un diseño comparativo, no un sustituto de él.'
+    ],
+    variables: {
+      independent: 'La intervención, presente en todos los participantes. Sin variación entre sujetos, no hay contraste posible entre personas.',
+      dependent: 'Desenlace medido antes y después, o solo después según el objetivo.',
+      confounders: 'No hay forma de controlarlas por diseño. Documéntelas y trátelas como limitación explícita.',
+      covariates: ['Valor basal del desenlace', 'Tiempo transcurrido', 'Adherencia', 'Co-intervenciones recibidas'],
+      effect: 'Cambio antes-después dentro del grupo, o proporción con el desenlace, siempre con intervalo de confianza y sin lenguaje causal.',
+      unit: 'El individuo.'
+    },
+    statHint: { purpose: 'description', note: 'Describir el desempeño observado; el contraste con un comparador no está disponible.' }
+  },
+
+  R_case_study: {
+    id: 'R_case_study', name: 'Estudio de Caso o Serie de Casos', en: 'Case Study or Case Series',
+    evidenceClass: 'D',
+    definition: 'Descripción detallada de uno o varios casos que comparten una característica, sin grupo de comparación.',
+    strength: 'Es el diseño que detecta lo nuevo y lo raro. Muchas alertas de seguridad y muchos brotes empezaron aquí.',
+    watch: [
+      'No hay denominador, así que no se puede estimar riesgo ni prevalencia.',
+      'La selección de los casos suele ser por notoriedad, lo que sesga hacia lo llamativo.',
+      'Use una guía de reporte de casos y explicite el consentimiento del paciente.',
+      'Formule las conclusiones como hipótesis a verificar, nunca como asociación establecida.'
+    ],
+    variables: {
+      independent: 'No aplica formalmente: sin comparación no hay exposición contrastada. Documente igualmente las exposiciones relevantes de cada caso.',
+      dependent: 'La condición, el evento o la evolución que motivó describir el caso.',
+      confounders: 'No corresponde el ajuste. Lo que corresponde es describir el contexto con el detalle suficiente para que otro clínico reconozca el patrón.',
+      covariates: ['Cronología clínica', 'Tratamientos previos y concomitantes', 'Comorbilidad', 'Hallazgos de laboratorio e imagen', 'Desenlace y seguimiento'],
+      effect: 'Ninguna medida de asociación. Se reportan frecuencias descriptivas y la narrativa del caso.',
+      unit: 'El caso.'
+    },
+    statHint: { purpose: 'description', note: 'Estadística exclusivamente descriptiva.' }
+  },
+
+  R_other_desc: {
+    id: 'R_other_desc', name: 'Otro Estudio Descriptivo', en: 'Other Descriptive Study',
+    evidenceClass: 'D',
+    definition: 'Caracteriza un fenómeno en su contexto natural sin comparar grupos y sin ser un caso en profundidad: encuestas descriptivas, mapeos de recursos, análisis de necesidades.',
+    strength: 'Establece la línea base de un problema y orienta la planificación de programas y de estudios posteriores.',
+    watch: [
+      'La representatividad depende por completo del marco muestral: descríbalo y reporte la tasa de respuesta.',
+      'Reporte prevalencias con intervalo de confianza; una proporción sin incertidumbre invita a sobreinterpretar.',
+      'Evite comparaciones no planificadas entre subgrupos: si va a comparar, el algoritmo lo lleva a la rama observacional.',
+      'Declare el período de recolección; una prevalencia sin fecha envejece mal.'
+    ],
+    variables: {
+      independent: 'No hay exposición bajo contraste. Las variables de caracterización cumplen un papel descriptivo, no explicativo.',
+      dependent: 'El indicador o los indicadores que se describen: prevalencia, cobertura, necesidad no satisfecha, distribución de un atributo.',
+      confounders: 'No procede el ajuste por confusión cuando no se estima un efecto. Sí procede considerar el peso de muestreo si el diseño fue complejo.',
+      covariates: ['Estratos de muestreo', 'Pesos de muestreo', 'Variables sociodemográficas', 'Área geográfica', 'Período de recolección'],
+      effect: 'Frecuencias, proporciones, medias y sus intervalos de confianza.',
+      unit: 'El individuo, el hogar o la unidad geográfica, según el marco muestral.'
+    },
+    statHint: { purpose: 'description', note: 'Descripción de variables cuantitativas o categóricas.' }
+  },
+
+  R_cross_sectional: {
+    id: 'R_cross_sectional', name: 'Estudio Transversal', en: 'Cross-Sectional Study',
+    evidenceClass: 'D',
+    definition: 'Exposición y resultado se miden en el mismo momento, en una muestra de la población, sin seguimiento.',
+    strength: 'Rápido y eficiente para estimar prevalencia y para describir la carga de un problema en una población definida.',
+    watch: [
+      'Ambigüedad temporal: no se sabe si la exposición precedió al resultado. Es el límite estructural del diseño.',
+      'Sesgo de prevalencia-incidencia: sobrerrepresenta los casos de larga duración y pierde los que murieron o se recuperaron rápido.',
+      'La medida propia es la razón de prevalencias o la razón de momios de prevalencia, no el riesgo relativo.',
+      'Si el muestreo fue complejo, el análisis debe incorporar estratos, conglomerados y pesos.'
+    ],
+    variables: {
+      independent: 'Exposición medida en el momento de la encuesta, con su definición operacional y su ventana de referencia.',
+      dependent: 'Resultado o condición medido en ese mismo momento.',
+      confounders: 'Deben medirse en la misma ocasión y elegirse a priori con un diagrama causal, cuidando de no ajustar por mediadores.',
+      covariates: ['Edad', 'Sexo', 'Nivel educativo', 'Ingreso o nivel socioeconómico', 'Seguro de salud', 'Área de residencia', 'Comorbilidad'],
+      effect: 'Razón de prevalencias o razón de momios de prevalencia, con intervalo de confianza de 95 %.',
+      unit: 'El individuo, o el hogar según el marco muestral.'
+    },
+    statHint: { purpose: 'relationship', note: 'Asociación entre variables medidas simultáneamente.' }
+  },
+
+  R_trend: {
+    id: 'R_trend', name: 'Estudio de Tendencia', en: 'Trend Study',
+    evidenceClass: 'D',
+    definition: 'Se mide repetidamente a la misma población, pero con una muestra distinta en cada ronda, para describir cómo cambia un indicador en el tiempo.',
+    strength: 'Describe la trayectoria poblacional de un indicador sin el costo ni el desgaste de seguir a las mismas personas.',
+    watch: [
+      'No estima cambio individual: la población puede parecer estable mientras las personas cambian en direcciones opuestas.',
+      'Falacia ecológica: la tendencia agregada no autoriza conclusiones sobre individuos.',
+      'Mantenga constantes las definiciones y los instrumentos entre rondas; si cambian, el quiebre de serie es artificial.',
+      'Separe el efecto de edad, el de período y el de cohorte antes de interpretar la pendiente.'
+    ],
+    variables: {
+      independent: 'El tiempo, o el período de la ronda, como variable de agrupación.',
+      dependent: 'El indicador poblacional que se sigue en cada ronda.',
+      confounders: 'Cambios en la composición de la población entre rondas. La estandarización por edad y sexo suele ser obligatoria.',
+      covariates: ['Ronda o año', 'Estructura de edad', 'Composición sociodemográfica', 'Cambios de definición o de instrumento', 'Tasa de respuesta por ronda'],
+      effect: 'Cambio absoluto o relativo entre rondas, o porcentaje de cambio anual, con intervalos de confianza.',
+      unit: 'La población en cada ronda; los individuos no se enlazan entre rondas.'
+    },
+    statHint: { purpose: 'differences', note: 'Comparación entre rondas, tratadas como muestras independientes.' }
+  },
+
+  R_case_control: {
+    id: 'R_case_control', name: 'Estudio de Casos y Controles', en: 'Case-Control Study',
+    evidenceClass: 'C',
+    definition: 'Se identifican personas con el resultado (casos) y sin él (controles) y se compara hacia atrás la frecuencia de la exposición.',
+    strength: 'Eficiente para resultados raros y para períodos de latencia largos, donde una cohorte resultaría inviable por tamaño o duración.',
+    watch: [
+      'Los controles deben provenir de la misma población base que generó los casos. Es el error más frecuente y el más grave.',
+      'Sesgo de memoria: quien tiene la enfermedad recuerda y reporta la exposición con más intensidad.',
+      'No estima incidencia, por lo que no produce riesgo relativo. La medida es la razón de momios.',
+      'Defina los criterios de caso antes de empezar y aplíquelos sin conocer el estado de exposición.'
+    ],
+    variables: {
+      independent: 'Exposición previa, reconstruida por entrevista, registro o biomarcador, con la ventana temporal definida.',
+      dependent: 'Condición de caso o control. Determina el muestreo, no se modela como desenlace incidente.',
+      confounders: 'Centrales. Se controlan por emparejamiento en el diseño o por ajuste en el análisis, nunca por ambos sin tenerlo en cuenta en el modelo.',
+      covariates: ['Edad', 'Sexo', 'Variables de emparejamiento', 'Nivel socioeconómico', 'Tabaquismo y otros hábitos', 'Comorbilidad', 'Fuente de reclutamiento'],
+      effect: 'Razón de momios (odds ratio) cruda y ajustada, con intervalo de confianza de 95 %.',
+      unit: 'El individuo; si hubo emparejamiento, el conjunto emparejado.'
+    },
+    statHint: { purpose: 'relationship', note: 'Asociación entre variables categóricas, con desenlace dicotómico.' }
+  },
+
+  R_prospective: {
+    id: 'R_prospective', name: 'Estudio Prospectivo (Cohorte)', en: 'Prospective Study',
+    evidenceClass: 'B',
+    definition: 'Se enrola a los participantes según su exposición, antes de que ocurra el resultado, y se les sigue hacia adelante en el tiempo.',
+    strength: 'La temporalidad queda establecida por diseño y permite estimar incidencia y riesgo. Es el diseño observacional más cercano a la inferencia causal.',
+    watch: [
+      'Pérdidas durante el seguimiento: si difieren entre expuestos y no expuestos, sesgan el resultado.',
+      'Defina la exposición y el desenlace antes de enrolar y mídalos igual en todos los grupos.',
+      'Considere la exposición variable en el tiempo si cambia durante el seguimiento.',
+      'Costoso y lento; para resultados raros exige tamaños de muestra grandes.'
+    ],
+    variables: {
+      independent: 'Exposición medida al inicio, y actualizada durante el seguimiento si es variable en el tiempo.',
+      dependent: 'Resultado incidente, con fecha de ocurrencia y tiempo en riesgo registrados por persona.',
+      confounders: 'Se miden al inicio, antes del desenlace. Selección a priori con diagrama causal; no ajustar por mediadores ni por variables posteriores a la exposición.',
+      covariates: ['Edad', 'Sexo', 'Nivel socioeconómico', 'Comorbilidad basal', 'Hábitos de salud', 'Acceso a servicios', 'Tiempo en riesgo'],
+      effect: 'Riesgo relativo, razón de tasas de incidencia o razón de riesgos instantáneos (hazard ratio), con intervalo de confianza de 95 %.',
+      unit: 'La persona-tiempo en riesgo.'
+    },
+    statHint: { purpose: 'relationship', note: 'Asociación entre exposición y desenlace incidente.' }
+  },
+
+  R_retrospective: {
+    id: 'R_retrospective', name: 'Estudio Retrospectivo (Cohorte Histórica)', en: 'Retrospective Study',
+    evidenceClass: 'B',
+    definition: 'La lógica es la de una cohorte — de la exposición hacia el resultado — pero ambos ya ocurrieron y se reconstruyen a partir de registros existentes.',
+    strength: 'Mucho más rápido y económico que una cohorte prospectiva, y viable cuando existen registros de calidad con seguimiento largo.',
+    watch: [
+      'La calidad de los datos la determinó quien llenó el registro, no usted, y ese registro no se hizo para su pregunta.',
+      'Datos faltantes no aleatorios: documente el patrón y su manejo antes de analizar.',
+      'La exposición pudo medirse de forma distinta a lo largo del período cubierto.',
+      'Fije los criterios de elegibilidad y las definiciones antes de mirar los desenlaces.'
+    ],
+    variables: {
+      independent: 'Exposición reconstruida del registro, con la fecha de inicio y la fuente documentadas.',
+      dependent: 'Resultado ya ocurrido, identificado en el registro con criterios explícitos y uniformes.',
+      confounders: 'Limitadas a lo que el registro capturó. Enumere las que no pudo medir: la confusión residual es la principal limitación de este diseño.',
+      covariates: ['Edad', 'Sexo', 'Comorbilidad registrada', 'Año de entrada en la cohorte', 'Fuente o sitio del registro', 'Completitud del expediente'],
+      effect: 'Riesgo relativo, razón de tasas o razón de riesgos instantáneos, con intervalo de confianza de 95 %.',
+      unit: 'La persona-tiempo reconstruida.'
+    },
+    statHint: { purpose: 'relationship', note: 'Asociación entre exposición registrada y desenlace ya ocurrido.' }
+  },
+
+  R_before_after: {
+    id: 'R_before_after', name: 'Estudio Antes y Después', en: 'Before & After Study',
+    evidenceClass: 'D',
+    definition: 'Se mide un indicador una vez antes y una vez después de un evento o de un cambio, en los mismos sujetos.',
+    strength: 'Sencillo y a menudo la única opción cuando el evento ya ocurrió y no fue controlado por nadie.',
+    watch: [
+      'Sin tendencia previa no se puede saber si el cambio ya venía ocurriendo.',
+      'Regresión a la media, maduración y tendencia secular compiten con el evento como explicación.',
+      'Si es posible, añada un grupo de comparación no expuesto al evento: convierte el diseño en algo mucho más defendible.',
+      'Documente cualquier otro cambio ocurrido en la misma ventana temporal.'
+    ],
+    variables: {
+      independent: 'El período: antes frente a después del evento.',
+      dependent: 'El indicador medido en ambos momentos, con la misma definición e instrumento.',
+      confounders: 'Todo lo que cambió en la misma ventana de tiempo. Enumérelo explícitamente; no se puede ajustar lo que no se documenta.',
+      covariates: ['Tiempo entre mediciones', 'Valor basal', 'Co-intervenciones', 'Cambios de contexto en la ventana', 'Composición del grupo'],
+      effect: 'Diferencia de medias o de proporciones antes-después, con intervalo de confianza y sin lenguaje causal.',
+      unit: 'El individuo, con dos observaciones emparejadas.'
+    },
+    statHint: { purpose: 'differences', note: 'Dos mediciones relacionadas en los mismos sujetos.' }
+  },
+
+  R_time: {
+    id: 'R_time', name: 'Estudio de Series Temporales', en: 'Time Study',
+    evidenceClass: 'C',
+    definition: 'Múltiples mediciones antes y después de un evento, lo que permite estimar la trayectoria previa y contrastarla con la posterior.',
+    strength: 'La tendencia previa actúa como contrafactual. Es la versión defendible del antes-y-después y admite análisis de series de tiempo interrumpidas.',
+    watch: [
+      'Corrija la autocorrelación: los puntos consecutivos no son independientes y ignorarlo estrecha falsamente los intervalos.',
+      'Modele la estacionalidad si el indicador la tiene.',
+      'Distinga el cambio de nivel del cambio de pendiente; son hipótesis distintas y con frecuencia se confunden.',
+      'Se necesitan suficientes puntos a cada lado; con tres o cuatro por lado el modelo no se sostiene.'
+    ],
+    variables: {
+      independent: 'Tiempo, indicador de post-evento, y el término de interacción entre ambos que captura el cambio de pendiente.',
+      dependent: 'El indicador medido de forma regular a lo largo de toda la serie.',
+      confounders: 'Eventos concurrentes, cambios de definición del indicador y estacionalidad. Se controlan modelándolos, no ajustando por covariables individuales.',
+      covariates: ['Período (antes / después)', 'Tiempo desde el inicio de la serie', 'Estacionalidad', 'Eventos concurrentes', 'Cambios de instrumento o de codificación'],
+      effect: 'Cambio inmediato de nivel y cambio de pendiente tras el evento, cada uno con su intervalo de confianza.',
+      unit: 'El punto temporal de la serie.'
+    },
+    statHint: { purpose: 'relationship', note: 'Relación entre tiempo y el indicador, con quiebre en el evento.' }
+  },
+
+  R_diagnostic: {
+    id: 'R_diagnostic', name: 'Estudio Diagnóstico, de Validez o de Confiabilidad', en: 'Diagnostic, Validity or Reliability Study',
+    evidenceClass: '—',
+    definition: 'Evalúa qué tan bien una prueba, instrumento o método mide lo que pretende medir, o con qué consistencia lo hace al repetirse.',
+    strength: 'Es el paso previo obligatorio a cualquier estudio que use ese instrumento: una asociación medida con un instrumento no validado no es interpretable.',
+    watch: [
+      'Defina el estándar de referencia antes de empezar y aplíquelo a todos los participantes.',
+      'Interprete la prueba en evaluación sin conocer el resultado del estándar, y viceversa.',
+      'Sesgo de verificación: si solo se confirma con el estándar a quienes dieron positivo, la sensibilidad y la especificidad quedan infladas.',
+      'Reclute el espectro completo de pacientes en los que la prueba se usará, no solo casos claros y sanos claros.'
+    ],
+    variables: {
+      independent: 'El resultado de la prueba índice, en su escala original antes de dicotomizar.',
+      dependent: 'El resultado del estándar de referencia, que define la verdad para efectos del estudio.',
+      confounders: 'Más que confusión, lo que importa es el espectro: la gravedad y la mezcla de casos cambian la sensibilidad y la especificidad observadas.',
+      covariates: ['Gravedad o estadio', 'Prevalencia en el escenario de uso', 'Observador que aplicó la prueba', 'Condiciones de aplicación', 'Tiempo entre ambas pruebas'],
+      effect: 'Sensibilidad, especificidad, valores predictivos, razones de verosimilitud y área bajo la curva ROC. Para confiabilidad: kappa, coeficiente de correlación intraclase o alfa de Cronbach.',
+      unit: 'El individuo evaluado, o el par de mediciones en los estudios de concordancia.'
+    },
+    statHint: { purpose: 'relationship', note: 'Concordancia entre la prueba índice y el estándar de referencia.' }
+  },
+
+  R_consult_q4: {
+    id: 'R_consult_q4', name: 'Consultar con el Investigador Principal', en: 'Consult with PI',
+    evidenceClass: '—', isConsult: true,
+    definition: 'Las cuatro preguntas maestras no clasificaron el estudio. El algoritmo indica consultar con el investigador principal, o volver a comenzar desde la pregunta 2.',
+    strength: 'Que el algoritmo no clasifique suele ser información útil: casi siempre significa que el objetivo del estudio todavía no está formulado como una pregunta contrastable.',
+    watch: [
+      'Escriba el objetivo en formato PICO o PECO: población, exposición o intervención, comparador y desenlace.',
+      'Si no hay comparador, decida si el estudio es realmente descriptivo y vuelva a la pregunta 2.',
+      'Si el estudio combina componentes cualitativos y cuantitativos, considere un diseño de métodos mixtos, que este algoritmo no cubre.',
+      'Revisiones sistemáticas, metaanálisis, modelaje y evaluaciones económicas son estudios secundarios y quedan fuera de este algoritmo de estudios primarios.'
+    ],
+    variables: {
+      independent: 'Por definir. Nombre la exposición o intervención candidata y la escala en que la medirá.',
+      dependent: 'Por definir. Nombre un desenlace primario, uno solo, con definición operacional.',
+      confounders: 'Por definir. Un diagrama causal dirigido es la forma más rápida de decidir qué medir.',
+      covariates: ['Población y marco de muestreo', 'Ventana temporal', 'Comparador', 'Fuente de los datos'],
+      effect: 'Por definir según el diseño que resulte.',
+      unit: 'Por definir.'
+    },
+    statHint: null
+  },
+
+  R_consult_e5: {
+    id: 'R_consult_e5', name: 'Consultar con el Investigador Principal', en: 'Consult with PI',
+    evidenceClass: '—', isConsult: true,
+    definition: 'El estudio declara asignación aleatorizada, pero no aleatoriza al individuo, ni el sitio, ni la secuencia de condiciones. El algoritmo envía este caso a consulta.',
+    strength: 'Detectar esta inconsistencia antes de enrolar evita un protocolo que después no se puede analizar como aleatorizado.',
+    watch: [
+      'Precise qué unidad se aleatorizó exactamente: persona, sitio, período o secuencia.',
+      'Si en realidad no hubo mecanismo de azar, el estudio pertenece a la rama no aleatorizada del algoritmo.',
+      'Documente el mecanismo de generación de la secuencia y su ocultamiento.',
+      'Registre el protocolo antes de enrolar al primer participante.'
+    ],
+    variables: {
+      independent: 'La intervención, una vez aclarada la unidad de asignación.',
+      dependent: 'El desenlace primario del protocolo.',
+      confounders: 'Dependen de la unidad de asignación que se aclare. Si no hubo aleatorización efectiva, deben tratarse como en un diseño no aleatorizado.',
+      covariates: ['Unidad de asignación', 'Mecanismo de aleatorización', 'Sitio', 'Período'],
+      effect: 'Por definir una vez resuelta la unidad de asignación.',
+      unit: 'Por definir.'
+    },
+    statHint: null
+  }
+};
+
+const EVIDENCE_CLASSES = {
+  A: 'Clase A — la de mayor control sobre la confusión en este algoritmo.',
+  B: 'Clase B — establece temporalidad; la confusión se controla midiéndola.',
+  C: 'Clase C — comparación presente, con control parcial de la confusión.',
+  D: 'Clase D — descriptiva o sin contrafactual; genera hipótesis.',
+  '—': 'Sin clase asignada en el documento fuente.'
+};
+
+
+/* ═════════════════════════════════════════════════════════════════════
+   GRAFO DE SELECCIÓN DE PRUEBA ESTADÍSTICA
+   Transcrito de "Statistical Test by Variable" (GLOBAL EPI LLC):
+   los tres diagramas — Description, Testing Differences, Testing
+   Relationship — expresados como un solo grafo con la misma forma que
+   el anterior, para que la interfaz no tenga que distinguirlos.
+   ═════════════════════════════════════════════════════════════════════ */
+
+const STAT_NODES = {
+  s1: {
+    id: 's1', stage: 'Propósito de la prueba',
+    text: '¿Cuál es el propósito de la prueba estadística?',
+    help: {
+      title: 'Los tres propósitos',
+      terms: [
+        ['Descripción', 'Resumir cómo se distribuyen las variables, sin contrastar hipótesis.'],
+        ['Prueba de diferencias', 'Contrastar si los promedios difieren entre grupos o momentos.'],
+        ['Prueba de relación', 'Contrastar si dos o más variables se asocian o predicen entre sí.']
+      ]
+    },
+    options: [
+      { id: 'description', label: 'Descripción', sub: 'Resumir la distribución de las variables', to: 'sd1' },
+      { id: 'differences', label: 'Prueba de diferencias', sub: 'Comparar medias entre grupos o momentos', to: 'sf1' },
+      { id: 'relationship', label: 'Prueba de relación', sub: 'Evaluar asociación o predicción', to: 'sr1' }
+    ]
+  },
+
+  /* Description */
+  sd1: {
+    id: 'sd1', stage: 'Descripción',
+    text: '¿Qué tipo de variable va a describir?',
+    help: {
+      title: 'Tipo de variable',
+      terms: [
+        ['Cuantitativa', 'Toma valores numéricos con los que tiene sentido operar: edad en años, presión arterial, puntaje.'],
+        ['Categórica', 'Clasifica en grupos. Nominal si no hay orden (municipio, sexo); ordinal si lo hay (leve, moderado, severo).']
+      ]
+    },
+    options: [
+      { id: 'quant', label: 'Variables cuantitativas', sub: 'Numéricas continuas o discretas', to: 'S_desc_quant' },
+      { id: 'cat', label: 'Variables categóricas', sub: 'Nominales u ordinales', to: 'S_desc_cat' }
+    ]
+  },
+
+  /* Testing differences */
+  sf1: {
+    id: 'sf1', stage: 'Diferencias · variables cuantitativas',
+    text: '¿Cuántas medias va a comparar?',
+    help: {
+      title: 'Número de grupos',
+      terms: [
+        ['Una media contra un valor de prueba', 'Se compara el promedio de una sola muestra contra un valor de referencia conocido.'],
+        ['Dos medias', 'Se comparan dos grupos o dos momentos.'],
+        ['Más de dos medias', 'Tres o más grupos o momentos. Compararlos de dos en dos infla el error tipo I; para eso existe el ANOVA.']
+      ]
+    },
+    options: [
+      { id: 'one', label: 'Una media contra un valor de prueba', sub: 'Una sola muestra', to: 'S_one_t' },
+      { id: 'two', label: 'Dos medias', sub: 'Dos grupos o dos momentos', to: 'sf2' },
+      { id: 'more', label: 'Más de dos medias', sub: 'Tres o más grupos o momentos', to: 'sf3' }
+    ]
+  },
+  sf2: {
+    id: 'sf2', stage: 'Diferencias · dos medias',
+    text: '¿Las muestras son relacionadas o independientes?',
+    help: {
+      title: 'Muestras relacionadas frente a independientes',
+      terms: [
+        ['Relacionadas', 'Cada observación de un grupo tiene su par en el otro: los mismos sujetos medidos dos veces, o pares emparejados.'],
+        ['Independientes', 'Los grupos están formados por personas distintas, sin correspondencia entre ellas.'],
+        ['Por qué decide la prueba', 'Ignorar el emparejamiento desperdicia poder estadístico; suponerlo cuando no existe produce intervalos falsamente estrechos.']
+      ]
+    },
+    options: [
+      { id: 'related', label: 'Muestras relacionadas', sub: 'Mismos sujetos o pares emparejados', to: 'sf2r' },
+      { id: 'independent', label: 'Muestras independientes', sub: 'Grupos de personas distintas', to: 'sf2i' }
+    ]
+  },
+  sf2r: {
+    id: 'sf2r', stage: 'Diferencias · dos medias relacionadas',
+    text: '¿En qué escala está medida la variable dependiente?',
+    help: {
+      title: 'Escala de medición',
+      terms: [
+        ['Intervalo', 'Distancias iguales entre valores consecutivos: temperatura, puntaje de una escala validada, presión arterial.'],
+        ['Ordinal', 'Hay orden pero las distancias no son comparables: escalas tipo Likert de pocos puntos, estadios, grados de severidad.']
+      ]
+    },
+    options: [
+      { id: 'interval', label: 'Intervalo', sub: 'Distancias comparables entre valores', to: 'S_paired_t' },
+      { id: 'ordinal', label: 'Ordinal', sub: 'Orden sin distancias comparables', to: 'S_wilcoxon' }
+    ]
+  },
+  sf2i: {
+    id: 'sf2i', stage: 'Diferencias · dos medias independientes',
+    text: '¿En qué escala está medida la variable dependiente?',
+    help: {
+      title: 'Escala de medición',
+      terms: [
+        ['Intervalo', 'Distancias iguales entre valores consecutivos.'],
+        ['Ordinal', 'Hay orden, pero las distancias entre categorías no son comparables.']
+      ]
+    },
+    options: [
+      { id: 'interval', label: 'Intervalo', sub: 'Distancias comparables entre valores', to: 'S_ind_t' },
+      { id: 'ordinal', label: 'Ordinal', sub: 'Orden sin distancias comparables', to: 'S_mannwhitney' }
+    ]
+  },
+  sf3: {
+    id: 'sf3', stage: 'Diferencias · más de dos medias',
+    text: '¿Las muestras son relacionadas o independientes?',
+    help: {
+      title: 'Estructura de las muestras',
+      terms: [
+        ['Relacionadas', 'Los mismos sujetos medidos en tres o más ocasiones.'],
+        ['Independientes', 'Tres o más grupos formados por personas distintas.']
+      ]
+    },
+    options: [
+      { id: 'related', label: 'Muestras relacionadas', sub: 'Mismos sujetos, varias ocasiones', to: 'S_rm_anova' },
+      { id: 'independent', label: 'Muestras independientes', sub: 'Tres o más grupos distintos', to: 'S_anova' }
+    ]
+  },
+
+  /* Testing relationship */
+  sr1: {
+    id: 'sr1', stage: 'Relación',
+    text: '¿Qué tipo de variables va a relacionar?',
+    help: {
+      title: 'Tipo de variable',
+      terms: [
+        ['Cuantitativas', 'Ambas numéricas, o una dependiente numérica con predictores.'],
+        ['Categóricas', 'El desenlace clasifica en categorías; la asociación se evalúa sobre frecuencias.']
+      ]
+    },
+    options: [
+      { id: 'quant', label: 'Variables cuantitativas', sub: 'Correlación o regresión lineal', to: 'sr2' },
+      { id: 'cat', label: 'Variables categóricas', sub: 'Frecuencias y asociación', to: 'sr3' }
+    ]
+  },
+  sr2: {
+    id: 'sr2', stage: 'Relación · variables cuantitativas',
+    text: '¿Cuántas variables entran en la relación?',
+    help: {
+      title: 'Correlación frente a regresión múltiple',
+      terms: [
+        ['Dos grupos, probados para relación', 'Dos variables cuantitativas y la fuerza de su asociación.'],
+        ['Dos o más independientes con una dependiente', 'Varias variables explicativas y un desenlace numérico: regresión lineal múltiple.']
+      ]
+    },
+    options: [
+      { id: 'two', label: 'Dos variables, probadas para relación', sub: 'Correlación entre dos variables', to: 'sr2a' },
+      { id: 'multi', label: 'Dos o más variables independientes y una dependiente', sub: 'Modelo con varios predictores', to: 'S_mlr' }
+    ]
+  },
+  sr2a: {
+    id: 'sr2a', stage: 'Relación · correlación',
+    text: '¿En qué escala están medidas las variables?',
+    help: {
+      title: 'Escala de medición',
+      terms: [
+        ['Intervalo', 'Distancias comparables entre valores consecutivos.'],
+        ['Ordinal', 'Orden sin distancias comparables.']
+      ]
+    },
+    options: [
+      { id: 'interval', label: 'Intervalo', sub: 'Distancias comparables', to: 'S_pearson' },
+      { id: 'ordinal', label: 'Ordinal', sub: 'Orden sin distancias comparables', to: 'S_rho' }
+    ]
+  },
+  sr3: {
+    id: 'sr3', stage: 'Relación · variables categóricas',
+    text: '¿Cómo está planteada la comparación?',
+    help: {
+      title: 'Tres planteamientos con variables categóricas',
+      terms: [
+        ['Un grupo contra una distribución propuesta', 'Se contrasta la frecuencia observada contra la esperada bajo una distribución teórica.'],
+        ['Dos grupos, probados para asociación', 'Tabla de contingencia entre dos variables categóricas.'],
+        ['Varias independientes con una dependiente dicotómica', 'Modelo con varios predictores y un desenlace de dos categorías.']
+      ]
+    },
+    options: [
+      { id: 'gof', label: 'Un grupo: frecuencia observada contra una distribución propuesta', sub: 'Bondad de ajuste', to: 'S_chi_gof' },
+      { id: 'assoc', label: 'Dos grupos: probados para asociación', sub: 'Tabla de contingencia', to: 'S_chi_assoc' },
+      { id: 'logistic', label: 'Dos o más independientes y una dependiente dicotómica', sub: 'Desenlace de dos categorías', to: 'S_logistic' }
+    ]
+  }
+};
+
+const STAT_RESULTS = {
+  S_desc_quant: {
+    id: 'S_desc_quant', name: 'Estadística descriptiva para variables cuantitativas',
+    numeric: 'Media, mediana, moda, varianza y desviación estándar.',
+    graphical: 'Histograma, diagrama de caja y bigotes, diagrama de tallo y hoja.',
+    why: 'Variable cuantitativa descrita sin contrastar hipótesis.'
+  },
+  S_desc_cat: {
+    id: 'S_desc_cat', name: 'Estadística descriptiva para variables categóricas',
+    numeric: 'Ordinal: mediana. Nominal: frecuencia.',
+    graphical: 'Gráfico de barras, gráfico de pastel.',
+    why: 'Variable categórica descrita sin contrastar hipótesis.'
+  },
+  S_one_t: { id: 'S_one_t', name: 'Prueba t de una muestra', en: 'One Sample t-test', why: 'Una media contrastada contra un valor de prueba.' },
+  S_paired_t: { id: 'S_paired_t', name: 'Prueba t para muestras pareadas', en: 'Paired Samples t-test', why: 'Dos medias relacionadas, en escala de intervalo.' },
+  S_wilcoxon: { id: 'S_wilcoxon', name: 'Prueba de Wilcoxon de pares emparejados', en: 'Wilcoxon matched-pairs test', why: 'Dos medias relacionadas, en escala ordinal.' },
+  S_ind_t: { id: 'S_ind_t', name: 'Prueba t para muestras independientes', en: 'Independent Samples t-test', why: 'Dos medias independientes, en escala de intervalo.' },
+  S_mannwhitney: { id: 'S_mannwhitney', name: 'Prueba U de Mann-Whitney', en: 'Mann-Whitney U test', why: 'Dos medias independientes, en escala ordinal.' },
+  S_rm_anova: { id: 'S_rm_anova', name: 'ANOVA de medidas repetidas', en: 'Repeated measures ANOVA', why: 'Más de dos medias en muestras relacionadas.' },
+  S_anova: { id: 'S_anova', name: 'ANOVA de una vía', en: 'One-way ANOVA', why: 'Más de dos medias en muestras independientes.' },
+  S_pearson: { id: 'S_pearson', name: 'Coeficiente de correlación de Pearson', en: "Pearson's Correlation Coefficient", why: 'Relación entre dos variables cuantitativas en escala de intervalo.' },
+  S_rho: {
+    id: 'S_rho', name: 'Rho de Pearson', en: "Pearson's rho",
+    why: 'Relación entre dos variables cuantitativas en escala ordinal.',
+    sourceNote: 'Así aparece nombrada en el documento fuente. En la literatura corriente, el coeficiente de correlación por rangos para datos ordinales se conoce como rho de Spearman; el de Pearson se reserva para escala de intervalo. Conviene verificar este nodo antes de redactar el plan de análisis.'
+  },
+  S_mlr: { id: 'S_mlr', name: 'Regresión lineal múltiple', en: 'Multiple Linear Regression', why: 'Dos o más variables independientes y una dependiente cuantitativa.' },
+  S_chi_gof: { id: 'S_chi_gof', name: 'Chi cuadrado de bondad de ajuste', en: 'Chi Squared Goodness-of-fit test', why: 'Frecuencia observada de un grupo contra una distribución propuesta.' },
+  S_chi_assoc: { id: 'S_chi_assoc', name: 'Chi cuadrado de asociación', en: 'Chi Squared tested for association', why: 'Asociación entre dos variables categóricas.' },
+  S_logistic: { id: 'S_logistic', name: 'Regresión logística múltiple', en: 'Multiple Logistic Regression', why: 'Dos o más variables independientes y una dependiente dicotómica.' }
+};
+
+
+/* ═════════════════════════════════════════════════════════════════════
+   FUNCIONES PURAS SOBRE LOS GRAFOS
+   Ninguna toca el DOM. Todas reciben el grafo como argumento, de modo
+   que sirven igual para el árbol de diseño y para el estadístico.
+   ═════════════════════════════════════════════════════════════════════ */
+
+const Algo = {
+  isResult(nodes, id) { return !Object.prototype.hasOwnProperty.call(nodes, id); },
+
+  node(nodes, id) { return nodes[id] || null; },
+
+  option(nodes, nodeId, optionId) {
+    const n = nodes[nodeId];
+    if (!n) return null;
+    return n.options.find((o) => o.id === optionId) || null;
+  },
+
+  /* Profundidad máxima que queda desde un nodo hasta cualquier terminal.
+     Memoizada y con guarda de ciclos, porque el grafo tiene un retorno
+     real: d1 --Sí--> q3. */
+  depthFrom(nodes, id, memo, guard) {
+    memo = memo || {};
+    guard = guard || new Set();
+    if (this.isResult(nodes, id)) return 0;
+    if (Object.prototype.hasOwnProperty.call(memo, id)) return memo[id];
+    if (guard.has(id)) return 0;              // ciclo: no contarlo dos veces
+    guard.add(id);
+    let deepest = 0;
+    for (const opt of nodes[id].options) {
+      const d = this.depthFrom(nodes, opt.to, memo, guard);
+      if (d > deepest) deepest = d;
+    }
+    guard.delete(id);
+    memo[id] = deepest + 1;
+    return memo[id];
+  },
+
+  /* Recorre el camino desde la raíz aplicando las respuestas dadas.
+     Devuelve los pasos y el nodo actual, sea pregunta o resultado. */
+  walk(nodes, rootId, answers) {
+    const steps = [];
+    let current = rootId;
+    for (const choice of answers) {
+      if (this.isResult(nodes, current)) break;
+      const opt = this.option(nodes, current, choice);
+      if (!opt) break;
+      steps.push({ nodeId: current, node: nodes[current], optionId: choice, option: opt });
+      current = opt.to;
+    }
+    return { steps, current, finished: this.isResult(nodes, current) };
+  },
+
+  /* Progreso honesto: preguntas contestadas sobre contestadas más la
+     rama más larga que todavía puede quedar por delante. */
+  progress(nodes, rootId, answers) {
+    const { steps, current, finished } = this.walk(nodes, rootId, answers);
+    const done = steps.length;
+    if (finished) return { done, total: done, pct: 100 };
+    const remaining = this.depthFrom(nodes, current);
+    const total = done + remaining;
+    return { done, total, pct: total === 0 ? 0 : Math.round((done / total) * 100) };
+  }
+};
+
+
+/* ═════════════════════════════════════════════════════════════════════
+   CONSTRUCCIÓN DEL REPORTE — texto plano, sin DOM
+   ═════════════════════════════════════════════════════════════════════ */
+
+function buildReport(designAnswers, statAnswers) {
+  const walk = Algo.walk(DESIGN_NODES, 'q1', designAnswers);
+  const result = DESIGN_RESULTS[walk.current];
+  const L = [];
+  const rule = '='.repeat(66);
+  const thin = '-'.repeat(66);
+
+  L.push(rule);
+  L.push('ALGORITMO DE DISEÑO DE INVESTIGACIÓN — GLOBAL EPI LLC');
+  L.push(rule);
+  L.push('');
+
+  if (!result) {
+    L.push('Cuestionario incompleto.');
+    return L.join('\n');
+  }
+
+  L.push('DISEÑO RECOMENDADO');
+  L.push('  ' + result.name);
+  L.push('  ' + result.en);
+  L.push('  Clase de evidencia: ' + result.evidenceClass + ' — ' + (EVIDENCE_CLASSES[result.evidenceClass] || ''));
+  L.push('');
+  L.push('DEFINICIÓN');
+  L.push(wrapText(result.definition, 64, '  '));
+  L.push('');
+
+  L.push(thin);
+  L.push('JUSTIFICACIÓN — CAMINO DE RESPUESTAS');
+  L.push(thin);
+  walk.steps.forEach((s, i) => {
+    L.push(String(i + 1).padStart(2, ' ') + '. ' + s.node.text);
+    L.push('    → ' + s.option.label + (s.option.sub ? ' (' + s.option.sub + ')' : ''));
+  });
+  L.push('');
+  L.push('  Por qué este diseño:');
+  L.push(wrapText(result.strength, 62, '    '));
+  L.push('');
+
+  L.push(thin);
+  L.push('ESTRUCTURA DE VARIABLES');
+  L.push(thin);
+  const v = result.variables;
+  L.push('  VARIABLE INDEPENDIENTE / EXPOSICIÓN');
+  L.push(wrapText(v.independent, 62, '    '));
+  L.push('');
+  L.push('  VARIABLE DEPENDIENTE / RESULTADO');
+  L.push(wrapText(v.dependent, 62, '    '));
+  L.push('');
+  L.push('  VARIABLES DE CONFUSIÓN / AJUSTE');
+  L.push(wrapText(v.confounders, 62, '    '));
+  L.push('    Candidatas típicas: ' + v.covariates.join(', ') + '.');
+  L.push('');
+  L.push('  MEDIDA DE ASOCIACIÓN O EFECTO');
+  L.push(wrapText(v.effect, 62, '    '));
+  L.push('');
+  L.push('  UNIDAD DE ANÁLISIS');
+  L.push(wrapText(v.unit, 62, '    '));
+  L.push('');
+
+  L.push(thin);
+  L.push('PUNTOS CRÍTICOS DE ESTE DISEÑO');
+  L.push(thin);
+  result.watch.forEach((w) => L.push(wrapText('• ' + w, 62, '  ')));
+  L.push('');
+
+  if (statAnswers && statAnswers.length) {
+    const sw = Algo.walk(STAT_NODES, 's1', statAnswers);
+    const sr = STAT_RESULTS[sw.current];
+    if (sr) {
+      L.push(thin);
+      L.push('PRUEBA ESTADÍSTICA SUGERIDA');
+      L.push(thin);
+      sw.steps.forEach((s, i) => {
+        L.push(String(i + 1).padStart(2, ' ') + '. ' + s.node.text);
+        L.push('    → ' + s.option.label);
+      });
+      L.push('');
+      L.push('  ' + sr.name + (sr.en ? ' (' + sr.en + ')' : ''));
+      if (sr.numeric) L.push('    Numérica: ' + sr.numeric);
+      if (sr.graphical) L.push('    Gráfica: ' + sr.graphical);
+      if (sr.sourceNote) { L.push(''); L.push(wrapText('Nota de la fuente: ' + sr.sourceNote, 62, '    ')); }
+      L.push('');
+    }
+  }
+
+  if (result.sourceNote) {
+    L.push(thin);
+    L.push('NOTA METODOLÓGICA SOBRE LA FUENTE');
+    L.push(thin);
+    L.push(wrapText(result.sourceNote, 64, '  '));
+    L.push('');
+  }
+
+  L.push(rule);
+  L.push('Algoritmo de diseño adaptado de ADA (2010), según "Study Design for');
+  L.push('Public Health Research" (GLOBAL EPI LLC). Selección de prueba');
+  L.push('estadística según "Statistical Test by Variable" (GLOBAL EPI LLC).');
+  L.push('Esta guía no sustituye la revisión del investigador principal, del');
+  L.push('comité de ética ni del estadístico del estudio.');
+  L.push(rule);
+
+  return L.join('\n');
+}
+
+/* Ajuste de línea para el reporte en texto plano. */
+function wrapText(text, width, indent) {
+  const words = String(text).split(/\s+/);
+  const lines = [];
+  let line = '';
+  for (const w of words) {
+    if (line && (line + ' ' + w).length > width) { lines.push(indent + line); line = w; }
+    else { line = line ? line + ' ' + w : w; }
+  }
+  if (line) lines.push(indent + line);
+  return lines.join('\n');
+}
+
+
+/* ═════════════════════════════════════════════════════════════════════
+   2. INTERFAZ — lee la lógica y dibuja. Ninguna regla de decisión vive
+   aquí; si el algoritmo cambia arriba, esto se adapta sin tocarse.
+   ═════════════════════════════════════════════════════════════════════ */
+
+const State = {
+  design: [],        // ids de opción elegidos en el árbol de diseño
+  stat: [],          // ids de opción elegidos en el árbol estadístico
+  statOpen: false,   // el sub-asistente estadístico está desplegado
+  showReport: false  // el reporte en texto está visible
+};
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+
+let toastTimer = null;
+function toast(msg) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+/* ── Barra de progreso ──────────────────────────────────────────── */
+function renderProgress() {
+  const p = Algo.progress(DESIGN_NODES, 'q1', State.design);
+  const walk = Algo.walk(DESIGN_NODES, 'q1', State.design);
+  $('bar').style.width = p.pct + '%';
+  $('progress-pct').textContent = p.pct + ' %';
+  $('progress-label').textContent = walk.finished
+    ? 'Resultado · ' + p.done + ' ' + (p.done === 1 ? 'pregunta' : 'preguntas')
+    : 'Pregunta ' + (p.done + 1) + ' de ' + p.total + ' (estimado)';
+}
+
+/* ── Ayuda ──────────────────────────────────────────────────────── */
+function openHelp(help) {
+  $('help-title').textContent = help.title;
+  $('help-body').innerHTML = '<dl style="margin:0;display:grid;gap:12px">' +
+    help.terms.map(([t, d]) => '<div><dt>' + esc(t) + '</dt><dd>' + esc(d) + '</dd></div>').join('') +
+    '</dl>';
+  $('help').showModal();
+}
+
+/* ── Rastro del camino recorrido ────────────────────────────────── */
+function trailHTML(steps) {
+  if (!steps.length) return '';
+  return '<aside class="trail"><h2>Camino recorrido</h2>' +
+    steps.map((s) => (
+      '<div class="trail-item">' +
+        '<span class="trail-dot" aria-hidden="true"></span>' +
+        '<div><p class="trail-q">' + esc(s.node.stage) + '</p>' +
+        '<p class="trail-a">' + esc(s.option.label) + '</p></div>' +
+      '</div>'
+    )).join('') +
+    '</aside>';
+}
+
+/* ── Pantalla de pregunta ───────────────────────────────────────── */
+function renderQuestion(node, steps) {
+  const binary = node.options.length === 2 ? ' binary' : '';
+  const keys = ['1', '2', '3', '4'];
+  $('stage').className = steps.length ? 'stage with-trail' : 'stage';
+  $('stage').innerHTML =
+    '<section class="card">' +
+      '<div class="step-head">' +
+        '<span class="hex" aria-hidden="true">' + (steps.length + 1) + '</span>' +
+        '<div class="titles">' +
+          '<p class="stage-name">' + esc(node.stage) + '</p>' +
+          '<h1 class="question">' + esc(node.text) +
+            '<button class="helpbtn" type="button" data-help="1" aria-label="Qué significa este término">?</button>' +
+          '</h1>' +
+        '</div>' +
+      '</div>' +
+      '<div class="options' + binary + '" role="group" aria-label="Opciones de respuesta">' +
+        node.options.map((o, i) => (
+          '<button class="option" type="button" data-choose="' + esc(o.id) + '">' +
+            '<span class="key" aria-hidden="true">' + keys[i] + '</span>' +
+            '<span class="label">' + esc(o.label) +
+              (o.sub ? '<span class="sub">' + esc(o.sub) + '</span>' : '') +
+            '</span>' +
+          '</button>'
+        )).join('') +
+      '</div>' +
+      '<div class="navrow">' +
+        '<button class="btn ghost" type="button" id="btn-back"' + (steps.length ? '' : ' disabled') + '>Atrás</button>' +
+        '<button class="btn ghost" type="button" id="btn-reset-inline">Reiniciar</button>' +
+      '</div>' +
+    '</section>' +
+    trailHTML(steps);
+
+  $('stage').querySelector('[data-help]').addEventListener('click', () => openHelp(node.help));
+  $('stage').querySelectorAll('[data-choose]').forEach((b) => {
+    b.addEventListener('click', () => { State.design.push(b.dataset.choose); render(); });
+  });
+  $('btn-back').addEventListener('click', goBack);
+  $('btn-reset-inline').addEventListener('click', reset);
+}
+
+/* ── Sub-asistente estadístico ──────────────────────────────────── */
+function statHTML() {
+  if (!State.statOpen) {
+    return '<div class="statbox"><div class="stathead">' +
+      '<strong>Prueba estadística</strong>' +
+      '<button class="btn ghost" type="button" id="stat-open">Elegir la prueba</button>' +
+      '</div><div class="statbody"><p class="lede">Cuatro preguntas como máximo, según el diagrama <em>Statistical Test by Variable</em>, para llegar a la prueba que corresponde a sus variables.</p></div></div>';
+  }
+  const walk = Algo.walk(STAT_NODES, 's1', State.stat);
+  let inner;
+  if (walk.finished) {
+    const r = STAT_RESULTS[walk.current];
+    inner =
+      '<div class="stat-result">' +
+        '<span class="name">' + esc(r.name) + '</span>' +
+        (r.en ? '<span class="why">' + esc(r.en) + '</span>' : '') +
+        (r.numeric ? '<span class="why"><strong>Numérica:</strong> ' + esc(r.numeric) + '</span>' : '') +
+        (r.graphical ? '<span class="why"><strong>Gráfica:</strong> ' + esc(r.graphical) + '</span>' : '') +
+        (r.why ? '<span class="why">' + esc(r.why) + '</span>' : '') +
+      '</div>' +
+      (r.sourceNote ? '<div class="note"><strong>Nota de la fuente</strong><span>' + esc(r.sourceNote) + '</span></div>' : '') +
+      '<div style="display:flex;gap:9px;flex-wrap:wrap">' +
+        '<button class="btn ghost" type="button" id="stat-back">Atrás</button>' +
+        '<button class="btn ghost" type="button" id="stat-reset">Empezar de nuevo</button>' +
+      '</div>';
+  } else {
+    const n = STAT_NODES[walk.current];
+    inner =
+      '<div>' +
+        '<p class="stage-name">' + esc(n.stage) + '</p>' +
+        '<p style="font-family:var(--display);font-weight:700;color:var(--text-strong);font-size:1.02rem;margin-top:5px">' +
+          esc(n.text) +
+          '<button class="helpbtn" type="button" id="stat-help" aria-label="Qué significa este término">?</button>' +
+        '</p>' +
+      '</div>' +
+      '<div class="options">' +
+        n.options.map((o) => (
+          '<button class="option" type="button" data-stat="' + esc(o.id) + '">' +
+            '<span class="label">' + esc(o.label) +
+              (o.sub ? '<span class="sub">' + esc(o.sub) + '</span>' : '') +
+            '</span>' +
+          '</button>'
+        )).join('') +
+      '</div>' +
+      (State.stat.length
+        ? '<div><button class="btn ghost" type="button" id="stat-back">Atrás</button></div>'
+        : '');
+  }
+  return '<div class="statbox"><div class="stathead"><strong>Prueba estadística</strong>' +
+    '<button class="btn ghost" type="button" id="stat-close">Ocultar</button></div>' +
+    '<div class="statbody">' + inner + '</div></div>';
+}
+
+/* ── Pantalla de resultado ──────────────────────────────────────── */
+function renderResult(result, steps) {
+  const v = result.variables;
+  $('stage').className = 'stage';
+  $('stage').innerHTML =
+    '<section>' +
+      '<div class="result-band">' +
+        '<p class="eyebrow">Diseño recomendado</p>' +
+        '<h2>' + esc(result.name) + '</h2>' +
+        '<p class="en">' + esc(result.en) + '</p>' +
+        '<div><span class="chip" data-class="' + esc(result.evidenceClass) + '">' +
+          '<span class="dot">' + esc(result.evidenceClass) + '</span>' +
+          esc(EVIDENCE_CLASSES[result.evidenceClass] || '') +
+        '</span></div>' +
+      '</div>' +
+      '<div class="result-body">' +
+
+        '<div class="section">' +
+          '<h3>Qué es</h3>' +
+          '<p>' + esc(result.definition) + '</p>' +
+          '<p style="margin-top:11px;color:var(--text-mute)">' + esc(result.strength) + '</p>' +
+        '</div>' +
+
+        '<div class="section">' +
+          '<h3>Justificación · camino de respuestas</h3>' +
+          '<div class="steplist">' +
+            steps.map((s, i) => (
+              '<div class="steprow">' +
+                '<span class="stepnum">' + (i + 1) + '</span>' +
+                '<div><p class="stepq">' + esc(s.node.text) + '</p>' +
+                  '<p class="stepa">' + esc(s.option.label) +
+                    (s.option.sub ? '<small>' + esc(s.option.sub) + '</small>' : '') +
+                  '</p>' +
+                '</div>' +
+              '</div>'
+            )).join('') +
+          '</div>' +
+        '</div>' +
+
+        '<div class="section">' +
+          '<h3>Variables recomendadas</h3>' +
+          '<dl class="vartable">' +
+            '<div class="varrow"><dt><span class="role">Independiente</span>Exposición o intervención</dt><dd>' + esc(v.independent) + '</dd></div>' +
+            '<div class="varrow"><dt><span class="role">Dependiente</span>Resultado o desenlace</dt><dd>' + esc(v.dependent) + '</dd></div>' +
+            '<div class="varrow"><dt><span class="role">Confusión</span>Variables de ajuste</dt><dd>' + esc(v.confounders) +
+              '<div class="taglist">' + v.covariates.map((c) => '<span class="tag">' + esc(c) + '</span>').join('') + '</div>' +
+            '</dd></div>' +
+            '<div class="varrow"><dt><span class="role">Estimación</span>Medida de asociación</dt><dd>' + esc(v.effect) + '</dd></div>' +
+            '<div class="varrow"><dt><span class="role">Unidad</span>Unidad de análisis</dt><dd>' + esc(v.unit) + '</dd></div>' +
+          '</dl>' +
+        '</div>' +
+
+        '<div class="section">' +
+          '<h3>Puntos críticos de este diseño</h3>' +
+          '<div class="steplist">' +
+            result.watch.map((w, i) => (
+              '<div class="steprow">' +
+                '<span class="stepnum" aria-hidden="true">' + (i + 1) + '</span>' +
+                '<p style="font-size:.93rem">' + esc(w) + '</p>' +
+              '</div>'
+            )).join('') +
+          '</div>' +
+        '</div>' +
+
+        '<div class="section">' +
+          '<h3>Prueba estadística</h3>' +
+          (result.statHint
+            ? '<p class="lede" style="margin-bottom:12px">' + esc(result.statHint.note) + '</p>'
+            : '<p class="lede" style="margin-bottom:12px">Defina primero el diseño con el investigador principal; la prueba se elige después.</p>') +
+          statHTML() +
+        '</div>' +
+
+        (result.sourceNote
+          ? '<div class="section"><h3>Nota metodológica sobre la fuente</h3>' +
+            '<div class="note"><strong>Este nodo merece una revisión</strong><span>' + esc(result.sourceNote) + '</span></div></div>'
+          : '') +
+
+        '<div class="section">' +
+          '<h3>Clases de evidencia del algoritmo</h3>' +
+          '<div class="classkey">' +
+            ['A', 'B', 'C', 'D'].map((c) => (
+              '<div><i style="background:var(--class-' + c.toLowerCase() + ')"></i>' + esc(EVIDENCE_CLASSES[c]) + '</div>'
+            )).join('') +
+          '</div>' +
+        '</div>' +
+
+        '<div class="navrow">' +
+          '<button class="btn" type="button" id="btn-copy">Copiar reporte</button>' +
+          '<button class="btn ghost" type="button" id="btn-toggle-report">' + (State.showReport ? 'Ocultar' : 'Ver') + ' reporte en texto</button>' +
+          '<button class="btn ghost" type="button" id="btn-back">Atrás</button>' +
+          '<button class="btn ghost" type="button" id="btn-reset-inline">Reiniciar cuestionario</button>' +
+        '</div>' +
+        (State.showReport
+          ? '<textarea class="reportarea" id="reportarea" readonly aria-label="Reporte en texto plano">' + esc(buildReport(State.design, State.statOpen ? State.stat : [])) + '</textarea>'
+          : '') +
+      '</div>' +
+    '</section>';
+
+  wireResult();
+}
+
+function wireResult() {
+  const byId = (id, fn) => { const el = $(id); if (el) el.addEventListener('click', fn); };
+
+  byId('btn-back', goBack);
+  byId('btn-reset-inline', reset);
+  byId('btn-copy', copyReport);
+  byId('btn-toggle-report', () => { State.showReport = !State.showReport; render(); });
+
+  byId('stat-open', () => { State.statOpen = true; render(); });
+  byId('stat-close', () => { State.statOpen = false; render(); });
+  byId('stat-reset', () => { State.stat = []; render(); });
+  byId('stat-back', () => { State.stat.pop(); render(); });
+  byId('stat-help', () => {
+    const walk = Algo.walk(STAT_NODES, 's1', State.stat);
+    const n = STAT_NODES[walk.current];
+    if (n) openHelp(n.help);
+  });
+  document.querySelectorAll('[data-stat]').forEach((b) => {
+    b.addEventListener('click', () => { State.stat.push(b.dataset.stat); render(); });
+  });
+}
+
+/* ── Acciones ───────────────────────────────────────────────────── */
+function goBack() {
+  if (State.design.length) { State.design.pop(); State.showReport = false; render(); }
+}
+
+function reset() {
+  State.design = [];
+  State.stat = [];
+  State.statOpen = false;
+  State.showReport = false;
+  render();
+  toast('Cuestionario reiniciado');
+}
+
+async function copyReport() {
+  const text = buildReport(State.design, State.statOpen ? State.stat : []);
+  try {
+    await navigator.clipboard.writeText(text);
+    toast('Reporte copiado al portapapeles');
+    return;
+  } catch (e) { /* el portapapeles puede estar bloqueado; seguimos abajo */ }
+  State.showReport = true;
+  render();
+  const area = $('reportarea');
+  if (area) {
+    area.focus();
+    area.select();
+    let copied = false;
+    try { copied = document.execCommand('copy'); } catch (e) { copied = false; }
+    toast(copied ? 'Reporte copiado al portapapeles' : 'El navegador bloqueó el portapapeles — el texto quedó seleccionado, copie con Ctrl+C');
+  }
+}
+
+/* ── Render principal ───────────────────────────────────────────── */
+function render() {
+  const walk = Algo.walk(DESIGN_NODES, 'q1', State.design);
+  renderProgress();
+  if (walk.finished) {
+    const result = DESIGN_RESULTS[walk.current];
+    if (result) { renderResult(result, walk.steps); }
+    else { State.design.pop(); render(); return; }
+  } else {
+    renderQuestion(walk.current === 'q1' ? DESIGN_NODES.q1 : DESIGN_NODES[walk.current], walk.steps);
+  }
+  window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
+}
+
+/* ── Arranque y atajos de teclado ───────────────────────────────── */
+$('btn-restart').addEventListener('click', reset);
+$('help-close').addEventListener('click', () => $('help').close());
+$('help').addEventListener('click', (e) => { if (e.target === $('help')) $('help').close(); });
+
+document.addEventListener('keydown', (e) => {
+  if ($('help').open) return;
+  if (e.target && /^(INPUT|TEXTAREA)$/.test(e.target.tagName)) return;
+  if (e.key >= '1' && e.key <= '4') {
+    const opts = document.querySelectorAll('#stage .card [data-choose]');
+    const i = Number(e.key) - 1;
+    if (opts[i]) { opts[i].click(); e.preventDefault(); }
+  }
+  if (e.key === 'Backspace') { goBack(); e.preventDefault(); }
+});
+
+render();
+</script>
+</body>
+</html>
