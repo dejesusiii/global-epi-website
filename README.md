@@ -34,31 +34,70 @@ README.md
 
 A survey tool, not an app with a survey inside it. Anyone can build an instrument —
 sections, question types, validation rules, conditional logic — preview it exactly as
-an interviewer will see it, and then run it in the field with no connectivity.
-Installable to a phone home screen from `/field-app/`.
+an interviewer will see it, and then run it in the field with no connectivity, or hand
+it to anyone as a link. Installable to a phone home screen from `/field-app/`.
 
-**The builder.** Fourteen question types: short and long text, whole number, decimal,
-choose one, dropdown, choose many, yes/no, rating scale, matrix, ranking, date,
-confirmation, location. Per question you set wording, hint, required, and the rules
-that fit its type — input masks, ranges, character and selection limits, a cap against
-an earlier numeric answer, matrix rows, and scale end labels. Option order can be
-randomised per response to reduce order bias. Conditional visibility is offered only
-against questions that come earlier, so a rule can never depend on an answer that has
-not been given. Sections and questions reorder with up and down controls and can be
-duplicated; duplicating a section rewrites the copied questions' ids and repoints any
-rule that referenced them.
+The library starts **empty**. There is no bundled example to delete or work around —
+the first screen is an invitation to build.
+
+**The builder.** Eighteen question types: short and long text, whole number, decimal,
+choose one, dropdown, yes/no, choose many, rating scale, NPS, stars, slider, allocate
+a fixed total, matrix, ranking, date, confirmation, location. Per question you set
+wording, hint, required, and the rules that fit its type — input masks, ranges,
+character and selection limits, a cap against an earlier numeric answer, matrix rows,
+scale end labels, star count, slider step, and the total to allocate. Choice questions
+can offer **“Other, please describe”**, whose text lands in its own answer key so it
+exports as its own column instead of being buried in the choice.
+
+Question wording supports **piping**: `{{question_id}}` inside a label or hint is
+replaced by that respondent's earlier answer, so a later question can quote them back
+to themselves. Option order can be randomised per response to reduce order bias —
+once per response, not per render, so the list does not reshuffle under a finger.
+
+Logic works at two levels. **Conditional visibility** hides a question until an earlier
+answer matches, and is offered only against questions that come earlier, so a rule can
+never depend on an answer that has not been given. **Section branching** sends the
+respondent to another section, or ends the survey early, when a chosen answer matches;
+rules are evaluated in order and the first match wins. Back-navigation follows the path
+actually taken rather than the section numbering.
+
+Sections and questions reorder with up and down controls and can be duplicated;
+duplicating a section rewrites the copied questions' ids and repoints any rule that
+referenced them.
+
+**Sharing by link.** A survey can be handed to anyone as a link. The whole
+questionnaire is gzipped and carried inside the URL fragment, which browsers never send
+to a server, so publishing a link publishes nothing: the definition is decoded and run
+entirely in the respondent's browser. There is no unlock and no access to anything on
+the owner's device.
+
+Answers are the separate problem, and the app is explicit about it: **a link on its own
+cannot send answers back.** Set a collection address on the survey — any URL that
+accepts a JSON POST — and the respondent's answers post there when they finish. The
+address must be `https` (plain `http` is accepted only against localhost, which is the
+one case where it is a test rather than a leak), and the field says so as you type.
+Leave it empty and the respondent is told up front, then at the end downloads a small
+answer file to send back; the owner drops that file into **Import file**, where it is
+encrypted and joins the library like any other response. Re-importing the same file
+does not duplicate it.
 
 **Analysis and export.** Every survey has a summary screen: response and collector
 counts, the collection date range, and a per-question summary shaped by the question —
-frequency bars with percentages for categorical answers, mean, median, min, max and a
-histogram for numeric ones, mean rating per row for a matrix, mean position for a
-ranking, recent answers for free text. Charts are single-series horizontal bars with
-direct labels rather than hover, because this runs on a phone in the field. The bar
-hue was chosen by running a palette validator, not by eye.
+frequency bars with percentages for categorical answers plus the verbatim “Other”
+write-ins, mean, median, min, max and a histogram for numeric ones, the NPS computed
+the published way (promoters minus detractors as a share of those who answered, not an
+average of 0–10) with its promoter/passive/detractor split, mean amount per option for
+an allocation, mean rating per row for a matrix, mean position for a ranking, and
+recent answers for free text. Charts are single-series horizontal bars with direct
+labels rather than hover, because this runs on a phone in the field. The bar hue was
+chosen by running a palette validator, not by eye.
 
 Responses download as CSV with a UTF-8 BOM so Excel reads accented place names
-correctly. Matrix rows and ranking positions each get their own column; multi-select
-answers are semicolon-joined; geopoints split into latitude and longitude.
+correctly. Matrix rows, ranking positions and allocation options each get their own
+column; an NPS question also exports its promoter/passive/detractor group and an
+“Other” question its write-in text; multi-select answers are semicolon-joined;
+geopoints split into latitude and longitude. A `source` column records whether a
+response was taken in an interview or came back from a share link.
 
 A survey cannot be run until every question is answerable; the library shows it as a
 draft and lists what is missing. Surveys export and import as JSON, so they move
@@ -78,9 +117,6 @@ exercised end to end without a backend. Replacing it is one function, `transmit`
 **Scope.** Non-identifying data only. There are no BAAs and no server-side controls,
 so this must not be used for PHI. The app states this on its About screen. The page is
 `noindex` and is deliberately not linked from the marketing site.
-
-`instruments/chna-screener.json` seeds the library on first run as a worked example.
-It is an ordinary survey: editable, duplicable and deletable like any other.
 
 ## Brand tokens
 

@@ -115,7 +115,8 @@ async function audit(action, detail) {
 const State = {
   instruments: [], instrument: null,
   deviceId: null, tenantId: null, collector: null,
-  answers: {}, section: 0, preview: false, shuffled: {}, analysisId: null,
+  answers: {}, section: 0, preview: false, shuffled: {}, analysisId: null, path: [],
+  respond: false, share: null, lastResponse: null,
   submissionId: null, baseVersion: null,
   draft: null, sectionIdx: 0, questionIdx: 0,   // builder cursors
 };
@@ -131,6 +132,10 @@ const QTYPES = [
   { t: 'yesno',        name: 'Yes / No',     desc: 'Two-button answer' },
   { t: 'select_multi', name: 'Choose many',  desc: 'Checkbox list, capped' },
   { t: 'scale',        name: 'Rating scale', desc: 'Numeric range with end labels' },
+  { t: 'nps',          name: 'NPS',          desc: '0–10, scored the standard way' },
+  { t: 'stars',        name: 'Stars',        desc: 'Tap a star rating' },
+  { t: 'slider',       name: 'Slider',       desc: 'Drag along a range' },
+  { t: 'constant_sum', name: 'Allocate',     desc: 'Split a fixed total across options' },
   { t: 'matrix',       name: 'Matrix',       desc: 'Several rows on one shared scale' },
   { t: 'ranking',      name: 'Ranking',      desc: 'Put the options in order' },
   { t: 'date',         name: 'Date',         desc: 'Calendar picker' },
@@ -138,7 +143,8 @@ const QTYPES = [
   { t: 'geopoint',     name: 'Location',     desc: 'Device coordinates' },
 ];
 const typeName = (t) => (QTYPES.find((x) => x.t === t) || { name: t }).name;
-const hasOptions = (t) => ['select_one', 'select_multi', 'dropdown', 'ranking'].includes(t);
+const hasOptions = (t) => ['select_one', 'select_multi', 'dropdown', 'ranking', 'constant_sum'].includes(t);
+const canOther = (t) => ['select_one', 'select_multi', 'dropdown'].includes(t);
 const pickOne = (t) => ['select_one', 'dropdown', 'yesno'].includes(t);
 
 /* ── Instrument logic ────────────────────────────────────────────── */
@@ -159,7 +165,8 @@ function validateQuestion(q, answers) {
   if (!visible(q, answers)) return null;
   const v = answers[q.id];
   const empty = v === undefined || v === null || v === '' || (Array.isArray(v) && v.length === 0) || v === false
-    || (q.type === 'matrix' && Object.keys(v || {}).length === 0);
+    || (q.type === 'matrix' && Object.keys(v || {}).length === 0)
+    || (q.type === 'constant_sum' && Object.keys(v || {}).length === 0);
   if (q.required && empty) return q.type === 'checkbox' ? 'This must be confirmed to continue.' : 'This answer is required.';
   if (empty) return null;
   if (q.type === 'text' && q.mask && !maskToRegex(q.mask).test(v)) {
@@ -194,10 +201,35 @@ function validateSection(section, answers) {
 }
 function pruneHidden(answers, instrument) {
   const out = { ...answers };
-  instrument.sections.forEach((s) => s.questions.forEach((q) => { if (!visible(q, out)) delete out[q.id]; }));
+  instrument.sections.forEach((s) => s.questions.forEach((q) => {
+    if (visible(q, out)) return;
+    delete out[q.id];
+    delete out[otherKey(q)];   // the write-in goes with the answer it belonged to
+  }));
   return out;
 }
 const allQuestions = (inst) => inst.sections.flatMap((s) => s.questions);
+
+/* {{question_id}} inside wording is replaced by that answer, so a later
+   question can quote an earlier one back to the respondent. */
+function pipe(text, answers) {
+  return String(text || '').replace(/\{\{\s*([\w-]+)\s*\}\}/g, (m, id) => {
+    const v = answers[id];
+    if (v === undefined || v === null || v === '') return '…';
+    if (Array.isArray(v)) return v.join(', ');
+    if (typeof v === 'object') return Object.entries(v).map(([k, x]) => `${k}: ${x}`).join(', ');
+    return String(v);
+  });
+}
+
+/* A choice question can offer "Other", whose text lives in its own key so
+   it exports as its own column instead of being buried in the choice. */
+const OTHER = 'Other';
+const otherKey = (q) => `${q.id}__other`;
+function choicesFor(q) {
+  const base = optionsFor(q);
+  return q.allowOther ? [...base, OTHER] : base;
+}
 
 /* Option order is randomised once per response, not per render — otherwise
    the list would reshuffle under the interviewer's finger. */
@@ -213,6 +245,24 @@ function optionsFor(q) {
     State.shuffled[q.id] = a;
   }
   return State.shuffled[q.id];
+}
+
+/* Where the next Continue leads. Jump rules are evaluated in order and the
+   first match wins; -1 ends the survey early. Without rules this is simply
+   the next section. */
+function nextSectionIndex() {
+  const i = State.instrument, s = i.sections[State.section];
+  for (const j of (s.jumps || [])) {
+    if (!j.q) continue;
+    const a = State.answers[j.q];
+    const hit = Array.isArray(a) ? a.includes(j.val) : String(a) === String(j.val);
+    if (hit) {
+      if (j.to === '__end') return -1;
+      const idx = i.sections.findIndex((x) => x.id === j.to);
+      if (idx > -1) return idx;
+    }
+  }
+  return State.section + 1 < i.sections.length ? State.section + 1 : -1;
 }
 
 /* ── Sync protocol ───────────────────────────────────────────────── */
@@ -288,6 +338,87 @@ async function submissions(instrumentId) {
   return out.sort((a, b) => b.capturedAt.localeCompare(a.capturedAt));
 }
 
+/* ── Sharing a survey by link ─────────────────────────────────────
+   The whole questionnaire travels inside the URL fragment. A fragment
+   is never sent to a server, so opening a link publishes nothing: the
+   definition is decoded and run entirely in the respondent's browser.
+   Answers are a separate problem — see submitPublic(). */
+function b64url(bytes) {
+  let s = '';
+  for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+  return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+function unb64url(str) {
+  const t = str.replace(/-/g, '+').replace(/_/g, '/');
+  return Uint8Array.from(atob(t + '='.repeat((4 - (t.length % 4)) % 4)), (c) => c.charCodeAt(0));
+}
+async function gzip(bytes) {
+  const cs = new CompressionStream('gzip');
+  const w = cs.writable.getWriter(); w.write(bytes); w.close();
+  return new Uint8Array(await new Response(cs.readable).arrayBuffer());
+}
+async function gunzip(bytes) {
+  const ds = new DecompressionStream('gzip');
+  const w = ds.writable.getWriter(); w.write(bytes); w.close();
+  return new Uint8Array(await new Response(ds.readable).arrayBuffer());
+}
+/* Only what a respondent's browser needs to run the survey. Response
+   counts, drafts and anything else on this device stay on this device. */
+function shareable(inst) {
+  return {
+    id: inst.id, version: inst.version, code: inst.code || '', title: inst.title,
+    subtitle: inst.subtitle || '', locale: inst.locale || 'en',
+    estimatedMinutes: inst.estimatedMinutes || 5,
+    endpoint: inst.endpoint || '', closing: inst.closing || '',
+    sections: inst.sections,
+  };
+}
+async function packSurvey(inst) {
+  const raw = enc.encode(JSON.stringify(shareable(inst)));
+  if (typeof CompressionStream === 'function') {
+    try { return 'g' + b64url(await gzip(raw)); } catch { /* fall through */ }
+  }
+  return 'r' + b64url(raw);
+}
+async function unpackSurvey(code) {
+  const body = unb64url(code.slice(1));
+  const raw = code[0] === 'g' ? await gunzip(body) : body;
+  const inst = JSON.parse(dec.decode(raw));
+  if (!inst || !Array.isArray(inst.sections) || !inst.sections.length) throw new Error('shape');
+  return inst;
+}
+async function surveyLink(inst) {
+  const base = location.href.split('#')[0];
+  return `${base}#s=${await packSurvey(inst)}`;
+}
+
+/* ── A response that arrives as a file ────────────────────────────
+   Without a collection address a link cannot send answers back, so the
+   respondent downloads one of these and the owner imports it here. */
+const RESPONSE_KIND = 'epi-collect-response';
+async function importResponse(obj) {
+  if (!obj || obj.kind !== RESPONSE_KIND) return 'not a response file';
+  const inst = State.instruments.find((i) => i.id === obj.survey_id)
+    || State.instruments.find((i) => (i.code || '') && i.code === obj.survey_code);
+  if (!inst) return 'no matching survey on this device';
+  const subId = obj.response_id || uuidv7();
+  const already = (await DB.all('events')).some((e) => e.submission_id === subId);
+  if (already) return 'already imported';
+  const payload = await Crypto.encrypt(obj.answers || {});
+  const env = {
+    op_id: uuidv7(), tenant_id: State.tenantId,
+    instrument_id: inst.id, instrument_version: obj.survey_version || inst.version,
+    submission_id: subId, version: 1, parent_version: null,
+    device_id: State.deviceId, collector_id: State.collector, via: 'link',
+    captured_at_device: obj.submitted_at || new Date().toISOString(), payload,
+  };
+  env.payload_hmac = await Crypto.sign(`${env.op_id}|${env.submission_id}|${env.version}|${env.payload.ct}`);
+  await DB.put('events', { ...env, synced: false, conflict: false });
+  await DB.put('outbox', env);
+  await audit('response.import', subId);
+  return null;
+}
+
 /* ── Builder model ───────────────────────────────────────────────── */
 function freshId(prefix, taken) {
   let id;
@@ -299,6 +430,10 @@ function newQuestion(type = 'text', taken = []) {
   if (hasOptions(type)) q.options = ['Option 1', 'Option 2'];
   if (type === 'scale') { q.min = 1; q.max = 5; q.minLabel = ''; q.maxLabel = ''; }
   if (type === 'matrix') { q.rows = ['Row 1', 'Row 2']; q.min = 1; q.max = 5; q.minLabel = ''; q.maxLabel = ''; }
+  if (type === 'nps') { q.min = 0; q.max = 10; }
+  if (type === 'stars') { q.max = 5; }
+  if (type === 'slider') { q.min = 0; q.max = 100; q.step = 1; }
+  if (type === 'constant_sum') { q.total = 100; }
   return q;
 }
 function newSection(n = 1, taken = []) {
@@ -332,9 +467,25 @@ function surveyProblems(inst) {
       }
       if ((q.type === 'scale' || q.type === 'matrix') && !(q.max > q.min)) p.push(`${where} needs a range where the top is above the bottom.`);
       if (q.type === 'matrix' && (!q.rows || q.rows.filter((r) => r.trim()).length < 1)) p.push(`${where} needs at least one row.`);
+      if (q.type === 'slider' && !(q.max > q.min)) p.push(`${where} needs a range where the top is above the bottom.`);
+      if (q.type === 'constant_sum' && !(q.total > 0)) p.push(`${where} needs a total above zero.`);
     });
   });
   return p;
+}
+
+/* A collection address that cannot receive answers is worse than none:
+   the respondent is told it was sent. Plain http is allowed only against
+   a local machine, which is the one case where it is a test and not a
+   leak. */
+function endpointProblem(value) {
+  const s = (value || '').trim();
+  if (!s) return null;
+  let url;
+  try { url = new URL(s); } catch { return 'That is not a web address, so link answers would be lost rather than delivered.'; }
+  if (url.protocol === 'https:') return null;
+  if (url.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname)) return null;
+  return 'Answers have to be sent over https. Over plain http they travel in the clear, and this app served over https will refuse to send them at all.';
 }
 
 /* ── View helpers ────────────────────────────────────────────────── */
@@ -345,7 +496,7 @@ function toast(msg) {
   const t = $('toast'); t.textContent = msg; t.classList.add('show');
   clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
 }
-const SCREENS = ['unlock', 'home', 'form', 'queue', 'record', 'builder', 'section', 'question', 'preview', 'analysis', 'about'];
+const SCREENS = ['unlock', 'home', 'form', 'queue', 'record', 'builder', 'section', 'question', 'preview', 'analysis', 'respond', 'done', 'about'];
 function show(name) { SCREENS.forEach((s) => { $(`scr-${s}`).hidden = s !== name; }); window.scrollTo(0, 0); }
 function setActions(html) { const b = $('actionbar'); b.innerHTML = html || ''; b.hidden = !html; }
 function netStatus() {
@@ -357,6 +508,9 @@ async function saveDraft() {
   State.draft.updatedAt = new Date().toISOString();
   await DB.put('instruments', State.draft);
   State.instruments = await DB.all('instruments');
+  // A link carries a copy of the survey, so any edit makes the one on
+  // screen stale. Drop it rather than let it be shared.
+  if (State.share && State.share.id === State.draft.id) State.share = null;
 }
 
 /* ── Unlock ──────────────────────────────────────────────────────── */
@@ -397,7 +551,6 @@ async function renderUnlock() {
       await DB.meta('tenant_id', uuidv7());
       await DB.meta('collector', $('collector').value.trim() || 'GE-USER-01');
       await loadIdentity();
-      await seedStarter();
       await audit('device.enrol', State.deviceId);
       toast('Device ready');
     } else {
@@ -418,18 +571,6 @@ async function loadIdentity() {
   State.tenantId = await DB.meta('tenant_id');
   State.collector = await DB.meta('collector');
 }
-/* One worked example so the library is not empty on first run. It is an
-   ordinary survey: editable, duplicable, deletable like any other. */
-async function seedStarter() {
-  if ((await DB.all('instruments')).length) return;
-  try {
-    const res = await fetch('instruments/chna-screener.json');
-    const inst = await res.json();
-    inst.updatedAt = new Date().toISOString();
-    await DB.put('instruments', inst);
-  } catch { /* offline first run: the library simply starts empty */ }
-}
-
 /* ── Library (home) ──────────────────────────────────────────────── */
 async function renderHome() {
   const subs = await submissions();
@@ -471,9 +612,23 @@ async function renderHome() {
             <button class="btn sm" data-run="${i.id}"${probs ? ' disabled' : ''}>Collect</button>
             <button class="btn ghost sm" data-edit="${i.id}">Edit</button>
             <button class="btn ghost sm" data-prev="${i.id}"${probs ? ' disabled' : ''}>Preview</button>
+            <button class="btn ghost sm" data-share="${i.id}"${probs ? ' disabled' : ''}>Share link</button>
             <button class="btn ghost sm" data-an="${i.id}">Analyse</button>
             <button class="btn ghost sm" data-exp="${i.id}">Export</button>
           </div>
+          ${State.share && State.share.id === i.id ? `
+            <div class="sharebox">
+              <b style="color:#fff">Anyone with this link can answer</b>
+              <div class="link">${esc(State.share.url)}</div>
+              <div class="row">
+                <button class="btn sm" id="share-copy">Copy link</button>
+                ${navigator.share ? '<button class="btn ghost sm" id="share-send">Share…</button>' : ''}
+                <button class="btn ghost sm" id="share-close">Close</button>
+              </div>
+              <span style="font-size:.78rem">${i.endpoint
+                ? `Answers post to <span class="mono">${esc(i.endpoint)}</span>.`
+                : 'No collection address set, so respondents will be asked to download an answer file and send it to you — import it below. Set an address in the survey settings to receive answers automatically.'}</span>
+            </div>` : ''}
           ${probs ? `<p class="err" style="font-size:.82rem">${probs} thing${probs === 1 ? '' : 's'} to finish before it can run.</p>` : ''}
         </div>`; }).join('')}
     </div>
@@ -482,12 +637,12 @@ async function renderHome() {
       <button class="btn wide" id="go-newsurvey">Create a survey</button>
     </div>
     <div class="row">
-      <button class="btn ghost sm" id="go-import">Import from file</button>
+      <button class="btn ghost sm" id="go-import">Import file</button>
       <button class="btn ghost sm" id="go-queue">Responses${outbox.length ? ` (${outbox.length} pending)` : ''}</button>
       <button class="btn ghost sm" id="go-about">About</button>
     </div>
     ${conflicts ? `<div class="notice risk"><b>${conflicts} conflict${conflicts > 1 ? 's' : ''} to resolve</b><span>Two versions share a parent. Open Responses to review.</span></div>` : ''}
-    <input type="file" id="import-file" accept="application/json" hidden />`;
+    <input type="file" id="import-file" accept="application/json,.json" multiple hidden />`;
 
   setActions('');
   $('go-newsurvey').onclick = async () => {
@@ -498,17 +653,33 @@ async function renderHome() {
   $('go-queue').onclick = async () => { await renderQueue(); show('queue'); };
   $('go-about').onclick = async () => { await renderAbout(); show('about'); };
   $('go-import').onclick = () => $('import-file').click();
+  /* One picker for both kinds of file: a survey definition, or an
+     answer file a respondent sent back from a share link. */
   $('import-file').onchange = async (e) => {
-    const f = e.target.files[0]; if (!f) return;
-    try {
-      const inst = JSON.parse(await f.text());
-      if (!inst.sections || !Array.isArray(inst.sections)) throw new Error('shape');
-      inst.id = uuidv7(); inst.updatedAt = new Date().toISOString();
-      await DB.put('instruments', inst);
-      State.instruments = await DB.all('instruments');
-      await audit('survey.import', inst.title || '');
-      toast('Survey imported'); await renderHome();
-    } catch { toast('That file is not a survey definition'); }
+    const files = [...e.target.files]; if (!files.length) return;
+    let surveys = 0, responses = 0; const rejected = [];
+    for (const f of files) {
+      let obj;
+      try { obj = JSON.parse(await f.text()); } catch { rejected.push(`${f.name}: not readable`); continue; }
+      if (obj && obj.kind === RESPONSE_KIND) {
+        const why = await importResponse(obj);
+        if (why) rejected.push(`${f.name}: ${why}`); else responses++;
+      } else if (obj && Array.isArray(obj.sections)) {
+        obj.id = uuidv7(); obj.updatedAt = new Date().toISOString();
+        await DB.put('instruments', obj);
+        await audit('survey.import', obj.title || '');
+        surveys++;
+      } else {
+        rejected.push(`${f.name}: not a survey or a response`);
+      }
+    }
+    e.target.value = '';
+    State.instruments = await DB.all('instruments');
+    const done = [surveys ? `${surveys} survey${surveys === 1 ? '' : 's'}` : '', responses ? `${responses} response${responses === 1 ? '' : 's'}` : '']
+      .filter(Boolean).join(' and ');
+    toast(done ? `Imported ${done}` : rejected[0] || 'Nothing imported');
+    if (rejected.length && done) console.warn('Import skipped:', rejected);
+    await renderHome();
   };
   $('scr-home').querySelectorAll('[data-run]').forEach((b) => b.onclick = () => startInterview(b.dataset.run));
   $('scr-home').querySelectorAll('[data-prev]').forEach((b) => b.onclick = () => startPreview(b.dataset.prev));
@@ -516,6 +687,26 @@ async function renderHome() {
     State.draft = JSON.parse(JSON.stringify(State.instruments.find((i) => i.id === b.dataset.edit)));
     renderBuilder(); show('builder');
   });
+  $('scr-home').querySelectorAll('[data-share]').forEach((b) => b.onclick = async () => {
+    const inst = State.instruments.find((x) => x.id === b.dataset.share);
+    State.share = { id: inst.id, url: await surveyLink(inst) };
+    await audit('survey.share', inst.id);
+    await renderHome();
+    const box = $('scr-home').querySelector('.sharebox');
+    if (box) box.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  });
+  if (State.share) {
+    const url = State.share.url;
+    if ($('share-copy')) $('share-copy').onclick = async () => {
+      try { await navigator.clipboard.writeText(url); toast('Link copied'); }
+      catch { toast('Copy blocked — select the link and copy it'); }
+    };
+    if ($('share-send')) $('share-send').onclick = () => {
+      const inst = State.instruments.find((x) => x.id === State.share.id);
+      navigator.share({ title: inst ? inst.title : 'Survey', url }).catch(() => {});
+    };
+    if ($('share-close')) $('share-close').onclick = async () => { State.share = null; await renderHome(); };
+  }
   $('scr-home').querySelectorAll('[data-an]').forEach((b) => b.onclick = async () => {
     await renderAnalysis(b.dataset.an); show('analysis');
   });
@@ -552,6 +743,13 @@ function renderBuilder() {
         <input id="b-code" type="text" value="${esc(d.code || '')}" placeholder="CHNA-SCR" /></div>
       <div class="q"><label class="lbl" for="b-mins">Estimated minutes</label>
         <input id="b-mins" type="number" min="1" max="180" value="${d.estimatedMinutes || 5}" /></div>
+      <div class="q"><label class="lbl" for="b-end">Where link answers are sent</label>
+        <p class="hint">A share link runs the survey in the respondent's browser; on its own it has no way to send answers back. Give a URL that accepts a JSON POST — a form service or your own server — and answers arrive there. Leave it empty and respondents are asked to download an answer file to send you instead.</p>
+        <input id="b-end" type="text" inputmode="url" value="${esc(d.endpoint || '')}" placeholder="https://…" />
+        <p class="err" id="b-end-err"${endpointProblem(d.endpoint) ? '' : ' hidden'}>${esc(endpointProblem(d.endpoint) || '')}</p></div>
+      <div class="q"><label class="lbl" for="b-closing">Thank-you message</label>
+        <p class="hint">Shown after a link response is sent.</p>
+        <input id="b-closing" type="text" value="${esc(d.closing || '')}" placeholder="Thank you for your time." /></div>
       <div class="q"><label class="lbl" for="b-label">Label responses by</label>
         <p class="hint">Which answer identifies a response in the list.</p>
         <select id="b-label">
@@ -597,6 +795,12 @@ function renderBuilder() {
     });
   };
   bind('b-title', 'title'); bind('b-sub', 'subtitle'); bind('b-code', 'code'); bind('b-mins', 'estimatedMinutes', true);
+  bind('b-end', 'endpoint'); bind('b-closing', 'closing');
+  $('b-end').addEventListener('input', (e) => {
+    const why = endpointProblem(e.target.value);
+    $('b-end-err').textContent = why || '';
+    $('b-end-err').hidden = !why;
+  });
   $('b-label').onchange = async (e) => { State.draft.labelField = e.target.value || null; await saveDraft(); };
 
   $('b-addsec').onclick = async () => {
@@ -678,6 +882,38 @@ function renderSection() {
           </div>`).join('')}
       </div>
       <button class="btn ghost wide sm" id="s-addq" style="margin-top:10px">Add question</button>
+    </div>
+
+    <div class="card">
+      <p class="eyebrow">After this section</p>
+      <p class="muted" style="font-size:.86rem">By default the next section follows. Add a rule to branch or to finish early.</p>
+      ${(s.jumps || []).map((j, i) => {
+        const src = allQuestions(d).find((x) => x.id === j.q);
+        return `
+        <div class="jumprule">
+          <div class="optedit">
+            <select data-jq="${i}">
+              <option value="">— choose a question —</option>
+              ${s.questions.map((x) => `<option value="${x.id}"${j.q === x.id ? ' selected' : ''}>${esc(x.label || x.id)}</option>`).join('')}
+            </select>
+            <button class="iconbtn del" data-jdel="${i}" aria-label="Remove rule">✕</button>
+          </div>
+          <div class="optedit" style="grid-template-columns:1fr">
+            ${src && (src.options || src.type === 'yesno') ? `
+              <select data-jv="${i}">
+                <option value="">— answer —</option>
+                ${(src.type === 'yesno' ? ['Yes', 'No'] : src.options).map((o) => `<option value="${esc(o)}"${j.val === o ? ' selected' : ''}>${esc(o)}</option>`).join('')}
+              </select>`
+              : `<input type="text" data-jv="${i}" value="${esc(j.val || '')}" placeholder="answer equals…" />`}
+          </div>
+          <div class="optedit" style="grid-template-columns:1fr">
+            <select data-jt="${i}">
+              ${d.sections.map((x, xi) => `<option value="${x.id}"${j.to === x.id ? ' selected' : ''}>Go to ${xi + 1}. ${esc(x.title)}</option>`).join('')}
+              <option value="__end"${j.to === '__end' ? ' selected' : ''}>Finish the survey</option>
+            </select>
+          </div>
+        </div>`; }).join('')}
+      <button class="btn ghost sm" id="s-addjump">Add rule</button>
     </div>`;
 
   setActions('<button class="btn ghost wide" id="s-back">Back to survey</button>');
@@ -709,6 +945,26 @@ function renderSection() {
   $('scr-section').querySelectorAll('[data-qdel]').forEach((b) => b.onclick = async () => {
     if (!confirm('Delete this question?')) return;
     s.questions.splice(Number(b.dataset.qdel), 1); await saveDraft(); renderSection();
+  });
+  $('s-addjump').onclick = async () => {
+    s.jumps = s.jumps || [];
+    s.jumps.push({ q: '', val: '', to: d.sections[Math.min(State.sectionIdx + 1, d.sections.length - 1)].id });
+    await saveDraft(); renderSection();
+  };
+  $('scr-section').querySelectorAll('[data-jq]').forEach((el) => el.onchange = async (e) => {
+    s.jumps[Number(el.dataset.jq)].q = e.target.value;
+    s.jumps[Number(el.dataset.jq)].val = '';
+    await saveDraft(); renderSection();
+  });
+  $('scr-section').querySelectorAll('[data-jv]').forEach((el) => {
+    const h = async (e) => { s.jumps[Number(el.dataset.jv)].val = e.target.value; await saveDraft(); };
+    el.tagName === 'SELECT' ? (el.onchange = h) : el.addEventListener('input', h);
+  });
+  $('scr-section').querySelectorAll('[data-jt]').forEach((el) => el.onchange = async (e) => {
+    s.jumps[Number(el.dataset.jt)].to = e.target.value; await saveDraft();
+  });
+  $('scr-section').querySelectorAll('[data-jdel]').forEach((b) => b.onclick = async () => {
+    s.jumps.splice(Number(b.dataset.jdel), 1); await saveDraft(); renderSection();
   });
   $('s-back').onclick = () => { renderBuilder(); show('builder'); };
 }
@@ -800,6 +1056,46 @@ function renderQuestion() {
     <div class="card"><div class="q"><label class="lbl" for="q-maxlen">Character limit</label>
       <input id="q-maxlen" type="number" min="10" value="${q.maxLength || 600}" /></div></div>` : ''}
 
+    ${q.type === 'stars' ? `
+    <div class="card"><div class="q"><label class="lbl" for="q-max">How many stars</label>
+      <input id="q-max" type="number" min="3" max="10" value="${q.max || 5}" /></div></div>` : ''}
+
+    ${q.type === 'slider' ? `
+    <div class="card">
+      <p class="eyebrow">Slider range</p>
+      <div class="q"><label class="lbl" for="q-min">Lowest</label><input id="q-min" type="number" value="${q.min ?? 0}" /></div>
+      <div class="q"><label class="lbl" for="q-max">Highest</label><input id="q-max" type="number" value="${q.max ?? 100}" /></div>
+      <div class="q"><label class="lbl" for="q-step">Step</label><input id="q-step" type="number" min="1" value="${q.step || 1}" /></div>
+      <div class="q"><label class="lbl" for="q-minlab">Label at the low end</label><input id="q-minlab" type="text" value="${esc(q.minLabel || '')}" /></div>
+      <div class="q"><label class="lbl" for="q-maxlab">Label at the high end</label><input id="q-maxlab" type="text" value="${esc(q.maxLabel || '')}" /></div>
+    </div>` : ''}
+
+    ${q.type === 'nps' ? `
+    <div class="card">
+      <p class="eyebrow">End labels</p>
+      <div class="q"><label class="lbl" for="q-minlab">At 0</label><input id="q-minlab" type="text" value="${esc(q.minLabel || '')}" placeholder="Not at all likely" /></div>
+      <div class="q"><label class="lbl" for="q-maxlab">At 10</label><input id="q-maxlab" type="text" value="${esc(q.maxLabel || '')}" placeholder="Extremely likely" /></div>
+    </div>` : ''}
+
+    ${q.type === 'constant_sum' ? `
+    <div class="card"><div class="q"><label class="lbl" for="q-total">Total to allocate</label>
+      <p class="hint">The parts must add up to exactly this.</p>
+      <input id="q-total" type="number" min="1" value="${q.total || 100}" /></div></div>` : ''}
+
+    ${canOther(q.type) ? `
+    <div class="card">
+      <label class="opt${q.allowOther ? ' sel' : ''}">
+        <input type="checkbox" id="q-other" ${q.allowOther ? 'checked' : ''} />
+        <span>Offer “Other”, with a box to type in — exported as its own column</span></label>
+    </div>` : ''}
+
+    ${earlier.length ? `
+    <div class="card">
+      <p class="eyebrow">Quote an earlier answer</p>
+      <p class="muted" style="font-size:.86rem">Paste one of these into the wording and it is replaced by what was answered.</p>
+      <div class="chiprow">${earlier.map((x) => `<code style="font-size:.72rem">{{${x.id}}}</code>`).join(' ')}</div>
+    </div>` : ''}
+
     ${(q.type === 'integer' || q.type === 'number' || q.type === 'scale') ? `
     <div class="card">
       <p class="eyebrow">${q.type === 'scale' ? 'Scale range' : 'Allowed range'}</p>
@@ -867,6 +1163,10 @@ function renderQuestion() {
     if (hasOptions(t) && !q.options) q.options = ['Option 1', 'Option 2'];
     if (t === 'scale' || t === 'matrix') { q.min = q.min ?? 1; q.max = q.max ?? 5; }
     if (t === 'matrix' && !q.rows) q.rows = ['Row 1', 'Row 2'];
+    if (t === 'nps') { q.min = 0; q.max = 10; }
+    if (t === 'stars') q.max = q.max ?? 5;
+    if (t === 'slider') { q.min = q.min ?? 0; q.max = q.max ?? 100; q.step = q.step ?? 1; }
+    if (t === 'constant_sum') q.total = q.total ?? 100;
     await save(); renderQuestion();
   });
   const num = (id, key) => { const el = $(id); if (el) el.addEventListener('input', async (e) => {
@@ -874,6 +1174,11 @@ function renderQuestion() {
   const txt = (id, key) => { const el = $(id); if (el) el.addEventListener('input', async (e) => {
     q[key] = e.target.value || undefined; await save(); }); };
   num('q-min', 'min'); num('q-max', 'max'); num('q-maxlen', 'maxLength'); num('q-maxsel', 'maxSelections');
+  num('q-step', 'step'); num('q-total', 'total');
+  if ($('q-other')) $('q-other').onchange = async (e) => {
+    q.allowOther = e.target.checked || undefined;
+    e.target.closest('.opt').classList.toggle('sel', e.target.checked); await save();
+  };
   txt('q-mask', 'mask'); txt('q-ph', 'placeholder'); txt('q-minlab', 'minLabel'); txt('q-maxlab', 'maxLabel');
 
   $('scr-question').querySelectorAll('[data-opt]').forEach((el) => el.addEventListener('input', async (e) => {
@@ -934,14 +1239,14 @@ function renderQuestion() {
 function startInterview(instrumentId) {
   State.instrument = State.instruments.find((i) => i.id === instrumentId);
   State.preview = false;
-  State.answers = {}; State.section = 0; State.shuffled = {};
+  State.answers = {}; State.section = 0; State.shuffled = {}; State.path = [];
   State.submissionId = uuidv7(); State.baseVersion = null;
   renderForm(); show('form');
 }
 function startPreview(instrumentId) {
   State.instrument = State.instruments.find((i) => i.id === instrumentId) || State.draft;
   State.preview = true;
-  State.answers = {}; State.section = 0; State.shuffled = {};
+  State.answers = {}; State.section = 0; State.shuffled = {}; State.path = [];
   renderForm(); show('form');
   toast('Preview — nothing is saved');
 }
@@ -949,8 +1254,9 @@ function startPreview(instrumentId) {
 function questionHTML(q, answers, err) {
   const v = answers[q.id];
   const req = q.required ? '<span class="req" aria-hidden="true">*</span>' : '';
-  const hint = q.hint ? `<p class="hint">${esc(q.hint)}</p>` : '';
+  const hint = q.hint ? `<p class="hint">${esc(pipe(q.hint, answers))}</p>` : '';
   const errHTML = err ? `<p class="err" id="err-${q.id}">${esc(err)}</p>` : '';
+  const labelText = pipe(q.label, answers);
   const cls = `q${err ? ' invalid' : ''}`;
   const aria = err ? `aria-invalid="true" aria-describedby="err-${q.id}"` : '';
   let control = '';
@@ -973,8 +1279,9 @@ function questionHTML(q, answers, err) {
     case 'dropdown':
       control = `<select id="f-${q.id}" data-q="${q.id}" ${aria}>
         <option value="">— choose —</option>
-        ${optionsFor(q).map((o) => `<option value="${esc(o)}"${v === o ? ' selected' : ''}>${esc(o)}</option>`).join('')}
-      </select>`;
+        ${choicesFor(q).map((o) => `<option value="${esc(o)}"${v === o ? ' selected' : ''}>${esc(o)}</option>`).join('')}
+      </select>` + (q.allowOther && v === OTHER ? `<input type="text" class="otherbox" data-other="${q.id}"
+        value="${esc(answers[otherKey(q)] || '')}" placeholder="Please describe" />` : '');
       break;
     case 'yesno':
       control = `<div class="opts" role="radiogroup" aria-label="${esc(q.label)}">` + ['Yes', 'No'].map((o) => `
@@ -1007,15 +1314,57 @@ function questionHTML(q, answers, err) {
       break;
     }
     case 'select_one':
-      control = `<div class="opts" role="radiogroup" aria-label="${esc(q.label)}">` + optionsFor(q).map((o) => `
+      control = `<div class="opts" role="radiogroup" aria-label="${esc(q.label)}">` + choicesFor(q).map((o) => `
         <label class="opt${v === o ? ' sel' : ''}"><input type="radio" name="${q.id}" data-q="${q.id}" value="${esc(o)}" ${v === o ? 'checked' : ''} />
-        <span>${esc(o)}</span></label>`).join('') + '</div>';
+        <span>${esc(o)}</span></label>`).join('') + '</div>'
+        + (q.allowOther && v === OTHER ? `<input type="text" class="otherbox" data-other="${q.id}"
+             value="${esc(answers[otherKey(q)] || '')}" placeholder="Please describe" />` : '');
       break;
+    case 'nps': {
+      const btns = [];
+      for (let n = 0; n <= 10; n++) {
+        btns.push(`<button type="button" class="npsbtn${Number(v) === n ? ' sel' : ''}" data-q="${q.id}" data-val="${n}" aria-pressed="${Number(v) === n}">${n}</button>`);
+      }
+      control = `<div class="scale"><div class="npsrow">${btns.join('')}</div>
+        <div class="scale-ends"><span>${esc(q.minLabel || 'Not at all likely')}</span><span>${esc(q.maxLabel || 'Extremely likely')}</span></div></div>`;
+      break;
+    }
+    case 'stars': {
+      const max = q.max || 5, btns = [];
+      for (let n = 1; n <= max; n++) {
+        btns.push(`<button type="button" class="starbtn${Number(v) >= n ? ' on' : ''}" data-q="${q.id}" data-val="${n}"
+          aria-label="${n} of ${max}" aria-pressed="${Number(v) === n}">★</button>`);
+      }
+      control = `<div class="starrow">${btns.join('')}<span class="muted mono" style="margin-left:8px">${v ? `${v} / ${max}` : ''}</span></div>`;
+      break;
+    }
+    case 'slider': {
+      const cur = v ?? Math.round(((q.min ?? 0) + (q.max ?? 100)) / 2);
+      control = `<div class="scale">
+        <input type="range" class="slider" id="f-${q.id}" data-q="${q.id}" min="${q.min ?? 0}" max="${q.max ?? 100}"
+          step="${q.step || 1}" value="${cur}" ${v === undefined ? 'data-untouched="1"' : ''} />
+        <div class="scale-ends"><span>${q.min ?? 0}${esc(q.minLabel ? ' · ' + q.minLabel : '')}</span>
+          <b id="sv-${q.id}" style="color:var(--brand-700)">${v === undefined ? '—' : esc(String(v))}</b>
+          <span>${q.max ?? 100}${esc(q.maxLabel ? ' · ' + q.maxLabel : '')}</span></div></div>`;
+      break;
+    }
+    case 'constant_sum': {
+      const cur = v || {};
+      const sum = Object.values(cur).reduce((a, x) => a + (Number(x) || 0), 0);
+      control = '<div>' + (q.options || []).map((o) => `
+        <div class="sumrow"><span>${esc(o)}</span>
+          <input type="number" inputmode="numeric" min="0" max="${q.total}" data-sum="${q.id}" data-opt="${esc(o)}"
+            value="${cur[o] ?? ''}" /></div>`).join('')
+        + `<div class="sumtotal ${sum === q.total ? 'ok' : ''}">Total <b>${sum}</b> of ${q.total}</div></div>`;
+      break;
+    }
     case 'select_multi': {
       const arr = Array.isArray(v) ? v : [];
-      control = `<div class="opts" role="group" aria-label="${esc(q.label)}">` + optionsFor(q).map((o) => `
+      control = `<div class="opts" role="group" aria-label="${esc(q.label)}">` + choicesFor(q).map((o) => `
         <label class="opt${arr.includes(o) ? ' sel' : ''}"><input type="checkbox" data-q="${q.id}" value="${esc(o)}" ${arr.includes(o) ? 'checked' : ''} />
-        <span>${esc(o)}</span></label>`).join('') + '</div>';
+        <span>${esc(o)}</span></label>`).join('') + '</div>'
+        + (q.allowOther && arr.includes(OTHER) ? `<input type="text" class="otherbox" data-other="${q.id}"
+             value="${esc(answers[otherKey(q)] || '')}" placeholder="Please describe" />` : '');
       break;
     }
     case 'scale': {
@@ -1030,14 +1379,14 @@ function questionHTML(q, answers, err) {
     case 'checkbox':
       return `<div class="${cls}"><label class="opt${v ? ' sel' : ''}">
         <input type="checkbox" data-q="${q.id}" data-single="1" ${v ? 'checked' : ''} />
-        <span>${esc(q.label)}${req}</span></label>${hint}${errHTML}</div>`;
+        <span>${esc(labelText)}${req}</span></label>${hint}${errHTML}</div>`;
     case 'geopoint':
       control = `<div class="row"><button type="button" class="btn ghost sm" data-geo="${q.id}">Capture location</button>
         <span class="muted mono" id="geo-${q.id}">${v ? esc(`${v.lat.toFixed(5)}, ${v.lon.toFixed(5)} ±${Math.round(v.acc)}m`) : 'Not captured'}</span></div>`;
       break;
     default: control = `<p class="muted">Unsupported type: ${esc(q.type)}</p>`;
   }
-  return `<div class="${cls}"><label class="lbl" for="f-${q.id}">${esc(q.label)}${req}</label>${hint}${control}${errHTML}</div>`;
+  return `<div class="${cls}"><label class="lbl" for="f-${q.id}">${esc(labelText)}${req}</label>${hint}${control}${errHTML}</div>`;
 }
 
 function renderForm(errs = {}) {
@@ -1046,7 +1395,7 @@ function renderForm(errs = {}) {
   vis.forEach((q) => {
     if (q.type === 'ranking' && !Array.isArray(State.answers[q.id])) State.answers[q.id] = [...optionsFor(q)];
   });
-  const pct = Math.round((State.section / i.sections.length) * 100);
+  const pct = Math.round((State.path.length / Math.max(1, i.sections.length)) * 100);
   $('scr-form').innerHTML = `
     ${State.preview ? `<div class="previewbanner"><span><b>Preview</b> — exactly what the interviewer sees</span><span>${esc(i.code || '')}</span></div>` : ''}
     <div class="progress"><div class="bar"><i style="width:${pct}%"></i></div>
@@ -1060,14 +1409,15 @@ function renderForm(errs = {}) {
     ${Object.keys(errs).length ? `<div class="notice risk"><b>${Object.keys(errs).length} answer${Object.keys(errs).length > 1 ? 's need' : ' needs'} attention</b><span>Corrections are marked above.</span></div>` : ''}`;
   setActions(`
     <button class="btn ghost" id="f-back">${State.section === 0 ? (State.preview ? 'Close' : 'Cancel') : 'Back'}</button>
-    <button class="btn" id="f-next">${State.section === i.sections.length - 1 ? (State.preview ? 'Finish preview' : 'Save response') : 'Continue'}</button>`);
+    <button class="btn" id="f-next">${nextSectionIndex() === -1 ? (State.preview ? 'Finish preview' : 'Submit') : 'Continue'}</button>`);
   wireForm();
   $('f-back').onclick = async () => {
-    if (State.section === 0) {
+    if (!State.path.length) {
+      if (State.respond) { renderRespondIntro(); return; }
       if (State.preview && State.draft) { renderBuilder(); show('builder'); return; }
       await renderHome(); show('home'); return;
     }
-    State.section--; renderForm();
+    State.section = State.path.pop(); renderForm();
   };
   $('f-next').onclick = onNext;
 }
@@ -1097,6 +1447,34 @@ function wireForm() {
       const on = b === el; b.classList.toggle('sel', on); b.setAttribute('aria-pressed', on);
     });
     el.closest('.q').classList.remove('invalid');
+  }));
+  root.querySelectorAll('.npsbtn, .starbtn').forEach((el) => el.addEventListener('click', () => {
+    State.answers[el.dataset.q] = Number(el.dataset.val);
+    renderForm();
+  }));
+  root.querySelectorAll('.slider').forEach((el) => {
+    const paint = () => {
+      State.answers[el.dataset.q] = Number(el.value);
+      const out = $(`sv-${el.dataset.q}`); if (out) out.textContent = el.value;
+      el.removeAttribute('data-untouched');
+      el.closest('.q').classList.remove('invalid');
+    };
+    el.addEventListener('input', paint);
+    el.addEventListener('change', paint);
+  });
+  root.querySelectorAll('[data-sum]').forEach((el) => el.addEventListener('input', () => {
+    const qid = el.dataset.sum;
+    const cur = { ...(State.answers[qid] || {}) };
+    if (el.value === '') delete cur[el.dataset.opt]; else cur[el.dataset.opt] = Number(el.value);
+    State.answers[qid] = cur;
+    const q = allQuestions(State.instrument).find((x) => x.id === qid);
+    const sum = Object.values(cur).reduce((a, x) => a + (Number(x) || 0), 0);
+    const box = el.closest('.q').querySelector('.sumtotal');
+    if (box) { box.innerHTML = `Total <b>${sum}</b> of ${q.total}`; box.classList.toggle('ok', sum === q.total); }
+  }));
+  root.querySelectorAll('[data-other]').forEach((el) => el.addEventListener('input', () => {
+    const q = allQuestions(State.instrument).find((x) => x.id === el.dataset.other);
+    State.answers[otherKey(q)] = el.value;
   }));
   root.querySelectorAll('[data-rank]').forEach((el) => el.addEventListener('click', () => {
     const qid = el.dataset.rank;
@@ -1147,7 +1525,9 @@ async function onNext() {
     if (first) first.scrollIntoView({ block: 'center', behavior: 'smooth' });
     return;
   }
-  if (State.section < i.sections.length - 1) { State.section++; renderForm(); return; }
+  const next = nextSectionIndex();
+  if (next > -1) { State.path.push(State.section); State.section = next; renderForm(); return; }
+  if (State.respond) { await submitPublic(); return; }
   if (State.preview) {
     toast('Preview complete — nothing was saved');
     if (State.draft) { renderBuilder(); show('builder'); } else { await renderHome(); show('home'); }
@@ -1245,9 +1625,11 @@ async function renderAbout() {
       <span>No business associate agreements are in place and no server-side controls exist. Do not enter names, addresses, phone numbers, dates of birth, record numbers, or any other identifying information.</span></div>
     <div class="card"><h3>What is real</h3>
       <ul style="margin:0;padding-left:20px;display:grid;gap:6px" class="muted">
-        <li>Anyone can build a survey here — sections, ten question types, validation rules and conditional logic</li>
+        <li>Anyone can build a survey here — sections, eighteen question types, validation rules, piping, conditional questions and section branching</li>
         <li>Preview shows exactly what the interviewer will see</li>
         <li>Surveys export and import as JSON, so they move between devices</li>
+        <li>A share link carries the whole survey inside the URL fragment, so opening it publishes nothing and reaches nothing on this device</li>
+        <li>Answers from a link go to the collection address you set. Without one, a link cannot return answers — the respondent downloads a file to send you, and you import it here</li>
         <li>Works with no connectivity; every asset is cached on first load</li>
         <li>Responses encrypted on the device with AES-256-GCM, key derived from your passphrase and never stored</li>
         <li>Each operation carries a UUIDv7 idempotency key and an HMAC signature</li>
@@ -1275,15 +1657,126 @@ async function renderAbout() {
 }
 
 /* ── Boot ────────────────────────────────────────────────────────── */
+/* ── Public respond mode ─────────────────────────────────────────
+   Reached by opening a share link. There is no unlock, no local
+   database of anyone else's answers, and nothing on this screen can
+   see the owner's device. */
+function renderRespondIntro() {
+  const i = State.instrument;
+  const qn = allQuestions(i).length;
+  $('scr-respond').innerHTML = `
+    <div class="respondhero">
+      <p class="eyebrow">${esc(i.code || 'Survey')}</p>
+      <h2>${esc(i.title)}</h2>
+      ${i.subtitle ? `<p class="muted">${esc(i.subtitle)}</p>` : ''}
+      <div class="meta">
+        <span>${i.sections.length} section${i.sections.length === 1 ? '' : 's'}</span>
+        <span>${qn} question${qn === 1 ? '' : 's'}</span>
+        <span>About ${i.estimatedMinutes || 5} min</span>
+      </div>
+    </div>
+    <div class="notice">
+      <b>Your answers stay in this browser until you send them</b>
+      <span>${i.endpoint
+        ? `On the last screen they are sent to <span class="mono">${esc(i.endpoint)}</span>.`
+        : 'This survey has no collection address, so at the end you will be asked to download your answers as a file and send it to whoever shared the link.'}</span>
+    </div>`;
+  setActions('<button class="btn wide" id="r-start">Start</button>');
+  $('r-start').onclick = () => {
+    State.answers = {}; State.section = 0; State.path = []; State.shuffled = {};
+    renderForm(); show('form');
+  };
+  show('respond');
+}
+
+async function submitPublic() {
+  const i = State.instrument;
+  const body = {
+    kind: RESPONSE_KIND, v: 1,
+    survey_id: i.id, survey_code: i.code || '', survey_version: i.version,
+    response_id: uuidv7(), submitted_at: new Date().toISOString(),
+    answers: pruneHidden(State.answers, i),
+  };
+  State.lastResponse = body;
+  let outcome = 'file';
+  if (i.endpoint) {
+    setActions('<button class="btn wide" disabled>Sending…</button>');
+    try {
+      const res = await fetch(i.endpoint, {
+        method: 'POST', mode: 'cors',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify(body),
+      });
+      outcome = res.ok ? 'sent' : 'failed';
+    } catch { outcome = 'failed'; }
+  }
+  renderDone(outcome); show('done');
+}
+
+function downloadResponse() {
+  const b = State.lastResponse;
+  const blob = new Blob([JSON.stringify(b, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `${(b.survey_code || 'response').toLowerCase()}-${b.response_id.slice(0, 8)}.json`;
+  a.click(); URL.revokeObjectURL(a.href);
+}
+
+/* Three honest endings: it was sent, it could not be sent, or there was
+   nowhere to send it. None of them pretends an answer was delivered. */
+function renderDone(outcome) {
+  const i = State.instrument;
+  const heads = {
+    sent: ['Answers sent', 'Thank you — your response has been delivered.'],
+    failed: ['Not sent', 'The collection address did not accept the answers. Nothing has been lost: download the file below and send it to whoever shared this link.'],
+    file: ['Almost done', 'This survey has no collection address, so a link cannot return your answers on its own. Download the file below and send it to whoever shared this link.'],
+  };
+  const [h, sub] = heads[outcome];
+  $('scr-done').innerHTML = `
+    <div style="display:grid; gap:14px; justify-items:start">
+      <div class="donemark" aria-hidden="true">${outcome === 'sent' ? '✓' : '↓'}</div>
+      <h2>${h}</h2>
+      <p class="muted">${sub}</p>
+    </div>
+    ${outcome === 'sent' && i.closing ? `<div class="notice"><b>${esc(i.title)}</b><span>${esc(i.closing)}</span></div>` : ''}
+    ${outcome === 'sent' ? '' : '<div class="notice warn"><b>Keep this file</b><span>It is the only copy of your answers. Closing this page without downloading loses them.</span></div>'}`;
+  setActions(outcome === 'sent'
+    ? '<button class="btn ghost wide" id="d-save">Save a copy</button>'
+    : '<button class="btn wide" id="d-save">Download my answers</button>');
+  $('d-save').onclick = downloadResponse;
+}
+
+/* Booting from a share link: decode, run, and never touch the vault. */
+async function bootRespond(code) {
+  let inst;
+  try { inst = await unpackSurvey(code); } catch {
+    $('scr-respond').innerHTML = `
+      <h2>This link is not readable</h2>
+      <p class="muted">The survey travels inside the link itself, so a truncated or edited link cannot be recovered. Ask whoever shared it to send the full link again.</p>`;
+    setActions(''); show('respond'); return;
+  }
+  State.respond = true;
+  State.instrument = inst;
+  State.instruments = [inst];
+  State.preview = false;
+  document.title = `${inst.title} — EPI Collect`;
+  renderRespondIntro();
+}
+
 async function boot() {
   netStatus();
   window.addEventListener('online', () => { netStatus(); toast('Back online'); });
   window.addEventListener('offline', () => { netStatus(); toast('Offline — capture continues'); });
-  await DB.open();
-  await loadIdentity();
-  State.instruments = await DB.all('instruments');
-  await renderUnlock();
-  show('unlock');
+  const link = /^#s=(.+)$/.exec(location.hash || '');
+  if (link) {
+    await bootRespond(link[1]);
+  } else {
+    await DB.open();
+    await loadIdentity();
+    State.instruments = await DB.all('instruments');
+    await renderUnlock();
+    show('unlock');
+  }
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 }
 document.addEventListener('DOMContentLoaded', boot);

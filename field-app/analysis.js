@@ -47,7 +47,14 @@ function summarise(instrument, rows) {
       vals.forEach((v) => (Array.isArray(v) ? v : [v]).forEach((x) => {
         if (counts.has(x)) counts.set(x, counts.get(x) + 1);
       }));
-      return { ...base, kind: 'categorical', multi: q.type === 'select_multi',
+      if (q.allowOther) {
+        const n = vals.filter((v) => (Array.isArray(v) ? v.includes('Other') : v === 'Other')).length;
+        counts.set('Other', n);
+      }
+      const others = q.allowOther
+        ? rows.map((r) => r.answers[`${q.id}__other`]).filter((t) => t !== undefined && String(t).trim() !== '').map(String)
+        : [];
+      return { ...base, kind: 'categorical', multi: q.type === 'select_multi', others,
         bars: [...counts].map(([label, value]) => ({ label, value })) };
     }
     if (q.type === 'checkbox') {
@@ -55,7 +62,38 @@ function summarise(instrument, rows) {
       return { ...base, kind: 'categorical',
         bars: [{ label: 'Confirmed', value: yes }, { label: 'Not confirmed', value: rows.length - yes }] };
     }
-    if (['scale', 'integer', 'number'].includes(q.type)) {
+    /* NPS is not a mean. The published definition is the share of
+       promoters minus the share of detractors, on answered responses
+       only, and reporting an average of 0–10 instead would be a
+       different number wearing the same name. */
+    if (q.type === 'nps') {
+      const n = vals.map(num).filter((v) => v !== null && Number.isFinite(v));
+      const detr = n.filter((v) => v <= 6).length;
+      const pass = n.filter((v) => v >= 7 && v <= 8).length;
+      const prom = n.filter((v) => v >= 9).length;
+      const pct = (x) => (n.length ? (x / n.length) * 100 : 0);
+      const bins = [];
+      for (let i = 0; i <= 10; i++) bins.push({ label: String(i), value: n.filter((v) => v === i).length });
+      return { ...base, kind: 'nps',
+        score: n.length ? Math.round(pct(prom) - pct(detr)) : null,
+        groups: [
+          { label: `Promoters (9–10)  ${Math.round(pct(prom))}%`, value: prom },
+          { label: `Passives (7–8)  ${Math.round(pct(pass))}%`, value: pass },
+          { label: `Detractors (0–6)  ${Math.round(pct(detr))}%`, value: detr },
+        ],
+        bars: bins };
+    }
+    /* Allocation: the readable summary is what an average respondent
+       gave each option, out of the fixed total. */
+    if (q.type === 'constant_sum') {
+      const opts = q.options || [];
+      const rowsOut = opts.map((o) => {
+        const n = vals.map((v) => num(v && v[o])).filter((x) => x !== null && Number.isFinite(x));
+        return { label: o, value: mean(n.length ? n : [0]) ?? 0, n: n.length };
+      });
+      return { ...base, kind: 'alloc', total: q.total || 100, bars: rowsOut };
+    }
+    if (['scale', 'integer', 'number', 'stars', 'slider'].includes(q.type)) {
       const n = vals.map(num).filter((v) => v !== null && Number.isFinite(v));
       /* Bins are an array, not a map keyed by label: over a narrow range two
          bins round to the same caption, and a map silently merged them —
@@ -68,7 +106,8 @@ function summarise(instrument, rows) {
         const allInt = n.every((v) => Number.isInteger(v));
         const exact = (q.type === 'scale' && q.min != null && q.max != null)
           ? { from: q.min, to: q.max }
-          : (allInt && hi - lo <= 12 ? { from: lo, to: hi } : null);
+          : (q.type === 'stars' ? { from: 1, to: q.max || 5 }
+          : (allInt && hi - lo <= 12 ? { from: lo, to: hi } : null));
 
         if (exact) {
           for (let i = exact.from; i <= exact.to; i++) bins.push({ label: String(i), value: 0, lo: i, hi: i });
@@ -160,21 +199,29 @@ function csvCell(v) {
 }
 function toCSV(instrument, rows) {
   const qs = allQuestions(instrument);
-  const head = ['response_id', 'version', 'collector', 'device', 'captured_at', 'synced', 'conflict'];
+  const head = ['response_id', 'version', 'source', 'collector', 'device', 'captured_at', 'synced', 'conflict'];
   const cols = [];
   qs.forEach((q) => {
     if (q.type === 'matrix') (q.rows || []).forEach((r) => cols.push({ q, sub: r, header: `${q.label} — ${r}` }));
     else if (q.type === 'ranking') (q.options || []).forEach((o) => cols.push({ q, rank: o, header: `${q.label} — rank of ${o}` }));
+    else if (q.type === 'constant_sum') (q.options || []).forEach((o) => cols.push({ q, alloc: o, header: `${q.label} — ${o}` }));
     else if (q.type === 'geopoint') { cols.push({ q, geo: 'lat', header: `${q.label} (lat)` }); cols.push({ q, geo: 'lon', header: `${q.label} (lon)` }); }
     else cols.push({ q, header: q.label || q.id });
+    if (q.type === 'nps') cols.push({ q, npsGroup: true, header: `${q.label} — group` });
+    if (q.allowOther) cols.push({ q, other: true, header: `${q.label} — other` });
   });
 
   const lines = [[...head, ...cols.map((c) => c.header)].map(csvCell).join(',')];
   rows.forEach((r) => {
-    const meta = [r.id, r.version, r.collector, r.device, r.capturedAt, r.synced ? 'yes' : 'no', r.conflict ? 'yes' : 'no'];
+    const meta = [r.id, r.version, r.via || 'interview', r.collector, r.device, r.capturedAt, r.synced ? 'yes' : 'no', r.conflict ? 'yes' : 'no'];
     const cells = cols.map((c) => {
+      /* Written-in text lives beside the answer, so it is read before
+         the empty-answer guard below. */
+      if (c.other) return r.answers[`${c.q.id}__other`] ?? '';
       const v = r.answers[c.q.id];
       if (v === undefined || v === null) return '';
+      if (c.npsGroup) { const n = Number(v); return Number.isFinite(n) ? (n >= 9 ? 'promoter' : n >= 7 ? 'passive' : 'detractor') : ''; }
+      if (c.alloc) return v[c.alloc] ?? '';
       if (c.sub) return v[c.sub] ?? '';
       if (c.rank) { const i = Array.isArray(v) ? v.indexOf(c.rank) : -1; return i >= 0 ? i + 1 : ''; }
       if (c.geo) return v[c.geo] ?? '';
@@ -203,6 +250,7 @@ async function responseRows(instrumentId) {
     let answers = {};
     try { answers = await Crypto.decrypt(s.latest.payload); } catch { continue; }
     out.push({ id: s.id, version: s.version, collector: s.latest.collector_id,
+      via: s.latest.via || 'interview',
       device: s.latest.device_id, capturedAt: s.capturedAt,
       synced: s.synced, conflict: s.conflict, answers });
   }
@@ -235,7 +283,11 @@ async function renderAnalysis(instrumentId) {
       const withPct = s.bars.map((b) => ({ ...b, label: `${b.label}  ${Math.round((b.value / total) * 100)}%` }));
       return `<div class="card">${head}
         ${s.multi ? '<p class="muted" style="font-size:.78rem">Percentages are of respondents, so they sum above 100.</p>' : ''}
-        <div class="chartwrap">${barChart(withPct)}</div></div>`;
+        <div class="chartwrap">${barChart(withPct)}</div>
+        ${(s.others || []).length ? `<div class="divider"></div>
+          <p class="muted" style="font-size:.78rem">“Other”, in their own words — ${s.others.length} written in</p>
+          <div class="list">${s.others.slice(-5).reverse().map((t) => `<div class="item" style="cursor:default;border-left-color:var(--g-300)">
+            <span style="font-size:.88rem">${esc(t)}</span></div>`).join('')}</div>` : ''}</div>`;
     }
     if (s.kind === 'numeric') {
       return `<div class="card">${head}
@@ -246,6 +298,23 @@ async function renderAnalysis(instrumentId) {
           <div class="stat"><b>${fmt(s.stats.max, 0)}</b><span>Max</span></div>
         </div>
         <div class="chartwrap">${barChart(s.bars)}</div></div>`;
+    }
+    if (s.kind === 'nps') {
+      return `<div class="card">${head}
+        <div class="stats" style="grid-template-columns:repeat(2,1fr)">
+          <div class="stat"><b>${s.score === null ? '—' : s.score}</b><span>NPS</span></div>
+          <div class="stat"><b>${s.answered}</b><span>Scored</span></div>
+        </div>
+        <p class="muted" style="font-size:.78rem">Promoters minus detractors, as a share of those who answered. The range is −100 to +100.</p>
+        <div class="chartwrap">${barChart(s.groups)}</div>
+        <div class="divider"></div>
+        <p class="muted" style="font-size:.78rem">Every score given</p>
+        <div class="chartwrap">${barChart(s.bars)}</div></div>`;
+    }
+    if (s.kind === 'alloc') {
+      return `<div class="card">${head}
+        <p class="muted" style="font-size:.78rem">Mean amount given to each option, out of ${s.total}.</p>
+        <div class="chartwrap">${barChart(s.bars, { valueMax: s.total, decimals: 1 })}</div></div>`;
     }
     if (s.kind === 'matrix') {
       return `<div class="card">${head}
