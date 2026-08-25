@@ -174,6 +174,140 @@ pre.dump {
   margin:0; padding:14px; border-radius:10px; background: var(--navy-900); color: var(--g-200);
   font-family: var(--mono); font-size:.72rem; line-height:1.6; overflow-x:auto; white-space:pre;
 }
+/* ── Builder ───────────────────────────────────────────────────────── */
+.rowitem {
+  background:#fff; border:1px solid var(--g-200); border-radius:12px;
+  display:grid; grid-template-columns: 1fr auto; align-items:center; gap:8px; padding:12px 12px 12px 16px;
+}
+.rowitem .grab { display:grid; gap:3px; min-width:0; text-align:left; background:none; border:0; padding:0; cursor:pointer; }
+.rowitem .grab strong { color: var(--navy-900); font-size:.94rem; font-weight:600; line-height:1.3; }
+.rowitem .grab span { font-size:.76rem; color: var(--g-500); }
+.rowitem .ctrls { display:flex; gap:4px; flex:none; }
+.iconbtn {
+  width:38px; height:38px; border-radius:9px; border:1px solid var(--g-300); background:#fff;
+  color: var(--g-600); font-size:1rem; line-height:1; cursor:pointer; display:grid; place-items:center;
+}
+.iconbtn:active { background: var(--g-100); }
+.iconbtn[disabled] { opacity:.3; cursor:default; }
+.iconbtn.del { color: var(--risk); border-color:#E9C9C6; }
+.typegrid { display:grid; grid-template-columns: repeat(2, 1fr); gap:8px; }
+.typebtn {
+  border:1.5px solid var(--g-300); background:#fff; border-radius:10px; padding:12px 10px;
+  text-align:left; cursor:pointer; display:grid; gap:2px; min-height:var(--tap);
+}
+.typebtn strong { font-size:.86rem; color: var(--navy-900); font-weight:600; }
+.typebtn span { font-size:.72rem; color: var(--g-500); }
+.typebtn.sel { border-color: var(--brand-600); background:#EAFBF6; }
+.chiprow { display:flex; flex-wrap:wrap; gap:6px; }
+.optedit { display:grid; grid-template-columns: 1fr auto; gap:6px; align-items:center; }
+.divider { height:1px; background: var(--g-200); }
+.chartwrap { overflow-x:auto; padding: 4px 0 2px; }
+.matrixrow { display:grid; gap:6px; padding:12px 0; border-top:1px solid var(--g-200); }
+.matrixrow:first-child { border-top:0; }
+.matrixrow > span { font-size:.9rem; color: var(--navy-900); font-weight:500; }
+.rankitem {
+  display:grid; grid-template-columns:auto 1fr auto; gap:10px; align-items:center;
+  background:#fff; border:1.5px solid var(--g-300); border-radius:10px; padding:10px 12px; min-height:var(--tap);
+}
+.rankitem .pos { font-weight:700; color: var(--brand-700); font-variant-numeric:tabular-nums; width:1.4em; }
+/* Which client's workspace is open. Distinct from the preview banner:
+   the two mean different things and must not share a class. */
+.clientbar {
+  background: var(--navy-900); color:#fff; border-radius:10px; padding:10px 12px 10px 16px;
+  font-size:.86rem; display:flex; align-items:center; justify-content:space-between; gap:10px;
+}
+.clientbar b { color: var(--brand-500); font-weight:700; }
+.previewbanner {
+  background: var(--navy-800); color:#fff; border-radius:10px; padding:12px 14px;
+  font-size:.84rem; display:flex; align-items:center; justify-content:space-between; gap:10px;
+}
+.previewbanner b { color: var(--lime-500); }
+/* ── NPS ───────────────────────────────────────────────────────────
+   Eleven buttons have to fit a 320px phone without a horizontal
+   scroller, so the row is a grid that shrinks rather than a flex row
+   that overflows.                                                     */
+.npsrow { display:grid; grid-template-columns: repeat(11, 1fr); gap:4px; }
+.npsbtn {
+  min-height: 46px; border-radius:8px; border:1.5px solid var(--g-300); background:#fff;
+  font-weight:700; font-size:.9rem; color: var(--navy-900); cursor:pointer; padding:0;
+  font-variant-numeric: tabular-nums;
+}
+.npsbtn.sel { background: var(--brand-500); border-color: var(--brand-600); }
+@media (max-width: 380px) { .npsbtn { font-size:.8rem; min-height:42px; } .npsrow { gap:3px; } }
+
+/* ── Stars ─────────────────────────────────────────────────────────
+   The filled state carries a shape change as well as colour: colour
+   alone is not an answer for anyone who cannot see it.                */
+.starrow { display:flex; align-items:center; flex-wrap:wrap; gap:4px; }
+.starbtn {
+  width:52px; height:52px; border-radius:10px; border:1.5px solid var(--g-300); background:#fff;
+  color: var(--g-300); font-size:1.6rem; line-height:1; cursor:pointer; display:grid; place-items:center;
+}
+.starbtn.on { color: var(--lime-500); background: var(--navy-900); border-color: var(--navy-800); }
+
+/* ── Slider ────────────────────────────────────────────────────────
+   Untouched sliders show a grey track: a range input always has a
+   position, and a thumb parked at the midpoint must not read as an
+   answer the respondent gave.                                         */
+.slider { -webkit-appearance:none; appearance:none; width:100%; height:38px; background:transparent; cursor:pointer; margin:0; }
+.slider::-webkit-slider-runnable-track { height:8px; border-radius:99px; background: var(--g-200); }
+.slider::-moz-range-track { height:8px; border-radius:99px; background: var(--g-200); }
+.slider::-webkit-slider-thumb {
+  -webkit-appearance:none; appearance:none; width:30px; height:30px; margin-top:-11px;
+  border-radius:50%; background: var(--brand-600); border:3px solid #fff; box-shadow:0 1px 4px rgba(6,26,46,.35);
+}
+.slider::-moz-range-thumb {
+  width:24px; height:24px; border-radius:50%; background: var(--brand-600);
+  border:3px solid #fff; box-shadow:0 1px 4px rgba(6,26,46,.35);
+}
+.slider[data-untouched]::-webkit-slider-thumb { background: var(--g-400); }
+.slider[data-untouched]::-moz-range-thumb { background: var(--g-400); }
+.slider:focus-visible { outline:none; }
+.slider:focus-visible::-webkit-slider-thumb { box-shadow:0 0 0 3px rgba(6,189,149,.4); }
+
+/* ── Allocate (constant sum) ───────────────────────────────────────── */
+.sumrow {
+  display:grid; grid-template-columns: 1fr 108px; gap:10px; align-items:center;
+  padding:9px 0; border-top:1px solid var(--g-200);
+}
+.sumrow:first-child { border-top:0; }
+.sumrow > span { font-size:.9rem; color: var(--navy-900); }
+.sumrow input { min-height:44px; text-align:right; font-variant-numeric: tabular-nums; }
+.sumtotal {
+  margin-top:10px; padding:10px 14px; border-radius:9px; background: var(--warn-bg);
+  border:1px solid var(--warn); color: var(--warn); font-size:.86rem; font-variant-numeric: tabular-nums;
+}
+.sumtotal b { color: inherit; font-weight:700; }
+.sumtotal.ok { background:#EAFBF6; border-color: var(--brand-600); color: var(--brand-700); }
+
+/* ── "Other, please describe" ──────────────────────────────────────── */
+.otherbox { margin-top:8px; }
+
+/* ── Branching rules in the builder ────────────────────────────────── */
+.jumprule {
+  display:grid; gap:8px; padding:12px; margin-bottom:10px;
+  border:1px solid var(--g-200); border-left:3px solid var(--brand-600);
+  border-radius:10px; background: var(--g-50);
+}
+
+/* ── Share sheet ───────────────────────────────────────────────────── */
+.sharebox {
+  display:grid; gap:8px; padding:12px 14px; border-radius:10px;
+  background: var(--navy-900); color: var(--g-200);
+}
+.sharebox .link {
+  font-family: var(--mono); font-size:.72rem; line-height:1.5; word-break:break-all;
+  max-height:96px; overflow-y:auto; color:#fff;
+}
+
+/* ── Public respond mode ───────────────────────────────────────────── */
+.respondhero { display:grid; gap:10px; }
+.respondhero .meta { display:flex; flex-wrap:wrap; gap:8px 16px; font-size:.82rem; color: var(--g-500); }
+.donemark {
+  width:64px; height:64px; border-radius:50%; background: var(--brand-500);
+  display:grid; place-items:center; color: var(--navy-900); font-size:2rem; font-weight:700;
+}
+
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
 </head>
@@ -200,6 +334,13 @@ pre.dump {
     <section class="screen" id="scr-form" hidden></section>
     <section class="screen" id="scr-queue" hidden></section>
     <section class="screen" id="scr-record" hidden></section>
+    <section class="screen" id="scr-builder" hidden></section>
+    <section class="screen" id="scr-section" hidden></section>
+    <section class="screen" id="scr-question" hidden></section>
+    <section class="screen" id="scr-preview" hidden></section>
+    <section class="screen" id="scr-analysis" hidden></section>
+    <section class="screen" id="scr-respond" hidden></section>
+    <section class="screen" id="scr-done" hidden></section>
     <section class="screen" id="scr-about" hidden></section>
   </main>
 
@@ -209,5 +350,6 @@ pre.dump {
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="app.js"></script>
+<script src="analysis.js"></script>
 </body>
 </html>
