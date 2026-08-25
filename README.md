@@ -195,9 +195,9 @@ the two Google Fonts families, which fall back cleanly — that walks a research
 GLOBAL EPI's own decision algorithms and hands back a study design, a variable
 structure, and the statistical test that fits.
 
-**The algorithms are transcribed, not invented.** The design tree comes from *Study
-Design for Public Health Research* (Research Design Algorithm, adapted from ADA 2010);
-the test tree from *Statistical Test by Variable*. The second document is flattened
+**The algorithms are transcribed, not invented.** The design tree comes from the
+Research Design Algorithm in *Study Design for Public Health Research*; the test tree
+from *Statistical Test by Variable*. Both are GLOBAL EPI documents. The second document is flattened
 artwork with no extractable text, so its three flowcharts were read from rendered
 images, and the A–D evidence classes were recovered by sampling the fill colour of every
 terminal box against the Class Key rather than judged by eye.

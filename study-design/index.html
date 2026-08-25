@@ -352,7 +352,7 @@ footer a { color: var(--brand-700); }
 <main id="stage" class="stage"></main>
 
 <footer>
-  <p>Design algorithm adapted from <strong>ADA (2010)</strong>, following <em>Study Design for Public Health Research</em> (GLOBAL EPI LLC). Statistical test selection follows <em>Statistical Test by Variable</em> (GLOBAL EPI LLC).</p>
+  <p>Design algorithm from <em>Study Design for Public Health Research</em> (GLOBAL EPI LLC). Statistical test selection follows <em>Statistical Test by Variable</em> (GLOBAL EPI LLC).</p>
   <p>This tool orients the choice of design. It does not replace the principal investigator, the ethics committee, or the study statistician.</p>
 </footer>
 
@@ -388,7 +388,8 @@ footer a { color: var(--brand-700); }
 
 /* ═════════════════════════════════════════════════════════════════════
    1. LOGIC — STUDY DESIGN GRAPH
-   Transcribed from "Research Design Algorithm" (adapted from ADA, 2010).
+   Transcribed from the "Research Design Algorithm" diagram in
+   "Study Design for Public Health Research" (GLOBAL EPI LLC).
    Node shape: { id, stage, text, help, options:[{ id, label, sub, to }] }
    ═════════════════════════════════════════════════════════════════════ */
 
@@ -525,7 +526,7 @@ const DESIGN_NODES = {
       title: 'Subjects as their own controls',
       terms: [
         ['Within-subject design', 'Each participant passes through two or more conditions and is compared with themselves.'],
-        ['In the source algorithm', 'This node of the ADA (2010) diagram leads to "Randomized Controlled Trial". See the methodological note on the result screen.'],
+        ['In the source algorithm', 'This node of the source diagram leads to "Randomized Controlled Trial". See the methodological note on the result screen.'],
         ['What it controls', 'Between-person variability, which usually translates into more statistical power from fewer participants.']
       ]
     },
@@ -1490,11 +1491,11 @@ function buildReport(designAnswers, statAnswers) {
   }
 
   L.push(rule);
-  L.push('Design algorithm adapted from ADA (2010), following "Study Design for');
-  L.push('Public Health Research" (GLOBAL EPI LLC). Statistical test selection');
-  L.push('follows "Statistical Test by Variable" (GLOBAL EPI LLC). This tool');
-  L.push('orients the choice of design. It does not replace the principal');
-  L.push('investigator, the ethics committee, or the study statistician.');
+  L.push('Design algorithm from "Study Design for Public Health Research"');
+  L.push('(GLOBAL EPI LLC). Statistical test selection follows "Statistical');
+  L.push('Test by Variable" (GLOBAL EPI LLC). This tool orients the choice of');
+  L.push('design. It does not replace the principal investigator, the ethics');
+  L.push('committee, or the study statistician.');
   L.push(rule);
 
   return L.join('\n');
@@ -2049,7 +2050,7 @@ function reportBlocks(designAnswers, statAnswers, study) {
 
   B.push({ t: 'rule' });
   B.push({ t: 'p', small: true, mute: true, text:
-    'Design algorithm adapted from ADA (2010), following "Study Design for Public Health Research" (GLOBAL EPI LLC). ' +
+    'Design algorithm from "Study Design for Public Health Research" (GLOBAL EPI LLC). ' +
     'Statistical test selection follows "Statistical Test by Variable" (GLOBAL EPI LLC).' });
   B.push({ t: 'p', small: true, mute: true, text:
     'This report orients the choice of design. It does not replace the principal investigator, the ethics committee, or the study statistician.' });
