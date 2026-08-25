@@ -115,7 +115,7 @@ async function audit(action, detail) {
 const State = {
   instruments: [], instrument: null,
   deviceId: null, tenantId: null, collector: null,
-  answers: {}, section: 0, preview: false,
+  answers: {}, section: 0, preview: false, shuffled: {}, analysisId: null,
   submissionId: null, baseVersion: null,
   draft: null, sectionIdx: 0, questionIdx: 0,   // builder cursors
 };
@@ -127,14 +127,19 @@ const QTYPES = [
   { t: 'integer',      name: 'Whole number', desc: 'Counts, ages, minutes' },
   { t: 'number',       name: 'Decimal',      desc: 'Measurements' },
   { t: 'select_one',   name: 'Choose one',   desc: 'Radio list' },
+  { t: 'dropdown',     name: 'Dropdown',     desc: 'Choose one from a long list' },
+  { t: 'yesno',        name: 'Yes / No',     desc: 'Two-button answer' },
   { t: 'select_multi', name: 'Choose many',  desc: 'Checkbox list, capped' },
   { t: 'scale',        name: 'Rating scale', desc: 'Numeric range with end labels' },
+  { t: 'matrix',       name: 'Matrix',       desc: 'Several rows on one shared scale' },
+  { t: 'ranking',      name: 'Ranking',      desc: 'Put the options in order' },
   { t: 'date',         name: 'Date',         desc: 'Calendar picker' },
   { t: 'checkbox',     name: 'Confirmation', desc: 'A single tick box' },
   { t: 'geopoint',     name: 'Location',     desc: 'Device coordinates' },
 ];
 const typeName = (t) => (QTYPES.find((x) => x.t === t) || { name: t }).name;
-const hasOptions = (t) => t === 'select_one' || t === 'select_multi';
+const hasOptions = (t) => ['select_one', 'select_multi', 'dropdown', 'ranking'].includes(t);
+const pickOne = (t) => ['select_one', 'dropdown', 'yesno'].includes(t);
 
 /* ── Instrument logic ────────────────────────────────────────────── */
 function visible(q, answers) {
@@ -153,7 +158,8 @@ function maskToRegex(mask) {
 function validateQuestion(q, answers) {
   if (!visible(q, answers)) return null;
   const v = answers[q.id];
-  const empty = v === undefined || v === null || v === '' || (Array.isArray(v) && v.length === 0) || v === false;
+  const empty = v === undefined || v === null || v === '' || (Array.isArray(v) && v.length === 0) || v === false
+    || (q.type === 'matrix' && Object.keys(v || {}).length === 0);
   if (q.required && empty) return q.type === 'checkbox' ? 'This must be confirmed to continue.' : 'This answer is required.';
   if (empty) return null;
   if (q.type === 'text' && q.mask && !maskToRegex(q.mask).test(v)) {
@@ -172,6 +178,13 @@ function validateQuestion(q, answers) {
     if (Number.isFinite(cap) && Number(v) > cap) return q.atMostField.message || 'Cannot exceed the earlier answer.';
   }
   if (q.maxSelections && Array.isArray(v) && v.length > q.maxSelections) return `Choose no more than ${q.maxSelections}.`;
+  if (q.type === 'matrix' && q.required) {
+    const missing = (q.rows || []).filter((r) => v[r] === undefined || v[r] === null);
+    if (missing.length) return `Rate every row — ${missing.length} still blank.`;
+  }
+  if (q.type === 'ranking' && q.required && Array.isArray(v) && v.length !== (q.options || []).length) {
+    return 'Put every option in order.';
+  }
   return null;
 }
 function validateSection(section, answers) {
@@ -185,6 +198,22 @@ function pruneHidden(answers, instrument) {
   return out;
 }
 const allQuestions = (inst) => inst.sections.flatMap((s) => s.questions);
+
+/* Option order is randomised once per response, not per render — otherwise
+   the list would reshuffle under the interviewer's finger. */
+function optionsFor(q) {
+  const base = q.options || [];
+  if (!q.randomize) return base;
+  if (!State.shuffled[q.id]) {
+    const a = [...base];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = crypto.getRandomValues(new Uint32Array(1))[0] % (i + 1);
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    State.shuffled[q.id] = a;
+  }
+  return State.shuffled[q.id];
+}
 
 /* ── Sync protocol ───────────────────────────────────────────────── */
 async function buildEnvelope(answers, submissionId, version, parentVersion) {
@@ -269,6 +298,7 @@ function newQuestion(type = 'text', taken = []) {
   const q = { id: freshId('q', taken), type, label: '', required: false };
   if (hasOptions(type)) q.options = ['Option 1', 'Option 2'];
   if (type === 'scale') { q.min = 1; q.max = 5; q.minLabel = ''; q.maxLabel = ''; }
+  if (type === 'matrix') { q.rows = ['Row 1', 'Row 2']; q.min = 1; q.max = 5; q.minLabel = ''; q.maxLabel = ''; }
   return q;
 }
 function newSection(n = 1, taken = []) {
@@ -300,7 +330,8 @@ function surveyProblems(inst) {
       if (hasOptions(q.type) && (!q.options || q.options.filter((o) => o.trim()).length < 2)) {
         p.push(`${where} needs at least two options.`);
       }
-      if (q.type === 'scale' && !(q.max > q.min)) p.push(`${where} needs a range where the top is above the bottom.`);
+      if ((q.type === 'scale' || q.type === 'matrix') && !(q.max > q.min)) p.push(`${where} needs a range where the top is above the bottom.`);
+      if (q.type === 'matrix' && (!q.rows || q.rows.filter((r) => r.trim()).length < 1)) p.push(`${where} needs at least one row.`);
     });
   });
   return p;
@@ -314,7 +345,7 @@ function toast(msg) {
   const t = $('toast'); t.textContent = msg; t.classList.add('show');
   clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
 }
-const SCREENS = ['unlock', 'home', 'form', 'queue', 'record', 'builder', 'section', 'question', 'preview', 'about'];
+const SCREENS = ['unlock', 'home', 'form', 'queue', 'record', 'builder', 'section', 'question', 'preview', 'analysis', 'about'];
 function show(name) { SCREENS.forEach((s) => { $(`scr-${s}`).hidden = s !== name; }); window.scrollTo(0, 0); }
 function setActions(html) { const b = $('actionbar'); b.innerHTML = html || ''; b.hidden = !html; }
 function netStatus() {
@@ -440,6 +471,7 @@ async function renderHome() {
             <button class="btn sm" data-run="${i.id}"${probs ? ' disabled' : ''}>Collect</button>
             <button class="btn ghost sm" data-edit="${i.id}">Edit</button>
             <button class="btn ghost sm" data-prev="${i.id}"${probs ? ' disabled' : ''}>Preview</button>
+            <button class="btn ghost sm" data-an="${i.id}">Analyse</button>
             <button class="btn ghost sm" data-exp="${i.id}">Export</button>
           </div>
           ${probs ? `<p class="err" style="font-size:.82rem">${probs} thing${probs === 1 ? '' : 's'} to finish before it can run.</p>` : ''}
@@ -483,6 +515,9 @@ async function renderHome() {
   $('scr-home').querySelectorAll('[data-edit]').forEach((b) => b.onclick = () => {
     State.draft = JSON.parse(JSON.stringify(State.instruments.find((i) => i.id === b.dataset.edit)));
     renderBuilder(); show('builder');
+  });
+  $('scr-home').querySelectorAll('[data-an]').forEach((b) => b.onclick = async () => {
+    await renderAnalysis(b.dataset.an); show('analysis');
   });
   $('scr-home').querySelectorAll('[data-exp]').forEach((b) => b.onclick = () => {
     const i = State.instruments.find((x) => x.id === b.dataset.exp);
@@ -537,6 +572,7 @@ function renderBuilder() {
             <div class="ctrls">
               <button class="iconbtn" data-secup="${i}"${i === 0 ? ' disabled' : ''} aria-label="Move up">↑</button>
               <button class="iconbtn" data-secdown="${i}"${i === d.sections.length - 1 ? ' disabled' : ''} aria-label="Move down">↓</button>
+              <button class="iconbtn" data-secdup="${i}" aria-label="Duplicate section">⧉</button>
               <button class="iconbtn del" data-secdel="${i}" aria-label="Delete section">✕</button>
             </div>
           </div>`).join('')}
@@ -575,6 +611,21 @@ function renderBuilder() {
   });
   $('scr-builder').querySelectorAll('[data-secdown]').forEach((b) => b.onclick = async () => {
     move(d.sections, Number(b.dataset.secdown), 1); await saveDraft(); renderBuilder();
+  });
+  $('scr-builder').querySelectorAll('[data-secdup]').forEach((b) => b.onclick = async () => {
+    const i = Number(b.dataset.secdup);
+    const copy = JSON.parse(JSON.stringify(d.sections[i]));
+    copy.id = freshId('s', d.sections.map((x) => x.id));
+    copy.title = `${copy.title} (copy)`;
+    const taken = allQuestions(d).map((x) => x.id);
+    // Copied questions need fresh ids, and any rule pointing inside the
+    // section has to be repointed at the copy rather than the original.
+    const remap = {};
+    copy.questions.forEach((cq) => { const nid = freshId('q', taken.concat(Object.values(remap))); remap[cq.id] = nid; cq.id = nid; });
+    copy.questions.forEach((cq) => { if (cq.showIf && remap[cq.showIf.q]) cq.showIf.q = remap[cq.showIf.q];
+      if (cq.atMostField && remap[cq.atMostField.field]) cq.atMostField.field = remap[cq.atMostField.field]; });
+    d.sections.splice(i + 1, 0, copy);
+    await saveDraft(); renderBuilder();
   });
   $('scr-builder').querySelectorAll('[data-secdel]').forEach((b) => b.onclick = async () => {
     const i = Number(b.dataset.secdel);
@@ -621,6 +672,7 @@ function renderSection() {
             <div class="ctrls">
               <button class="iconbtn" data-qup="${i}"${i === 0 ? ' disabled' : ''} aria-label="Move up">↑</button>
               <button class="iconbtn" data-qdown="${i}"${i === s.questions.length - 1 ? ' disabled' : ''} aria-label="Move down">↓</button>
+              <button class="iconbtn" data-qdup="${i}" aria-label="Duplicate question">⧉</button>
               <button class="iconbtn del" data-qdel="${i}" aria-label="Delete question">✕</button>
             </div>
           </div>`).join('')}
@@ -645,6 +697,14 @@ function renderSection() {
   });
   $('scr-section').querySelectorAll('[data-qdown]').forEach((b) => b.onclick = async () => {
     move(s.questions, Number(b.dataset.qdown), 1); await saveDraft(); renderSection();
+  });
+  $('scr-section').querySelectorAll('[data-qdup]').forEach((b) => b.onclick = async () => {
+    const i = Number(b.dataset.qdup);
+    const copy = JSON.parse(JSON.stringify(s.questions[i]));
+    copy.id = freshId('q', allQuestions(State.draft).map((x) => x.id));
+    copy.label = `${copy.label} (copy)`;
+    s.questions.splice(i + 1, 0, copy);
+    await saveDraft(); renderSection();
   });
   $('scr-section').querySelectorAll('[data-qdel]').forEach((b) => b.onclick = async () => {
     if (!confirm('Delete this question?')) return;
@@ -704,6 +764,26 @@ function renderQuestion() {
         <div class="q"><label class="lbl" for="q-maxsel">Maximum selections</label>
           <p class="hint">Leave empty for no limit.</p>
           <input id="q-maxsel" type="number" min="1" value="${q.maxSelections || ''}" /></div>` : ''}
+    </div>` : ''}
+
+    ${q.type === 'matrix' ? `
+    <div class="card">
+      <p class="eyebrow">Rows</p>
+      <div class="list">
+        ${(q.rows || []).map((r, i) => `
+          <div class="optedit">
+            <input type="text" data-row="${i}" value="${esc(r)}" />
+            <button class="iconbtn del" data-rowdel="${i}" aria-label="Remove row">✕</button>
+          </div>`).join('')}
+      </div>
+      <button class="btn ghost sm" id="q-addrow">Add row</button>
+    </div>` : ''}
+
+    ${hasOptions(q.type) && q.type !== 'ranking' ? `
+    <div class="card">
+      <label class="opt${q.randomize ? ' sel' : ''}">
+        <input type="checkbox" id="q-rand" ${q.randomize ? 'checked' : ''} />
+        <span>Randomise the option order for each response — reduces order bias</span></label>
     </div>` : ''}
 
     ${q.type === 'text' ? `
@@ -783,8 +863,10 @@ function renderQuestion() {
     const t = b.dataset.type;
     if (t === q.type) return;
     q.type = t;
+    // Switching type must leave the question usable, not half-configured.
     if (hasOptions(t) && !q.options) q.options = ['Option 1', 'Option 2'];
-    if (t === 'scale') { q.min = q.min ?? 1; q.max = q.max ?? 5; }
+    if (t === 'scale' || t === 'matrix') { q.min = q.min ?? 1; q.max = q.max ?? 5; }
+    if (t === 'matrix' && !q.rows) q.rows = ['Row 1', 'Row 2'];
     await save(); renderQuestion();
   });
   const num = (id, key) => { const el = $(id); if (el) el.addEventListener('input', async (e) => {
@@ -800,6 +882,19 @@ function renderQuestion() {
   $('scr-question').querySelectorAll('[data-optdel]').forEach((b) => b.onclick = async () => {
     q.options.splice(Number(b.dataset.optdel), 1); await save(); renderQuestion();
   });
+  $('scr-question').querySelectorAll('[data-row]').forEach((el) => el.addEventListener('input', async (e) => {
+    q.rows[Number(el.dataset.row)] = e.target.value; await save();
+  }));
+  $('scr-question').querySelectorAll('[data-rowdel]').forEach((b) => b.onclick = async () => {
+    q.rows.splice(Number(b.dataset.rowdel), 1); await save(); renderQuestion();
+  });
+  if ($('q-addrow')) $('q-addrow').onclick = async () => {
+    q.rows.push(`Row ${q.rows.length + 1}`); await save(); renderQuestion();
+  };
+  if ($('q-rand')) $('q-rand').onchange = async (e) => {
+    q.randomize = e.target.checked || undefined;
+    e.target.closest('.opt').classList.toggle('sel', e.target.checked); await save();
+  };
   if ($('q-addopt')) $('q-addopt').onclick = async () => {
     q.options.push(`Option ${q.options.length + 1}`); await save(); renderQuestion();
   };
@@ -839,14 +934,14 @@ function renderQuestion() {
 function startInterview(instrumentId) {
   State.instrument = State.instruments.find((i) => i.id === instrumentId);
   State.preview = false;
-  State.answers = {}; State.section = 0;
+  State.answers = {}; State.section = 0; State.shuffled = {};
   State.submissionId = uuidv7(); State.baseVersion = null;
   renderForm(); show('form');
 }
 function startPreview(instrumentId) {
   State.instrument = State.instruments.find((i) => i.id === instrumentId) || State.draft;
   State.preview = true;
-  State.answers = {}; State.section = 0;
+  State.answers = {}; State.section = 0; State.shuffled = {};
   renderForm(); show('form');
   toast('Preview — nothing is saved');
 }
@@ -875,14 +970,50 @@ function questionHTML(q, answers, err) {
     case 'date':
       control = `<input type="date" id="f-${q.id}" data-q="${q.id}" ${aria} value="${v ? esc(v) : ''}" />`;
       break;
+    case 'dropdown':
+      control = `<select id="f-${q.id}" data-q="${q.id}" ${aria}>
+        <option value="">— choose —</option>
+        ${optionsFor(q).map((o) => `<option value="${esc(o)}"${v === o ? ' selected' : ''}>${esc(o)}</option>`).join('')}
+      </select>`;
+      break;
+    case 'yesno':
+      control = `<div class="opts" role="radiogroup" aria-label="${esc(q.label)}">` + ['Yes', 'No'].map((o) => `
+        <label class="opt${v === o ? ' sel' : ''}"><input type="radio" name="${q.id}" data-q="${q.id}" value="${o}" ${v === o ? 'checked' : ''} />
+        <span>${o}</span></label>`).join('') + '</div>';
+      break;
+    case 'matrix': {
+      const cur = v || {};
+      control = '<div>' + (q.rows || []).map((r) => {
+        const btns = [];
+        for (let n = q.min; n <= q.max; n++) {
+          btns.push(`<button type="button" class="scale-btn${Number(cur[r]) === n ? ' sel' : ''}"
+            data-mrow="${esc(r)}" data-q="${q.id}" data-val="${n}" aria-pressed="${Number(cur[r]) === n}">${n}</button>`);
+        }
+        return `<div class="matrixrow"><span>${esc(r)}</span><div class="scale-row">${btns.join('')}</div></div>`;
+      }).join('') + `<div class="scale-ends" style="padding-top:8px"><span>${esc(q.minLabel || '')}</span><span>${esc(q.maxLabel || '')}</span></div></div>`;
+      break;
+    }
+    case 'ranking': {
+      const order = Array.isArray(v) && v.length === (q.options || []).length ? v : optionsFor(q);
+      control = '<div class="list">' + order.map((o, i) => `
+        <div class="rankitem">
+          <span class="pos">${i + 1}</span>
+          <span style="font-size:.9rem">${esc(o)}</span>
+          <span class="ctrls">
+            <button type="button" class="iconbtn" data-rank="${q.id}" data-dir="-1" data-idx="${i}"${i === 0 ? ' disabled' : ''} aria-label="Move up">↑</button>
+            <button type="button" class="iconbtn" data-rank="${q.id}" data-dir="1" data-idx="${i}"${i === order.length - 1 ? ' disabled' : ''} aria-label="Move down">↓</button>
+          </span>
+        </div>`).join('') + '</div>';
+      break;
+    }
     case 'select_one':
-      control = `<div class="opts" role="radiogroup" aria-label="${esc(q.label)}">` + (q.options || []).map((o) => `
+      control = `<div class="opts" role="radiogroup" aria-label="${esc(q.label)}">` + optionsFor(q).map((o) => `
         <label class="opt${v === o ? ' sel' : ''}"><input type="radio" name="${q.id}" data-q="${q.id}" value="${esc(o)}" ${v === o ? 'checked' : ''} />
         <span>${esc(o)}</span></label>`).join('') + '</div>';
       break;
     case 'select_multi': {
       const arr = Array.isArray(v) ? v : [];
-      control = `<div class="opts" role="group" aria-label="${esc(q.label)}">` + (q.options || []).map((o) => `
+      control = `<div class="opts" role="group" aria-label="${esc(q.label)}">` + optionsFor(q).map((o) => `
         <label class="opt${arr.includes(o) ? ' sel' : ''}"><input type="checkbox" data-q="${q.id}" value="${esc(o)}" ${arr.includes(o) ? 'checked' : ''} />
         <span>${esc(o)}</span></label>`).join('') + '</div>';
       break;
@@ -912,6 +1043,9 @@ function questionHTML(q, answers, err) {
 function renderForm(errs = {}) {
   const i = State.instrument, s = i.sections[State.section];
   const vis = s.questions.filter((q) => visible(q, State.answers));
+  vis.forEach((q) => {
+    if (q.type === 'ranking' && !Array.isArray(State.answers[q.id])) State.answers[q.id] = [...optionsFor(q)];
+  });
   const pct = Math.round((State.section / i.sections.length) * 100);
   $('scr-form').innerHTML = `
     ${State.preview ? `<div class="previewbanner"><span><b>Preview</b> — exactly what the interviewer sees</span><span>${esc(i.code || '')}</span></div>` : ''}
@@ -951,6 +1085,28 @@ function wireForm() {
   root.querySelectorAll('input[type=radio]').forEach((el) => el.addEventListener('change', () => {
     State.answers[el.dataset.q] = el.value; renderForm();
   }));
+  root.querySelectorAll('select[data-q]').forEach((el) => el.addEventListener('change', () => {
+    State.answers[el.dataset.q] = el.value || undefined; renderForm();
+  }));
+  root.querySelectorAll('[data-mrow]').forEach((el) => el.addEventListener('click', () => {
+    const q = el.dataset.q, row = el.dataset.mrow;
+    const cur = { ...(State.answers[q] || {}) };
+    cur[row] = Number(el.dataset.val);
+    State.answers[q] = cur;
+    el.parentElement.querySelectorAll('.scale-btn').forEach((b) => {
+      const on = b === el; b.classList.toggle('sel', on); b.setAttribute('aria-pressed', on);
+    });
+    el.closest('.q').classList.remove('invalid');
+  }));
+  root.querySelectorAll('[data-rank]').forEach((el) => el.addEventListener('click', () => {
+    const qid = el.dataset.rank;
+    const q = allQuestions(State.instrument).find((x) => x.id === qid);
+    const order = Array.isArray(State.answers[qid]) && State.answers[qid].length === (q.options || []).length
+      ? [...State.answers[qid]] : [...optionsFor(q)];
+    move(order, Number(el.dataset.idx), Number(el.dataset.dir));
+    State.answers[qid] = order;
+    renderForm();
+  }));
   root.querySelectorAll('input[type=checkbox]').forEach((el) => el.addEventListener('change', () => {
     const q = el.dataset.q;
     if (el.dataset.single) State.answers[q] = el.checked;
@@ -963,7 +1119,7 @@ function wireForm() {
     }
     el.closest('.opt').classList.toggle('sel', el.checked);
   }));
-  root.querySelectorAll('.scale-btn').forEach((el) => el.addEventListener('click', () => {
+  root.querySelectorAll('.scale-btn:not([data-mrow])').forEach((el) => el.addEventListener('click', () => {
     State.answers[el.dataset.q] = Number(el.dataset.val);
     el.parentElement.querySelectorAll('.scale-btn').forEach((b) => {
       const on = b === el; b.classList.toggle('sel', on); b.setAttribute('aria-pressed', on);

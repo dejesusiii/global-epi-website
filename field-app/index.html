@@ -201,6 +201,15 @@ pre.dump {
 .chiprow { display:flex; flex-wrap:wrap; gap:6px; }
 .optedit { display:grid; grid-template-columns: 1fr auto; gap:6px; align-items:center; }
 .divider { height:1px; background: var(--g-200); }
+.chartwrap { overflow-x:auto; padding: 4px 0 2px; }
+.matrixrow { display:grid; gap:6px; padding:12px 0; border-top:1px solid var(--g-200); }
+.matrixrow:first-child { border-top:0; }
+.matrixrow > span { font-size:.9rem; color: var(--navy-900); font-weight:500; }
+.rankitem {
+  display:grid; grid-template-columns:auto 1fr auto; gap:10px; align-items:center;
+  background:#fff; border:1.5px solid var(--g-300); border-radius:10px; padding:10px 12px; min-height:var(--tap);
+}
+.rankitem .pos { font-weight:700; color: var(--brand-700); font-variant-numeric:tabular-nums; width:1.4em; }
 .previewbanner {
   background: var(--navy-800); color:#fff; border-radius:10px; padding:12px 14px;
   font-size:.84rem; display:flex; align-items:center; justify-content:space-between; gap:10px;
@@ -236,6 +245,7 @@ pre.dump {
     <section class="screen" id="scr-section" hidden></section>
     <section class="screen" id="scr-question" hidden></section>
     <section class="screen" id="scr-preview" hidden></section>
+    <section class="screen" id="scr-analysis" hidden></section>
     <section class="screen" id="scr-about" hidden></section>
   </main>
 
@@ -245,5 +255,6 @@ pre.dump {
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="app.js"></script>
+<script src="analysis.js"></script>
 </body>
 </html>

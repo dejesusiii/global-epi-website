@@ -37,13 +37,28 @@ sections, question types, validation rules, conditional logic — preview it exa
 an interviewer will see it, and then run it in the field with no connectivity.
 Installable to a phone home screen from `/field-app/`.
 
-**The builder.** Ten question types: short and long text, whole number, decimal,
-choose one, choose many, rating scale, date, confirmation, location. Per question you
-set wording, hint, required, and the rules that fit its type — input masks, ranges,
-character and selection limits, a cap against an earlier numeric answer, and scale end
-labels. Conditional visibility is offered only against questions that come earlier, so
-a rule can never depend on an answer that has not been given. Sections and questions
-reorder with up and down controls, which work on touch and by keyboard.
+**The builder.** Fourteen question types: short and long text, whole number, decimal,
+choose one, dropdown, choose many, yes/no, rating scale, matrix, ranking, date,
+confirmation, location. Per question you set wording, hint, required, and the rules
+that fit its type — input masks, ranges, character and selection limits, a cap against
+an earlier numeric answer, matrix rows, and scale end labels. Option order can be
+randomised per response to reduce order bias. Conditional visibility is offered only
+against questions that come earlier, so a rule can never depend on an answer that has
+not been given. Sections and questions reorder with up and down controls and can be
+duplicated; duplicating a section rewrites the copied questions' ids and repoints any
+rule that referenced them.
+
+**Analysis and export.** Every survey has a summary screen: response and collector
+counts, the collection date range, and a per-question summary shaped by the question —
+frequency bars with percentages for categorical answers, mean, median, min, max and a
+histogram for numeric ones, mean rating per row for a matrix, mean position for a
+ranking, recent answers for free text. Charts are single-series horizontal bars with
+direct labels rather than hover, because this runs on a phone in the field. The bar
+hue was chosen by running a palette validator, not by eye.
+
+Responses download as CSV with a UTF-8 BOM so Excel reads accented place names
+correctly. Matrix rows and ranking positions each get their own column; multi-select
+answers are semicolon-joined; geopoints split into latitude and longitude.
 
 A survey cannot be run until every question is answerable; the library shows it as a
 draft and lists what is missing. Surveys export and import as JSON, so they move
