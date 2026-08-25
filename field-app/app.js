@@ -106,6 +106,33 @@ const DB = {
   },
 };
 
+/* ── Durability ──────────────────────────────────────────────────
+   IndexedDB survives closing the browser, but by default it is
+   "best-effort": the browser may evict it under storage pressure, and
+   iOS evicts a site that has not been opened in seven days unless it
+   was installed to the home screen. Asking for persistent storage is
+   what turns that from a maybe into a promise, so we ask — and report
+   the answer instead of assuming it was granted. */
+const Store = {
+  persisted: null, usage: null, quota: null,
+  async read() {
+    try { this.persisted = navigator.storage?.persisted ? await navigator.storage.persisted() : null; }
+    catch { this.persisted = null; }
+    try {
+      const e = navigator.storage?.estimate ? await navigator.storage.estimate() : null;
+      this.usage = e ? e.usage : null; this.quota = e ? e.quota : null;
+    } catch { this.usage = this.quota = null; }
+    return this.persisted;
+  },
+  async request() {
+    if (!navigator.storage?.persist) { this.persisted = null; return null; }
+    try { this.persisted = await navigator.storage.persist(); } catch { this.persisted = null; }
+    await this.read();
+    return this.persisted;
+  },
+};
+const mb = (n) => (n === null || n === undefined ? '—' : n < 1048576 ? `${Math.round(n / 1024)} KB` : `${(n / 1048576).toFixed(1)} MB`);
+
 async function audit(action, detail) {
   await DB.put('audit', { id: uuidv7(), at: new Date().toISOString(),
     collector: State.collector, device: State.deviceId, action, detail: detail || '' });
@@ -419,6 +446,78 @@ async function importResponse(obj) {
   return null;
 }
 
+/* ── Backup of the whole device ──────────────────────────────────
+   Storage that survives a browser close still does not survive a lost
+   phone, a wiped profile, or "clear site data". A backup is the only
+   thing that does. Response payloads are already AES-GCM ciphertext, so
+   the file carries no readable answers; it also carries the salt and
+   verifier, which are not secret, so the same passphrase opens it on a
+   new device. The passphrase itself is in neither the file nor this
+   app — without it the backup is inert. */
+const BACKUP_KIND = 'epi-collect-backup';
+
+async function buildBackup() {
+  return {
+    kind: BACKUP_KIND, v: 1,
+    exported_at: new Date().toISOString(),
+    salt: await DB.meta('salt'), verifier: await DB.meta('verifier'),
+    device_id: await DB.meta('device_id'), tenant_id: await DB.meta('tenant_id'),
+    collector: await DB.meta('collector'),
+    instruments: await DB.all('instruments'),
+    events: await DB.all('events'),
+    outbox: await DB.all('outbox'),
+    audit: await DB.all('audit'),
+  };
+}
+
+/* Merging a backup into a device holding ciphertext from a different
+   passphrase would leave records nothing on that device can open, so
+   that case is refused rather than half-completed. */
+async function restoreBackup(obj) {
+  if (!obj || obj.kind !== BACKUP_KIND) return { error: 'That file is not a device backup.' };
+  if (!obj.salt || !obj.verifier) return { error: 'That backup is missing its key material and cannot be opened.' };
+  const mine = await DB.meta('salt');
+  if (mine && mine !== obj.salt) {
+    return { error: 'This backup was made under a different passphrase than this device uses. Restoring it would leave responses nothing here could decrypt. Erase this device first, or restore onto a fresh one.' };
+  }
+  if (!mine) {
+    await DB.meta('salt', obj.salt);
+    await DB.meta('verifier', obj.verifier);
+    await DB.meta('device_id', obj.device_id || uuidv7());
+    await DB.meta('tenant_id', obj.tenant_id || uuidv7());
+    await DB.meta('collector', obj.collector || 'GE-USER-01');
+  }
+  const counts = { instruments: 0, events: 0, outbox: 0 };
+  const seenEvents = new Set((await DB.all('events')).map((e) => e.op_id));
+  const seenInst = new Set((await DB.all('instruments')).map((i) => i.id));
+  const seenOut = new Set((await DB.all('outbox')).map((e) => e.op_id));
+  for (const i of obj.instruments || []) { if (!seenInst.has(i.id)) { await DB.put('instruments', i); counts.instruments++; } }
+  for (const e of obj.events || []) { if (!seenEvents.has(e.op_id)) { await DB.put('events', e); counts.events++; } }
+  for (const e of obj.outbox || []) { if (!seenOut.has(e.op_id)) { await DB.put('outbox', e); counts.outbox++; } }
+  for (const a of obj.audit || []) { await DB.put('audit', a); }
+  return { counts, adopted: !mine };
+}
+
+async function downloadBackup() {
+  const backup = await buildBackup();
+  const stamp = new Date().toISOString().slice(0, 10);
+  const blob = new Blob([JSON.stringify(backup)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `epi-collect-backup-${stamp}.json`;
+  a.click(); URL.revokeObjectURL(a.href);
+  await DB.meta('last_backup', { at: new Date().toISOString(), events: backup.events.length });
+  await audit('device.backup', `${backup.events.length} events`);
+  return backup;
+}
+
+/* How many stored responses are not in the most recent backup. */
+async function unbackedUp() {
+  const last = await DB.meta('last_backup');
+  const total = (await DB.all('events')).length;
+  return { total, since: Math.max(0, total - (last ? last.events : 0)), at: last ? last.at : null };
+}
+
 /* ── Builder model ───────────────────────────────────────────────── */
 function freshId(prefix, taken) {
   let id;
@@ -535,9 +634,31 @@ async function renderUnlock() {
         <input id="collector" type="text" value="GE-USER-01" /></div>` : ''}
       <button class="btn wide" id="do-unlock">${first ? 'Create and continue' : 'Unlock'}</button>
     </div>
+    ${first ? `
+    <div class="card">
+      <h3>Already have a backup?</h3>
+      <p class="muted">Restoring brings back the surveys and responses from another device. You then unlock with the passphrase that device used — it is not in the file, and without it the backup cannot be opened.</p>
+      <button class="btn ghost wide sm" id="do-restore">Restore from a backup file</button>
+      <p class="err" id="restore-err" hidden></p>
+      <input type="file" id="restore-file" accept="application/json,.json" hidden />
+    </div>` : ''}
     <div class="notice warn"><b>Pilot scope</b>
       <span>Non-identifying data only. This is not a HIPAA-compliant system.</span></div>`;
   setActions('');
+  if (first) {
+    $('do-restore').onclick = () => $('restore-file').click();
+    $('restore-file').onchange = async (e) => {
+      const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+      const err = $('restore-err'); err.hidden = true;
+      let obj;
+      try { obj = JSON.parse(await f.text()); } catch { obj = null; }
+      const r = await restoreBackup(obj);
+      if (r.error) { err.textContent = r.error; err.hidden = false; return; }
+      await audit('device.restore', `${r.counts.events} events`);
+      toast(`Restored ${r.counts.events} response${r.counts.events === 1 ? '' : 's'}`);
+      await renderUnlock();   // the device is no longer new: ask for the passphrase
+    };
+  }
   $('do-unlock').onclick = async () => {
     const pass = $('pass').value, err = $('pass-err');
     err.hidden = true;
@@ -562,6 +683,10 @@ async function renderUnlock() {
       await loadIdentity();
       await audit('unlock', '');
     }
+    /* Ask now, while the passphrase screen is still the thing on screen:
+       Firefox prompts for this, and a prompt during an interview is a
+       prompt at the worst possible moment. */
+    await Store.request();
     State.instruments = await DB.all('instruments');
     await renderHome(); show('home');
   };
@@ -575,6 +700,8 @@ async function loadIdentity() {
 async function renderHome() {
   const subs = await submissions();
   const outbox = await DB.all('outbox');
+  await Store.read();
+  const backup = await unbackedUp();
   const conflicts = subs.filter((s) => s.conflict).length;
   const counts = new Map();
   subs.forEach((s) => counts.set(s.latest.instrument_id, (counts.get(s.latest.instrument_id) || 0) + 1));
@@ -642,6 +769,18 @@ async function renderHome() {
       <button class="btn ghost sm" id="go-about">About</button>
     </div>
     ${conflicts ? `<div class="notice risk"><b>${conflicts} conflict${conflicts > 1 ? 's' : ''} to resolve</b><span>Two versions share a parent. Open Responses to review.</span></div>` : ''}
+
+    ${Store.persisted === false ? `<div class="notice warn">
+      <b>This browser has not promised to keep your data</b>
+      <span>Responses stay here when you close the browser, but until storage is marked persistent the browser may clear them if the device runs short of space — and on iPhone, after about a week without opening the app. Installing it to the home screen usually settles this. Either way, keep a backup.</span>
+      <div class="row" style="margin-top:4px"><button class="btn ghost sm" id="go-persist">Ask the browser to keep it</button></div></div>` : ''}
+
+    ${backup.total ? `<div class="notice${backup.since ? ' warn' : ''}">
+      <b>${backup.at ? `Last backup ${new Date(backup.at).toLocaleDateString()}` : 'No backup yet'}</b>
+      <span>${backup.since
+        ? `${backup.since} response${backup.since === 1 ? '' : 's'} ${backup.since === 1 ? 'is' : 'are'} on this device only. A backup is the one copy that survives a lost phone or cleared site data.`
+        : 'Every response here is in a backup file.'}</span>
+      <div class="row" style="margin-top:4px"><button class="btn ghost sm" id="go-backup">Back up now</button></div></div>` : ''}
     <input type="file" id="import-file" accept="application/json,.json" multiple hidden />`;
 
   setActions('');
@@ -649,6 +788,17 @@ async function renderHome() {
     State.draft = newSurvey(); await saveDraft();
     await audit('survey.create', State.draft.id);
     renderBuilder(); show('builder');
+  };
+  if ($('go-persist')) $('go-persist').onclick = async (e) => {
+    e.target.disabled = true;
+    const got = await Store.request();
+    toast(got ? 'The browser will keep this data' : 'The browser declined for now — keep a backup');
+    await renderHome();
+  };
+  if ($('go-backup')) $('go-backup').onclick = async () => {
+    await downloadBackup();
+    toast('Backup saved — keep it somewhere else than this device');
+    await renderHome();
   };
   $('go-queue').onclick = async () => { await renderQueue(); show('queue'); };
   $('go-about').onclick = async () => { await renderAbout(); show('about'); };
@@ -661,7 +811,11 @@ async function renderHome() {
     for (const f of files) {
       let obj;
       try { obj = JSON.parse(await f.text()); } catch { rejected.push(`${f.name}: not readable`); continue; }
-      if (obj && obj.kind === RESPONSE_KIND) {
+      if (obj && obj.kind === BACKUP_KIND) {
+        const r = await restoreBackup(obj);
+        if (r.error) rejected.push(r.error);
+        else { surveys += r.counts.instruments; responses += r.counts.events; }
+      } else if (obj && obj.kind === RESPONSE_KIND) {
         const why = await importResponse(obj);
         if (why) rejected.push(`${f.name}: ${why}`); else responses++;
       } else if (obj && Array.isArray(obj.sections)) {
@@ -1619,6 +1773,13 @@ async function renderRecord(id) {
 /* ── About ───────────────────────────────────────────────────────── */
 async function renderAbout() {
   const log = (await DB.all('audit')).sort((a, b) => b.id.localeCompare(a.id)).slice(0, 12);
+  await Store.read();
+  const backup = await unbackedUp();
+  const persistTxt = Store.persisted === true
+    ? 'Persistent — the browser has promised not to clear it to reclaim space.'
+    : Store.persisted === false
+      ? 'Best-effort — the browser may clear it if the device runs short of space, and on iPhone after about a week without opening the app. Installing to the home screen usually settles this.'
+      : 'This browser does not report a storage mode.';
   $('scr-about').innerHTML = `
     <div><p class="eyebrow">About this build</p><h2 style="margin-top:4px">What it does, and what it is not</h2></div>
     <div class="notice risk"><b>Not a HIPAA-compliant system</b>
@@ -1634,10 +1795,38 @@ async function renderAbout() {
         <li>Responses encrypted on the device with AES-256-GCM, key derived from your passphrase and never stored</li>
         <li>Each operation carries a UUIDv7 idempotency key and an HMAC signature</li>
         <li>Append-only history: corrections add versions, nothing is overwritten</li>
+        <li>Responses stay on the device when the browser is closed, and the app asks the browser to keep them rather than treating them as disposable cache</li>
+        <li>A backup file carries surveys and responses to another device, still as ciphertext</li>
         <li>Divergent edits are flagged for a human, never resolved automatically</li>
       </ul></div>
     <div class="card"><h3>What is simulated</h3>
       <p class="muted">The server is a local store, so the protocol can be demonstrated end to end without a backend. Swapping it for a real API is one function, <span class="mono">transmit</span>.</p></div>
+    <div class="card"><h3>Where your data lives</h3>
+      <p class="muted">Everything is stored inside this browser on this device, encrypted under your passphrase. It stays there when you close the browser and when the device is offline. It is not on a server, so it is not reachable from another phone or computer — a backup file is how it moves.</p>
+      <div class="stats" style="grid-template-columns:repeat(2,1fr)">
+        <div class="stat"><b>${backup.total}</b><span>Stored responses</span></div>
+        <div class="stat"><b>${mb(Store.usage)}</b><span>of ${mb(Store.quota)} available</span></div>
+      </div>
+      <div class="notice${Store.persisted === true ? '' : ' warn'}">
+        <b>Storage: ${Store.persisted === true ? 'persistent' : Store.persisted === false ? 'best-effort' : 'unknown'}</b>
+        <span>${persistTxt}</span></div>
+      ${Store.persisted === true ? '' : '<button class="btn ghost wide sm" id="a-persist">Ask the browser to keep this data</button>'}
+      <div class="divider"></div>
+      <h3>Backup</h3>
+      <p class="muted">${backup.at
+        ? `Last backup ${new Date(backup.at).toLocaleString()}${backup.since ? ` · ${backup.since} response${backup.since === 1 ? '' : 's'} since then` : ' · nothing new since'}`
+        : 'No backup has been made from this device.'}</p>
+      <p class="muted">The file holds your surveys and your responses as ciphertext. Your passphrase is not in it and is not stored anywhere, so the file is useless without you — and useless to you if the passphrase is forgotten.</p>
+      <div class="row">
+        <button class="btn sm" id="a-backup">Download a backup</button>
+        <button class="btn ghost sm" id="a-restore">Restore from a backup</button>
+      </div>
+      <input type="file" id="a-restore-file" accept="application/json,.json" hidden />
+      <p class="err" id="a-restore-err" hidden></p></div>
+
+    <div class="card"><h3>Signing in from another device</h3>
+      <p class="muted">There is no account and no server behind this app, so there is nothing to sign in to from elsewhere: the data is on the device that collected it. To carry it to another device, download a backup here and restore it there with the same passphrase. Accounts that follow a client across phones and computers need a hosted backend — that is a different build, not a setting.</p></div>
+
     <div class="card"><h3>This device</h3>
       <p class="muted mono">device ${esc(State.deviceId || '—')}<br />user ${esc(State.collector || '—')}</p>
       <h3 style="margin-top:8px">Recent activity</h3>
@@ -1645,10 +1834,33 @@ async function renderAbout() {
         <div class="item-top"><strong>${esc(a.action)}</strong><span class="muted mono">${new Date(a.at).toLocaleTimeString()}</span></div>
         ${a.detail ? `<span class="muted mono">${esc(a.detail)}</span>` : ''}</div>`).join('')}</div></div>
     <div class="card"><h3>Danger zone</h3>
-      <p class="muted">Erasing destroys the local key, every survey and every response on this device.</p>
+      <p class="muted">Erasing destroys the local key, every survey and every response on this device. A backup taken before erasing is the only way any of it comes back.</p>
       <button class="btn danger wide" id="a-wipe">Erase this device</button></div>`;
   setActions('<button class="btn ghost wide" id="a-back">Back</button>');
   $('a-back').onclick = async () => { await renderHome(); show('home'); };
+  if ($('a-persist')) $('a-persist').onclick = async (e) => {
+    e.target.disabled = true;
+    const got = await Store.request();
+    toast(got ? 'The browser will keep this data' : 'The browser declined for now — keep a backup');
+    await renderAbout();
+  };
+  $('a-backup').onclick = async () => {
+    await downloadBackup();
+    toast('Backup saved — keep it somewhere else than this device');
+    await renderAbout();
+  };
+  $('a-restore').onclick = () => $('a-restore-file').click();
+  $('a-restore-file').onchange = async (e) => {
+    const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+    const err = $('a-restore-err'); err.hidden = true;
+    let obj; try { obj = JSON.parse(await f.text()); } catch { obj = null; }
+    const r = await restoreBackup(obj);
+    if (r.error) { err.textContent = r.error; err.hidden = false; return; }
+    State.instruments = await DB.all('instruments');
+    await audit('device.restore', `${r.counts.events} events`);
+    toast(`Restored ${r.counts.events} response${r.counts.events === 1 ? '' : 's'} and ${r.counts.instruments} survey${r.counts.instruments === 1 ? '' : 's'}`);
+    await renderAbout();
+  };
   $('a-wipe').onclick = async () => {
     if (!confirm('Erase all surveys, responses and the encryption key? This cannot be undone.')) return;
     indexedDB.deleteDatabase('epi-collect'); Crypto.lock();

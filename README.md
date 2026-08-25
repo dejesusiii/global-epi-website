@@ -111,6 +111,38 @@ signature. History is append-only: a correction adds a version, nothing is
 overwritten. Divergent edits are flagged for a human rather than resolved
 automatically. An operation leaves the outbox only after a durable acknowledgement.
 
+**Where the data lives, and how long it stays.** Responses are held in IndexedDB on the
+device that collected them, encrypted under the passphrase. That survives closing the
+browser and rebooting the phone — verified by driving a real browser profile, closing
+the browser entirely, and reopening it.
+
+What it does not survive by default is the browser deciding it needs the space. Storage
+is "best-effort" until a site asks for better, and iOS evicts a site untouched for about
+a week unless it was installed to the home screen. So the app calls
+`navigator.storage.persist()` at unlock — while the passphrase screen is still up, since
+Firefox prompts for this and a prompt mid-interview is a prompt at the worst possible
+moment — and then **reports what the browser actually answered** rather than assuming it
+was granted. If it was not, the home screen says so in those words and offers to ask
+again.
+
+**Backup and restore.** Persistent storage still does not survive a lost phone or
+"clear site data", so the whole device backs up to one file: surveys, responses, outbox
+and audit log. Response payloads are already ciphertext, so the file carries no readable
+answers; it also carries the salt and verifier, which are not secret, so the same
+passphrase opens it on a new device. The passphrase is in neither the file nor the app.
+
+Restoring onto a fresh device adopts its key material, so the next screen asks for the
+passphrase that device used instead of offering to create a new one. Restoring onto a
+device that already holds ciphertext from a *different* passphrase is refused with the
+reason, rather than half-completing and leaving records nothing there can open.
+Re-restoring the same file changes nothing. The home screen tracks how many responses
+exist beyond the last backup and says so.
+
+**There is no account.** Nothing to sign in to from another phone or computer: the data
+is on the device that collected it, and a backup file is how it moves. Accounts that
+follow a client across devices need a hosted backend — a different build, not a setting.
+The app says this on its About screen rather than leaving it to be discovered.
+
 **What is simulated.** The server is a local IndexedDB store, so the protocol can be
 exercised end to end without a backend. Replacing it is one function, `transmit`.
 
