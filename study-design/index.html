@@ -155,8 +155,12 @@ main { max-width: var(--wrap); margin: 0 auto; padding: 34px 24px 72px; }
 .btn:hover { background: var(--brand-400); }
 .btn.ghost { background: #FFFFFF; border-color: var(--gray-300); color: var(--navy-900); }
 .btn.ghost:hover { background: var(--gray-50); border-color: var(--brand-600); color: var(--brand-700); }
-.btn[disabled] { opacity: .4; cursor: not-allowed; }
-.btn[disabled]:hover { background: #FFFFFF; border-color: var(--gray-300); color: var(--navy-900); }
+/* A disabled solid button dimmed to 40% read as "loading" rather than
+   "not yet". A neutral fill says what it means. */
+.btn[disabled], .btn[disabled]:hover {
+  background: var(--gray-100); border-color: var(--gray-200); color: var(--gray-400);
+  cursor: not-allowed;
+}
 
 /* ── Trail: the path taken is the justification ─────────────────── */
 .trail { display: grid; gap: 0; align-content: start; }
@@ -312,6 +316,93 @@ footer a { color: var(--brand-700); }
   border: 1px solid var(--gray-200); border-radius: 8px; padding: 14px; background: var(--gray-50);
   color: var(--gray-700); resize: vertical; margin-top: 12px;
 }
+
+/* ── The manuscript proposal wizard ─────────────────────────────── */
+.btn.sm { padding: 7px 13px; font-size: .82rem; }
+select {
+  font: inherit; width: 100%; padding: 11px 13px; border-radius: 8px;
+  border: 1.5px solid var(--gray-300); background: #FFFFFF; color: var(--gray-800);
+}
+select:focus { border-color: var(--brand-600); outline: none; box-shadow: 0 0 0 3px rgba(6,189,149,.16); }
+
+.pbar { display: flex; flex-wrap: wrap; gap: 6px; margin: 16px 0 4px; }
+.pchip {
+  font-family: var(--mono); font-size: .72rem; font-variant-numeric: tabular-nums;
+  width: 30px; height: 30px; border-radius: 7px; cursor: pointer;
+  border: 1.5px solid var(--gray-300); background: #FFFFFF; color: var(--gray-500);
+  display: grid; place-items: center; transition: background .15s, border-color .15s, color .15s;
+}
+.pchip.done { border-color: var(--brand-600); background: var(--brand-50); color: var(--brand-700); font-weight: 700; }
+.pchip.now { border-color: var(--navy-900); background: var(--navy-900); color: #FFFFFF; font-weight: 700; }
+.pchip:disabled { cursor: not-allowed; opacity: .45; }
+.pchip:not(:disabled):hover { border-color: var(--brand-600); }
+
+.pblock { margin-top: 20px; display: grid; gap: 7px; }
+.pblock h4 {
+  font-size: .7rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--gray-500);
+}
+.pblock p, .pblock li { font-size: .92rem; line-height: 1.6; color: var(--gray-700); }
+.pblock ul { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
+
+.guiding {
+  border-left: 3px solid var(--brand-500); padding: 2px 0 2px 15px;
+  display: grid; gap: 8px;
+}
+.guiding p { font-family: var(--display); font-weight: 600; color: var(--navy-900); font-size: 1rem; line-height: 1.5; }
+
+.pexample { margin-top: 18px; border: 1px solid var(--gray-200); border-radius: 8px; background: var(--gray-50); }
+.pexample > summary {
+  cursor: pointer; padding: 11px 15px; font-size: .85rem; font-weight: 600; color: var(--brand-700);
+  list-style: none;
+}
+.pexample > summary::-webkit-details-marker { display: none; }
+.pexample > summary::before { content: "▸ "; }
+.pexample[open] > summary::before { content: "▾ "; }
+.pexample .body {
+  padding: 0 15px 14px; font-size: .88rem; line-height: 1.65; color: var(--gray-700);
+  white-space: pre-wrap; border-top: 1px solid var(--gray-200); padding-top: 12px; margin: 0 0 0 0;
+}
+
+.peditor { display: grid; gap: 14px; margin-top: 20px; }
+.peditor > .btn { justify-self: start; }
+.rowcard {
+  border: 1px solid var(--gray-200); border-radius: 9px; padding: 15px; display: grid; gap: 10px;
+  background: #FFFFFF;
+}
+.rowhead { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.rowhead span { font-family: var(--mono); font-size: .72rem; color: var(--gray-400); text-transform: uppercase; letter-spacing: .1em; }
+.rowgrid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+@media (max-width: 720px) { .rowgrid { grid-template-columns: 1fr; } }
+.subfield { display: grid; gap: 4px; }
+.subfield label { font-size: .76rem; font-weight: 600; color: var(--gray-500); }
+.subfield textarea { min-height: 62px; }
+
+.pchecks { margin-top: 22px; display: grid; gap: 8px; }
+.pcheck {
+  display: grid; grid-template-columns: 18px minmax(0,1fr); gap: 10px; align-items: start;
+  font-size: .88rem; line-height: 1.55; padding: 10px 13px; border-radius: 8px;
+}
+.pcheck i { font-style: normal; font-weight: 700; line-height: 1.4; }
+.pcheck.block { background: #FBEDEC; border: 1px solid #E4B7B2; color: #7C2A24; }
+.pcheck.adv { background: #FCF7E4; border: 1px solid #E3D48E; color: #6B5A16; }
+.pcheck.ok { background: var(--brand-50); border: 1px solid var(--brand-600); color: var(--brand-700); }
+
+.prefillbar {
+  margin-top: 18px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+  padding: 12px 15px; border-radius: 8px; background: var(--gray-50); border: 1px dashed var(--gray-300);
+  font-size: .86rem; color: var(--gray-600);
+}
+.reviewrow {
+  display: grid; grid-template-columns: 30px minmax(0,1fr) auto; gap: 14px; align-items: center;
+  padding: 12px 0; border-top: 1px solid var(--gray-200);
+}
+.reviewrow .num { font-family: var(--mono); font-size: .76rem; color: var(--gray-400); }
+.reviewrow .ttl { font-weight: 600; color: var(--navy-900); font-size: .93rem; }
+.reviewrow .sub { font-size: .82rem; color: var(--gray-500); margin-top: 2px; }
+.pill { font-size: .72rem; font-weight: 700; padding: 4px 9px; border-radius: 9999px; letter-spacing: .04em; }
+.pill.ok { background: var(--brand-50); color: var(--brand-700); border: 1px solid var(--brand-600); }
+.pill.no { background: #FBEDEC; color: #7C2A24; border: 1px solid #E4B7B2; }
 
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 @media print {
@@ -1515,6 +1606,730 @@ function wrapText(text, width, indent) {
 
 
 /* ═════════════════════════════════════════════════════════════════════
+   MANUSCRIPT PROPOSAL — the seventeen sections
+   ---------------------------------------------------------------------
+   Transcribed from the GLOBAL EPI Manuscript Proposal Template: the
+   guiding questions, the instructions and the quality checkpoints are
+   the template's own words, and the worked examples are its own
+   hypothetical greenspace/hypertension study.
+
+   Each section carries its own checks, split in two on purpose:
+
+     blocking  — the format is incomplete. The template says a field is
+                 required, or that a part is mandatory. These stop the
+                 researcher moving on, which is what was asked for.
+     advisory  — the instructions give a target the page can count
+                 (12-15 words, 10-15 references, 4-6 limitations, a
+                 citation in author-year form). These are surfaced and
+                 never block, because a count is not a judgement: a
+                 sixteen-word title can be the right title.
+
+   Five sections prefill from the Research Design Algorithm. That is the
+   reason the proposal lives in this app rather than beside it — a
+   proposal that restates its own design by hand is a proposal that can
+   drift out of alignment with itself, which is exactly what Section 17
+   exists to catch.
+   ═════════════════════════════════════════════════════════════════════ */
+
+const words = (t) => String(t || '').trim().split(/\s+/).filter(Boolean).length;
+const sentences = (t) => String(t || '').trim().split(/[.!?]+(?=\s|$)/).map((x) => x.trim()).filter(Boolean).length;
+const hasCitation = (t) => /\(([A-Z][A-Za-z'’-]+)(\s+(et al\.?|and|&)\s+[A-Za-z'’-]+)?[,;]?\s*\d{4}\)/.test(String(t || ''))
+  || /[A-Z][A-Za-z'’-]+\s+(et al\.?|and|&)?\s*\(\d{4}\)/.test(String(t || ''));
+const filled = (t) => String(t || '').trim().length > 0;
+
+const DATABASES = ['pubmed', 'scopus', 'web of science', 'embase', 'cinahl', 'psycinfo',
+                   'medline', 'cochrane', 'lilacs', 'scielo', 'google scholar', 'proquest'];
+
+const PROPOSAL_SECTIONS = [
+  {
+    n: 1, part: 1, title: 'Title', kind: 'text', rows: 2,
+    guiding: ['Clearly and concisely, what is the working title for this study? Include the topic, the variables or concepts and the relationship between them, and the most critical key words.'],
+    instructions: 'Aim for 12-15 words or fewer. The title should let a reader identify, at a glance, the exposure or independent variable, the outcome or dependent variable, and the population and geographic context of the study.',
+    example: 'Residential Greenspace Exposure and Hypertension Prevalence among Adults in a Metropolitan Region.',
+    check(v) {
+      const b = [], a = [];
+      if (!filled(v)) b.push('The title is empty.');
+      else if (words(v) > 15) a.push('This title runs to ' + words(v) + ' words. The instructions aim for 12-15 or fewer.');
+      return { blocking: b, advisory: a };
+    }
+  },
+  {
+    n: 2, part: 1, title: 'Supporting Literature', kind: 'para', rows: 6,
+    guiding: ['In your review of recent, empirical literature, what keywords did you search and in what databases?'],
+    instructions: 'Write one paragraph documenting your search strategy: the exact keywords used (comma-separated), the scientific databases searched, and any institutional or governmental data sources consulted.',
+    example: 'The keywords and databases searched included residential greenspace, urban green space, NDVI, blood pressure, hypertension, environmental epidemiology, and GIS exposure assessment in the PubMed, Scopus, Web of Science, and Embase databases, as well as the Metropolitan Health Department chronic disease surveillance resources.',
+    check(v) {
+      const b = [], a = [];
+      if (!filled(v)) b.push('The search strategy is empty.');
+      else {
+        const low = String(v).toLowerCase();
+        if (!DATABASES.some((d) => low.includes(d))) a.push('No scientific database is named. The instructions ask for the databases searched.');
+        if (!String(v).includes(',')) a.push('No comma-separated keyword list is visible. The instructions ask for the exact keywords used.');
+      }
+      return { blocking: b, advisory: a };
+    }
+  },
+  {
+    n: 3, part: 1, title: 'Annotated Bibliography', kind: 'biblio',
+    guiding: ['What scholarly, peer-reviewed sources justify that this is a current and relevant problem in your discipline, and support your theoretical framework?'],
+    instructions: 'Provide roughly 10-15 full reference entries in the required citation style. After each entry add a four-part annotation: (a) the author(s) and year; (b) the design or method of the cited study; (c) its main finding(s); (d) exactly why this source matters to your proposal — name the specific methodological, theoretical or analytic decision it justifies, not just a summary of the article.',
+    checkpoints: ['Justified — Is evidence presented that this problem is significant to the discipline or professional field?'],
+    example: 'Alvarez R, Kim S, Nwosu C, et al. Urban Green Space Exposure and Blood Pressure: A Systematic Review. J Environ Epidemiol. 2023;12(3):145-160.\n(a) Alvarez et al. (2023); (b) systematic review of studies linking satellite-derived greenspace to blood pressure in urban adults; (c) higher greenspace exposure was associated with lower systolic blood pressure, attenuated after adjustment for neighborhood income; (d) it establishes a plausible dose-related association that justifies examining hypertension diagnosis as a discrete outcome while adjusting for socioeconomic covariates.',
+    check(v) {
+      const rows = Array.isArray(v) ? v : [];
+      const b = [], a = [];
+      const used = rows.filter((r) => filled(r.ref) || filled(r.a) || filled(r.b) || filled(r.c) || filled(r.d));
+      if (!used.length) b.push('No reference has been entered.');
+      used.forEach((r, i) => {
+        const missing = [];
+        if (!filled(r.ref)) missing.push('the reference entry');
+        if (!filled(r.a)) missing.push('(a) author(s) and year');
+        if (!filled(r.b)) missing.push('(b) design or method');
+        if (!filled(r.c)) missing.push('(c) main finding');
+        if (!filled(r.d)) missing.push('(d) relevance to this proposal');
+        if (missing.length) b.push('Reference ' + (i + 1) + ' is missing ' + missing.join(', ') + '.');
+      });
+      if (used.length && used.length < 10) a.push(used.length + ' reference' + (used.length === 1 ? '' : 's') + ' entered. The instructions ask for roughly 10-15.');
+      return { blocking: b, advisory: a };
+    }
+  },
+  {
+    n: 4, part: 1, title: 'Problem', kind: 'para', rows: 8,
+    guiding: ['What was the public-health problem that prompted you to search the literature to find out more? Write in complete sentences using a scholarly tone.'],
+    instructions: 'Sequence the paragraph as: (1) general context of the problem, supported by figures or data that demonstrate its magnitude and current relevance; (2) a synthesis of the most relevant existing evidence, cited by author and year; (3) an explicit statement of what aspect of the problem remains unresolved, as a bridge into the Research Gap section.',
+    example: 'A metropolitan region carries a substantial and geographically uneven distribution of residential greenspace, with a documented association to cardiovascular risk factors, yet the specific relationship between cumulative greenspace exposure and hypertension diagnosis remains poorly characterized. Satellite-derived vegetation indices have documented wide variation across the region (Alvarez et al., 2023). Despite this evidence, cumulative residential greenspace exposure has not been linked to hypertension diagnosis at the individual level while controlling for competing individual risk factors.',
+    check(v) {
+      const b = [], a = [];
+      if (!filled(v)) b.push('The problem statement is empty.');
+      else {
+        if (!hasCitation(v)) a.push('No author-year citation is visible. Step (2) of the instructions asks for the evidence cited by author and year.');
+        if (sentences(v) < 3) a.push('The instructions describe a three-part sequence; this reads as ' + sentences(v) + ' sentence' + (sentences(v) === 1 ? '' : 's') + '.');
+      }
+      return { blocking: b, advisory: a };
+    }
+  },
+  {
+    n: 5, part: 1, title: 'The Research Gap', kind: 'para', rows: 6,
+    guiding: ['Given what other researchers have already explored, what meaningful gap have you identified that your study will address?'],
+    instructions: 'In one paragraph, state explicitly what has NOT been studied yet. Contrast what the prior literature has already done (cite 2-3 key studies) against what remains unexplored. Be direct: "no study has..." / "the topic has not been explored in this way..."',
+    example: 'Although researchers have linked neighborhood-level greenspace to aggregate cardiovascular risk (Alvarez et al., 2023), no study has linked cumulative, multi-year residential greenspace exposure to hypertension diagnosis at the individual level while simultaneously adjusting for physical activity, income, and body mass index.',
+    check(v) {
+      const b = [], a = [];
+      if (!filled(v)) b.push('The research gap is empty.');
+      else {
+        const low = String(v).toLowerCase();
+        const direct = ['no study has', 'has not been', 'have not been', 'has yet to', 'remains unexplored', 'not been explored', 'no research has', 'no published'];
+        if (!direct.some((d) => low.includes(d))) a.push('The instructions ask you to be direct — "no study has...", "the topic has not been explored in this way...". No such statement is visible.');
+        if (!hasCitation(v)) a.push('No citation is visible. The instructions ask you to contrast 2-3 key prior studies.');
+      }
+      return { blocking: b, advisory: a };
+    }
+  },
+  {
+    n: 6, part: 1, title: 'The Research Problem', kind: 'text', rows: 4,
+    guiding: ['Based on the problem, the literature review and the gap, what is your research problem in one sentence?'],
+    instructions: 'Write a single formal sentence integrating the independent variable, the dependent variable, the population, and the covariates.',
+    checkpoints: ['Meaningful — Has a meaningful problem and gap in the research literature been identified?',
+                  'Original — Does this project have potential to make an original contribution?'],
+    example: 'The specific research problem that will be addressed through this study is that it is not known whether cumulative residential greenspace exposure over a 10-year window is associated with hypertension diagnosis among adults in a metropolitan region, controlling for individual-level risk factors.',
+    check(v) {
+      const b = [], a = [];
+      if (!filled(v)) b.push('The research problem is empty.');
+      else if (sentences(v) > 1) a.push('The instructions ask for a single sentence; this reads as ' + sentences(v) + '.');
+      return { blocking: b, advisory: a };
+    }
+  },
+  {
+    n: 7, part: 1, title: 'Purpose', kind: 'text', rows: 4,
+    guiding: ['To address your stated research problem, what is the purpose of your study? Will you describe, compare, explore, examine?'],
+    instructions: 'State the purpose in one sentence, specifying the type of study, the independent variable, the dependent variable, the population, and the adjustment covariates.',
+    example: 'The purpose of this quantitative, secondary data analysis study is to examine the association between cumulative residential greenspace exposure and hypertension diagnosis among an adult cohort, adjusted by age, sex, household income, physical activity level, body mass index, and smoking status.',
+    check(v) {
+      const b = [], a = [];
+      if (!filled(v)) b.push('The purpose is empty.');
+      else if (sentences(v) > 1) a.push('The instructions ask for a single sentence; this reads as ' + sentences(v) + '.');
+      return { blocking: b, advisory: a };
+    }
+  },
+  {
+    n: 8, part: 1, title: 'Framework (Conceptual or Theoretical)', kind: 'para', rows: 6,
+    guiding: ['What theory or concepts support (frame) your study, and who are the original authors?'],
+    instructions: 'Identify: (1) the original author(s) who introduced the framework and the year; (2) the framework’s main components or domains; (3) how prior studies in the field have applied it, with citations. Cite original, primary sources for the theory — not secondary summaries.',
+    example: 'The theory that grounds this study is the Social Ecological Model, originally articulated by Stokols (1992). The model conceptualizes health outcomes as shaped by multiple interacting levels of influence: individual, interpersonal, organizational, community and built environment, and public policy.',
+    check(v) {
+      const b = [], a = [];
+      if (!filled(v)) b.push('The framework is empty.');
+      else if (!hasCitation(v)) a.push('No original author and year is visible. The instructions ask for the author(s) who introduced the framework and the year.');
+      return { blocking: b, advisory: a };
+    }
+  },
+  {
+    n: 9, part: 1, title: 'Theoretical Framework Application', kind: 'para', rows: 7,
+    guiding: ['How do these theories or concepts relate to your research problem, purpose, and the nature of your study?'],
+    instructions: 'Explain the logical connection between the framework and every methodological decision in the proposal. For each design decision — time window, variable selection, design type, treatment of covariates — name the specific property of the framework that justifies it. Avoid justifying decisions by convenience; each choice should derive explicitly from the cited framework.',
+    checkpoints: ['Grounded — Is the problem framed to enable the researcher to build upon or counter previously published findings on the topic?'],
+    example: 'Measuring residential greenspace as a neighborhood-level exposure operationalizes the community level of the Social Ecological Model (Stokols, 1992). Selecting individual covariates such as physical activity and body mass index reflects the individual level and its interaction with the community-level exposure.',
+    check(v) {
+      const b = [], a = [];
+      if (!filled(v)) b.push('The framework application is empty.');
+      return { blocking: b, advisory: a };
+    }
+  },
+  {
+    n: 10, part: 2, title: 'Research Question and Hypotheses', kind: 'rq',
+    guiding: ['What question and hypotheses will you use to address the research problem? Ensure alignment with your study purpose and identify the variables and how they will be examined.'],
+    instructions: 'Write three components: the RQ as a complete formal question naming the independent variable, dependent variable, population and adjustment covariates; H₀, stating that no statistically significant association exists after adjustment; H₁, stating that a statistically significant association does exist after adjustment.',
+    example: 'RQ: What is the association between cumulative residential greenspace exposure and hypertension diagnosis among adults in a metropolitan region, adjusted for age, sex, household income, physical activity level, body mass index, and smoking status?\nH₀ — There is no statistically significant association between cumulative residential greenspace exposure and hypertension diagnosis, after adjustment for the specified covariates.\nH₁ — There is a statistically significant association between cumulative residential greenspace exposure and hypertension diagnosis, after adjustment for the specified covariates.',
+    check(v) {
+      const o = v || {};
+      const b = [], a = [];
+      if (!filled(o.rq)) b.push('The research question is empty.');
+      else if (!String(o.rq).trim().endsWith('?')) a.push('The instructions ask for the RQ as a complete formal question; this one does not end in a question mark.');
+      if (!filled(o.h0)) b.push('The null hypothesis (H₀) is empty.');
+      if (!filled(o.h1)) b.push('The alternative hypothesis (H₁) is empty.');
+      return { blocking: b, advisory: a };
+    }
+  },
+  {
+    n: 11, part: 2, title: 'Nature of the Study', kind: 'design',
+    guiding: ['What quantitative research design do you plan to use to address your research question?'],
+    instructions: 'Name the specific design and explain how it links the data sources and mitigates known limitations of that design, such as the ecological fallacy. Close with the full reference entry for the methodological source the design is based on.',
+    example: 'The specific quantitative research design will be a mixed ecological-individual cross-sectional design in which the neighborhood-level greenspace exposure is linked to individual hypertension cases in the adult cohort.\nReference: Salkind, N. J. (2010). Encyclopedia of Research Design. Vols 1-3. SAGE Publications.',
+    check(v) {
+      const o = v || {};
+      const b = [], a = [];
+      if (!filled(o.design)) b.push('The research design is empty.');
+      if (!filled(o.reference)) a.push('The instructions ask you to close with the full reference entry for the methodological source the design is based on.');
+      return { blocking: b, advisory: a };
+    },
+    prefill(ctx) {
+      if (!ctx.result) return null;
+      return {
+        design: 'The specific quantitative research design will be a ' + ctx.result.name.toLowerCase() + '. ' + ctx.result.definition,
+        reference: ''
+      };
+    },
+    prefillNote: 'From the Research Design Algorithm'
+  },
+  {
+    n: 12, part: 2, title: 'Sources of the Secondary Data', kind: 'para', rows: 8,
+    guiding: ['For your planned research design, what are the sources of the secondary data you will use, by name and date, to address each research question?'],
+    instructions: 'For each secondary data source, describe: its name and the period it covers; the unit of analysis and number of records or cases; the key variables it contains; the linkage method with the other data sources; and at least one known limitation of the data, such as possible exposure misclassification.',
+    example: 'Two linked secondary data sources will be used. The first is a satellite-derived vegetation index dataset for the metropolitan region, 2014-2024, curated into a neighborhood-year ecological dataset. The second is the Metropolitan Health Department Chronic Disease Registry, containing geocoded adult cases with hypertension diagnosis and covariates. A limitation is that the registry captures residence at the time of diagnosis but not complete residential history, which may introduce exposure misclassification.',
+    check(v) {
+      const b = [], a = [];
+      if (!filled(v)) b.push('The data sources are empty.');
+      else {
+        const low = String(v).toLowerCase();
+        if (!/limitation|misclassification|incomplete|missing|bias|caveat/.test(low)) {
+          a.push('No limitation of the data is visible. The instructions ask for at least one known limitation per source.');
+        }
+      }
+      return { blocking: b, advisory: a };
+    }
+  },
+  {
+    n: 13, part: 2, title: 'Data Points to Be Collected', kind: 'para', rows: 5,
+    guiding: ['What data points from these sources do you plan to use to answer your research question?'],
+    instructions: 'In a short paragraph, list the independent variable and every covariate that will be extracted from the secondary data sources to answer the research question.',
+    example: 'The variables selected to answer the research question include cumulative residential greenspace exposure (independent variable) and the covariates of age, sex, household income, physical activity level, body mass index, and smoking status.',
+    check(v) {
+      const b = [], a = [];
+      if (!filled(v)) b.push('The data points are empty.');
+      return { blocking: b, advisory: a };
+    },
+    prefill(ctx) {
+      /* The algorithm describes each variable in its own words, and those
+         descriptions are whole sentences. Folding them into one running
+         sentence produced grammar that read as if nobody had looked at
+         it, so they are laid out as labelled lines instead — the
+         researcher replaces each description with the field that will
+         actually supply it. */
+      if (!ctx.result) return null;
+      const v = ctx.result.variables;
+      return 'Independent variable — ' + v.independent + '\n' +
+        'Covariates — ' + v.covariates.join('; ') + '.\n' +
+        'Dependent variable — ' + v.dependent + '\n' +
+        'These are the variables the Research Design Algorithm identified for this design. Name, for each one, the specific field in the secondary data sources that will supply it.';
+    },
+    prefillNote: 'From the variable structure of the design'
+  },
+  {
+    n: 14, part: 2, title: 'Table 1. Data Dictionary and Data Table', kind: 'datatable',
+    guiding: ['For each variable, what is its name, label, type, level of measurement, coding scheme, and the statistical test that will be applied to the outcome variable?'],
+    instructions: 'Add one row per independent variable, covariate, and dependent variable. Keep variable names short, in capital letters, and free of spaces (SPSS or REDCap style, e.g. GREEN_EXP). The Statistical Test column is typically completed only for the outcome or dependent variable row.',
+    example: 'GREEN_EXP | Cumulative residential greenspace exposure | Independent | Ratio (Continuous) | Mean vegetation index; also in tertiles | Binary Logistic Regression\nHTN_DX | Hypertension diagnosis | Dependent | Nominal (Categorical) | 1= Diagnosed; 2= Not diagnosed | Binary Logistic Regression (Odds Ratios)',
+    check(v) {
+      const rows = (Array.isArray(v) ? v : []).filter((r) => filled(r.name) || filled(r.label));
+      const b = [], a = [];
+      if (!rows.length) b.push('The data dictionary has no rows.');
+      rows.forEach((r, i) => {
+        if (!filled(r.name)) b.push('Row ' + (i + 1) + ' has no variable name.');
+        if (!filled(r.type)) b.push('Row ' + (i + 1) + ' does not say whether the variable is independent, dependent or a covariate.');
+      });
+      const types = rows.map((r) => String(r.type || '').toLowerCase());
+      if (rows.length && !types.some((t) => t.includes('independent'))) b.push('No independent variable row.');
+      if (rows.length && !types.some((t) => t.includes('dependent'))) b.push('No dependent variable row.');
+      rows.forEach((r, i) => {
+        if (filled(r.name) && !/^[A-Z0-9_]+$/.test(String(r.name).trim())) {
+          a.push('"' + String(r.name).trim() + '" is not in SPSS or REDCap style — capital letters, digits and underscores only.');
+        }
+      });
+      const dv = rows.find((r) => String(r.type || '').toLowerCase().includes('dependent'));
+      if (dv && !filled(dv.test)) a.push('The dependent variable row has no statistical test. The instructions ask for it on the outcome row.');
+      return { blocking: b, advisory: a };
+    },
+    prefill(ctx) {
+      if (!ctx.result) return null;
+      const v = ctx.result.variables;
+      const test = ctx.statResult ? ctx.statResult.name : '';
+      const rows = [
+        { name: '', label: v.independent, type: 'Independent', level: '', code: '', test: '' }
+      ];
+      v.covariates.forEach((c) => rows.push({ name: '', label: c, type: 'Covariate', level: '', code: '', test: '' }));
+      rows.push({ name: '', label: v.dependent, type: 'Dependent', level: '', code: '', test: test });
+      return rows;
+    },
+    prefillNote: 'One row per variable from the design, plus the statistical test on the outcome row'
+  },
+  {
+    n: 15, part: 2, title: 'Study Limitations and Challenges', kind: 'list',
+    guiding: ['What limitations, challenges or barriers might you need to address while conducting this study — access to data, storage requirements, separation of roles, ethical considerations, data fees?'],
+    instructions: 'List 4-6 methodological limitations. For each one, state (a) why it constitutes a limitation and (b) how it is mitigated, or why it cannot be fully eliminated. Include data-governance considerations where relevant: Data Use Agreement, IRB approval, encrypted access-controlled storage, role separation between data custodians and analysts.',
+    checkpoints: ['Feasible — Can a systematic method of inquiry be used to address the problem, and does the approach consider potential risks and burdens placed on research participants?'],
+    example: 'The ecological assignment of neighborhood greenspace exposure to individuals introduces the potential for exposure misclassification and the ecological fallacy; this is mitigated by the mixed ecological-individual design and by adjusting for individual covariates, but it cannot be fully eliminated.',
+    check(v) {
+      const items = (Array.isArray(v) ? v : []).filter((x) => filled(x));
+      const b = [], a = [];
+      if (!items.length) b.push('No limitation has been entered.');
+      if (items.length && items.length < 4) a.push(items.length + ' limitation' + (items.length === 1 ? '' : 's') + ' entered. The instructions ask for 4-6.');
+      if (items.length > 6) a.push(items.length + ' limitations entered. The instructions ask for 4-6.');
+      items.forEach((t, i) => {
+        const low = String(t).toLowerCase();
+        if (!/mitigat|address|reduce|minimi|cannot be|control for|adjust/.test(low)) {
+          a.push('Limitation ' + (i + 1) + ' does not say how it is mitigated, or why it cannot be eliminated.');
+        }
+      });
+      return { blocking: b, advisory: a };
+    },
+    prefill(ctx) {
+      if (!ctx.result) return null;
+      return ctx.result.watch.slice();
+    },
+    prefillNote: 'The critical points the algorithm flagged for this design'
+  },
+  {
+    n: 16, part: 2, title: 'Significance', kind: 'para', rows: 8,
+    guiding: ['How will your study address the meaningful, discipline-specific issue you identified, and therefore contribute to your field and to positive social change?'],
+    instructions: 'Write two paragraphs: (1) scientific and disciplinary significance — how the study extends the existing literature or fills a specific, already-identified gap, citing the prior studies it extends; (2) significance for positive social change and public health — who will benefit from the findings and what concrete actions could follow, such as policy, surveillance, resource allocation or prevention.',
+    checkpoints: ['Impact — Does this project have potential to affect positive social change?',
+                  'Objective — Is the topic approached in an objective manner?'],
+    example: 'This study would address a meaningful, discipline-specific gap by providing an individual-level characterization of how cumulative residential greenspace exposure relates to hypertension diagnosis.\n\nResults could provide decision-relevant evidence for city planning departments, public health agencies and community organizations regarding the neighborhoods that would benefit most from greenspace investment.',
+    check(v) {
+      const b = [], a = [];
+      if (!filled(v)) b.push('The significance section is empty.');
+      else {
+        const paras = String(v).split(/\n\s*\n|\n/).map((x) => x.trim()).filter(Boolean);
+        if (paras.length < 2) a.push('The instructions ask for two paragraphs: disciplinary significance, then significance for positive social change.');
+      }
+      return { blocking: b, advisory: a };
+    }
+  },
+  {
+    n: 17, part: 2, title: 'Research Design Alignment Table', kind: 'alignment',
+    guiding: ['Is there a logical progression from the research problem to the purpose of the study?',
+              'Does the identified framework ground the investigation into the stated problem?',
+              'Do the problem, purpose and framework align with the research question in every row?',
+              'By row: will the variables listed address the RQ? Will the analysis address the RQ? Can the analysis be completed with the data points that will be collected?'],
+    instructions: 'This table is a synthesis, not new content. Copy — in condensed form — the problem, purpose and framework from Sections 6-8 into the first column; the RQ and design from Sections 10-11 into the second; the data sources from Section 12 into the third; the variables from Sections 13-14 into the fourth; and the planned analytic method into the fifth.',
+    checkpoints: ['Aligned — Do the various aspects of the proposal align overall?'],
+    example: 'Problem, Purpose, Framework | RQ and Design | Secondary Data Sources | Data Points | Data Analysis',
+    check(v) {
+      const rows = (Array.isArray(v) ? v : []).filter((r) => r.some ? r.some(filled) : false);
+      const b = [], a = [];
+      if (!rows.length) b.push('The alignment table has no rows.');
+      rows.forEach((r, i) => {
+        const cols = ['Problem, purpose and framework', 'Research question and design', 'Secondary data sources', 'Data points', 'Data analysis'];
+        r.forEach((cell, ci) => { if (!filled(cell)) b.push('Row ' + (i + 1) + ' is missing "' + cols[ci] + '".'); });
+      });
+      return { blocking: b, advisory: a };
+    },
+    prefill(ctx) {
+      const p = ctx.proposal || {};
+      const design = ctx.result ? ctx.result.name : '';
+      const analysis = ctx.statResult ? ctx.statResult.name : '';
+      const dataPoints = ctx.result
+        ? 'IV: ' + ctx.result.variables.independent + ' Covariates: ' + ctx.result.variables.covariates.join('; ') + '. DV: ' + ctx.result.variables.dependent
+        : '';
+      const col1 = [p.s6 ? 'Problem: ' + p.s6 : '', p.s7 ? 'Purpose: ' + p.s7 : '', p.s8 ? 'Framework: ' + p.s8 : ''].filter(Boolean).join(' ');
+      const col2 = [(p.s10 && p.s10.rq) ? 'RQ: ' + p.s10.rq : '', design ? 'Design: ' + design + '.' : ''].filter(Boolean).join(' ');
+      return [[col1, col2, p.s12 || '', dataPoints || p.s13 || '', analysis]];
+    },
+    prefillNote: 'Condensed from the sections you already completed'
+  }
+];
+
+const sectionByNumber = (n) => PROPOSAL_SECTIONS.find((x) => x.n === n) || null;
+const proposalKey = (n) => 's' + n;
+
+/* An empty value of the right shape for a section, so the editors never
+   have to cope with undefined. */
+function blankValue(section) {
+  switch (section.kind) {
+    case 'biblio': return [{ ref: '', a: '', b: '', c: '', d: '' }];
+    case 'rq': return { rq: '', h0: '', h1: '' };
+    case 'design': return { design: '', reference: '' };
+    case 'datatable': return [{ name: '', label: '', type: '', level: '', code: '', test: '' }];
+    case 'list': return [''];
+    case 'alignment': return [['', '', '', '', '']];
+    default: return '';
+  }
+}
+
+function proposalValue(proposal, section) {
+  const v = (proposal || {})[proposalKey(section.n)];
+  if (v === undefined || v === null) return blankValue(section);
+  return v;
+}
+
+/* How far the proposal has got: a section counts as done when nothing
+   blocks it. */
+function proposalProgress(proposal, ctx) {
+  let done = 0;
+  const status = {};
+  for (const sec of PROPOSAL_SECTIONS) {
+    const v = proposalValue(proposal, sec);
+    const r = sec.check(v, ctx);
+    status[sec.n] = r;
+    if (!r.blocking.length) done += 1;
+  }
+  return { done, total: PROPOSAL_SECTIONS.length, status };
+}
+
+/* The Word document. Mirrors the template's own order and headings. */
+function buildProposalDocx(study, proposal, ctx) {
+  const D = DOCX;
+  const p = proposal || {};
+  const val = (n) => p[proposalKey(n)];
+  const out = [];
+
+  out.push(D.p('GLOBAL EPI LLC', { style: 'Subtitle' }));
+  out.push(D.p('Manuscript Proposal' + (study && study.name ? '' : ''), { style: 'Title' }));
+  if (study && study.name) out.push(D.p(study.name, { size: 13, bold: true, color: '047963' }));
+  const meta = [];
+  if (study && study.pi) meta.push('Researcher: ' + study.pi);
+  if (study && study.population) meta.push('Population: ' + study.population);
+  meta.push('Prepared ' + new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }));
+  out.push(D.p(meta.join('   ·   '), { size: 9, color: '69736F', spaceAfter: 320 }));
+
+  const section = (n, bodyFn) => {
+    const sec = sectionByNumber(n);
+    out.push(D.p(n + '. ' + sec.title, { style: 'Heading2' }));
+    bodyFn(sec);
+  };
+
+  out.push(D.p('Part 1: Overview', { style: 'Heading1' }));
+
+  [1, 2].forEach((n) => section(n, () => out.push(D.prose(val(n) || ''))));
+
+  section(3, () => {
+    const rows = Array.isArray(val(3)) ? val(3) : [];
+    const used = rows.filter((r) => filled(r.ref) || filled(r.a));
+    if (!used.length) { out.push(D.p('')); return; }
+    used.forEach((r) => {
+      out.push(D.prose(r.ref, { spaceAfter: 60 }));
+      out.push(D.p('(a) ' + (r.a || ''), { indent: 360, size: 10, spaceAfter: 40 }));
+      out.push(D.p('(b) ' + (r.b || ''), { indent: 360, size: 10, spaceAfter: 40 }));
+      out.push(D.p('(c) ' + (r.c || ''), { indent: 360, size: 10, spaceAfter: 40 }));
+      out.push(D.p('(d) ' + (r.d || ''), { indent: 360, size: 10, spaceAfter: 200 }));
+    });
+  });
+
+  [4, 5, 6, 7, 8, 9].forEach((n) => section(n, () => out.push(D.prose(val(n) || ''))));
+
+  out.push(D.pageBreak());
+  out.push(D.p('Part 2: Manuscript', { style: 'Heading1' }));
+
+  section(10, () => {
+    const v = val(10) || {};
+    out.push(D.p('RQ: ' + (v.rq || ''), { spaceAfter: 100 }));
+    out.push(D.p('H₀ — ' + (v.h0 || ''), { spaceAfter: 100 }));
+    out.push(D.p('H₁ — ' + (v.h1 || '')));
+  });
+
+  section(11, () => {
+    const v = val(11) || {};
+    out.push(D.prose(v.design || ''));
+    if (filled(v.reference)) out.push(D.p('Reference entry for the work on which this design is based: ' + v.reference, { size: 10 }));
+  });
+
+  [12, 13].forEach((n) => section(n, () => out.push(D.prose(val(n) || ''))));
+
+  section(14, () => {
+    const rows = (Array.isArray(val(14)) ? val(14) : []).filter((r) => filled(r.name) || filled(r.label));
+    const head = ['Variable Names', 'Variable Label', 'Types of Variables', 'Levels of Measurement', 'Code', 'Statistical Test for the Outcome Variable'];
+    const body = rows.map((r) => [r.name || '', r.label || '', r.type || '', r.level || '', r.code || '', r.test || '']);
+    out.push(D.table([head].concat(body.length ? body : [['', '', '', '', '', '']]),
+      [1300, 2300, 1300, 1600, 2100, 1800], { header: true, size: 8 }));
+  });
+
+  section(15, () => {
+    const items = (Array.isArray(val(15)) ? val(15) : []).filter(filled);
+    if (!items.length) { out.push(D.p('')); return; }
+    items.forEach((t, i) => out.push(D.p((i + 1) + '. ' + t, { indent: 240, spaceAfter: 120 })));
+  });
+
+  section(16, () => out.push(D.prose(val(16) || '')));
+
+  section(17, () => {
+    const rows = (Array.isArray(val(17)) ? val(17) : []).filter((r) => Array.isArray(r) && r.some(filled));
+    const head = ['Research Problem, Purpose, and Framework', 'Research Question(s) & Design', 'Secondary Data Sources', 'Data Points', 'Data Analysis'];
+    const body = rows.length ? rows : [['', '', '', '', '']];
+    out.push(D.table([head].concat(body), [2600, 2200, 1800, 1900, 1900], { header: true, size: 8 }));
+  });
+
+  out.push(D.p('', { spaceAfter: 200 }));
+  out.push(D.p('Prepared with the GLOBAL EPI Research Design Algorithm. This proposal orients the design of the study; it does not replace the principal investigator, the ethics committee, or the study statistician.',
+    { size: 8, color: '69736F', italic: true }));
+
+  return DOCX.pack(out.join(''));
+}
+
+
+/* ═════════════════════════════════════════════════════════════════════
+   DOCX WRITER — no library, no network
+   ---------------------------------------------------------------------
+   A .docx is a ZIP of XML parts, so the same reasoning as the PDF
+   applies: the page can build one itself rather than depend on a script
+   from somewhere else. Entries are stored uncompressed — Word opens a
+   stored archive perfectly well, a proposal is a few dozen kilobytes of
+   text, and nothing is gained by deflating it.
+   ═════════════════════════════════════════════════════════════════════ */
+
+const ZIP = {
+  table: (() => {
+    const t = new Uint32Array(256);
+    for (let n = 0; n < 256; n++) {
+      let c = n;
+      for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1;
+      t[n] = c >>> 0;
+    }
+    return t;
+  })(),
+
+  crc32(bytes) {
+    let c = 0xFFFFFFFF;
+    for (let i = 0; i < bytes.length; i++) c = this.table[(c ^ bytes[i]) & 0xFF] ^ (c >>> 8);
+    return (c ^ 0xFFFFFFFF) >>> 0;
+  },
+
+  /* MS-DOS date and time, which is what a ZIP header carries. */
+  stamp(d) {
+    return {
+      time: (d.getHours() << 11) | (d.getMinutes() << 5) | (d.getSeconds() >> 1),
+      date: ((d.getFullYear() - 1980) << 9) | ((d.getMonth() + 1) << 5) | d.getDate()
+    };
+  },
+
+  build(files) {
+    const parts = [];
+    const central = [];
+    let offset = 0;
+    const { time, date } = this.stamp(new Date());
+    const utf8 = new TextEncoder();
+
+    const u16 = (n) => [n & 0xFF, (n >>> 8) & 0xFF];
+    const u32 = (n) => [n & 0xFF, (n >>> 8) & 0xFF, (n >>> 16) & 0xFF, (n >>> 24) & 0xFF];
+
+    for (const f of files) {
+      const name = utf8.encode(f.name);
+      const data = typeof f.data === 'string' ? utf8.encode(f.data) : f.data;
+      const crc = this.crc32(data);
+
+      const local = [].concat(
+        u32(0x04034B50), u16(20), u16(0), u16(0), u16(time), u16(date),
+        u32(crc), u32(data.length), u32(data.length), u16(name.length), u16(0));
+      parts.push(new Uint8Array(local), name, data);
+
+      central.push(new Uint8Array([].concat(
+        u32(0x02014B50), u16(20), u16(20), u16(0), u16(0), u16(time), u16(date),
+        u32(crc), u32(data.length), u32(data.length),
+        u16(name.length), u16(0), u16(0), u16(0), u16(0), u32(0), u32(offset))));
+      central.push(name);
+      offset += local.length + name.length + data.length;
+    }
+
+    const cdStart = offset;
+    let cdSize = 0;
+    for (const c of central) { parts.push(c); cdSize += c.length; }
+    parts.push(new Uint8Array([].concat(
+      u32(0x06054B50), u16(0), u16(0), u16(files.length), u16(files.length),
+      u32(cdSize), u32(cdStart), u16(0))));
+
+    let total = 0;
+    for (const part of parts) total += part.length;
+    const out = new Uint8Array(total);
+    let at = 0;
+    for (const part of parts) { out.set(part, at); at += part.length; }
+    return out;
+  }
+};
+
+const DOCX = {
+  /* XML forbids most control characters outright, and a stray one makes
+     Word refuse the whole file rather than skip the character. */
+  esc(text) {
+    const src = String(text === null || text === undefined ? '' : text);
+    let out = '';
+    for (const ch of src) {
+      const c = ch.codePointAt(0);
+      /* XML 1.0 forbids most C0 controls outright: one stray character
+         makes Word reject the whole file rather than skip it. Tab, line
+         feed and carriage return are the only ones allowed through. */
+      if (c < 0x20 && c !== 0x09 && c !== 0x0A && c !== 0x0D) continue;
+      if (c === 0x7F) continue;
+      out += ch === '&' ? '&amp;'
+           : ch === '<' ? '&lt;'
+           : ch === '>' ? '&gt;'
+           : ch === '"' ? '&quot;'
+           : ch;
+    }
+    return out;
+  },
+
+  p(text, opts) {
+    const o = opts || {};
+    const pPr = '<w:pPr>' +
+      (o.style ? '<w:pStyle w:val="' + o.style + '"/>' : '') +
+      (o.spaceAfter !== undefined ? '<w:spacing w:after="' + o.spaceAfter + '"/>' : '') +
+      (o.indent ? '<w:ind w:left="' + o.indent + '"/>' : '') +
+      '</w:pPr>';
+    const rPr = '<w:rPr>' +
+      (o.bold ? '<w:b/>' : '') + (o.italic ? '<w:i/>' : '') +
+      (o.size ? '<w:sz w:val="' + o.size * 2 + '"/><w:szCs w:val="' + o.size * 2 + '"/>' : '') +
+      (o.color ? '<w:color w:val="' + o.color + '"/>' : '') +
+      '</w:rPr>';
+    const body = String(text === null || text === undefined ? '' : text);
+    if (!body) return '<w:p>' + pPr + '</w:p>';
+    return '<w:p>' + pPr + '<w:r>' + rPr + '<w:t xml:space="preserve">' + this.esc(body) + '</w:t></w:r></w:p>';
+  },
+
+  /* A field the researcher typed with line breaks becomes several
+     paragraphs, not one paragraph with breaks inside it. */
+  prose(text, opts) {
+    const blocks = String(text || '').split(/\r?\n/).map((x) => x.trim()).filter(Boolean);
+    if (!blocks.length) return this.p('', opts);
+    return blocks.map((b) => this.p(b, opts)).join('');
+  },
+
+  cell(text, widthDxa, opts) {
+    const o = opts || {};
+    return '<w:tc><w:tcPr><w:tcW w:w="' + widthDxa + '" w:type="dxa"/>' +
+      (o.shade ? '<w:shd w:val="clear" w:color="auto" w:fill="' + o.shade + '"/>' : '') +
+      '</w:tcPr>' +
+      this.prose(text, { bold: o.bold, size: o.size || 9, color: o.color, spaceAfter: 40 }) +
+      '</w:tc>';
+  },
+
+  table(rows, widths, opts) {
+    const o = opts || {};
+    const total = widths.reduce((a, b) => a + b, 0);
+    const grid = widths.map((w) => '<w:gridCol w:w="' + w + '"/>').join('');
+    const edges = ['top', 'left', 'bottom', 'right', 'insideH', 'insideV'];
+    const borders = '<w:tblBorders>' +
+      edges.map((e) => '<w:' + e + ' w:val="single" w:sz="4" w:space="0" w:color="C5CFCB"/>').join('') +
+      '</w:tblBorders>';
+    const body = rows.map((cells, ri) => {
+      const head = ri === 0 && o.header;
+      return '<w:tr>' + (head ? '<w:trPr><w:tblHeader/></w:trPr>' : '') +
+        cells.map((c, ci) => this.cell(c, widths[ci], {
+          bold: head, shade: head ? '0A2540' : null, color: head ? 'FFFFFF' : null, size: o.size
+        })).join('') + '</w:tr>';
+    }).join('');
+    return '<w:tbl><w:tblPr><w:tblStyle w:val="TableGrid"/><w:tblW w:w="' + total + '" w:type="dxa"/>' +
+      borders + '</w:tblPr><w:tblGrid>' + grid + '</w:tblGrid>' + body + '</w:tbl>' +
+      this.p('', { spaceAfter: 160 });
+  },
+
+  pageBreak() { return '<w:p><w:r><w:br w:type="page"/></w:r></w:p>'; },
+
+  /* US Letter with one-inch margins, matching the template it replaces. */
+  document(bodyXml) {
+    return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+      '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">' +
+      '<w:body>' + bodyXml +
+      '<w:sectPr><w:pgSz w:w="12240" w:h="15840"/>' +
+      '<w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" ' +
+      'w:header="720" w:footer="720" w:gutter="0"/></w:sectPr>' +
+      '</w:body></w:document>';
+  },
+
+  styles() {
+    const style = (id, name, o) =>
+      '<w:style w:type="paragraph" w:styleId="' + id + '">' +
+      '<w:name w:val="' + name + '"/><w:qFormat/><w:pPr>' +
+      /* CT_PPrBase fixes the order of these children: keepNext, then
+         spacing, then outlineLvl. Any other order fails the schema, and
+         Word reports a corrupt file rather than ignoring the element. */
+      (o.keep ? '<w:keepNext/>' : '') +
+      '<w:spacing w:before="' + (o.before || 0) + '" w:after="' + (o.after || 120) + '"/>' +
+      (o.outline !== undefined ? '<w:outlineLvl w:val="' + o.outline + '"/>' : '') +
+      '</w:pPr><w:rPr>' +
+      (o.bold ? '<w:b/>' : '') +
+      '<w:color w:val="' + (o.color || '39413E') + '"/>' +
+      '<w:sz w:val="' + o.size * 2 + '"/><w:szCs w:val="' + o.size * 2 + '"/>' +
+      (o.caps ? '<w:caps/>' : '') +
+      '</w:rPr></w:style>';
+    const edges = ['top', 'left', 'bottom', 'right', 'insideH', 'insideV'];
+
+    return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+      '<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">' +
+      '<w:docDefaults><w:rPrDefault><w:rPr>' +
+      '<w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/>' +
+      '<w:sz w:val="22"/><w:szCs w:val="22"/><w:color w:val="39413E"/>' +
+      '</w:rPr></w:rPrDefault><w:pPrDefault><w:pPr>' +
+      '<w:spacing w:after="140" w:line="276" w:lineRule="auto"/>' +
+      '</w:pPr></w:pPrDefault></w:docDefaults>' +
+      style('Title', 'Title', { size: 22, bold: true, color: '061A2E', after: 60 }) +
+      style('Subtitle', 'Subtitle', { size: 11, color: '69736F', after: 240 }) +
+      style('Heading1', 'heading 1', { size: 14, bold: true, color: '061A2E', outline: 0, before: 360, after: 160, keep: true, caps: true }) +
+      style('Heading2', 'heading 2', { size: 12, bold: true, color: '047963', outline: 1, before: 280, after: 100, keep: true }) +
+      style('Heading3', 'heading 3', { size: 10, bold: true, color: '69736F', outline: 2, before: 160, after: 60, keep: true }) +
+      '<w:style w:type="table" w:styleId="TableGrid"><w:name w:val="Table Grid"/><w:tblPr>' +
+      '<w:tblBorders>' +
+      edges.map((e) => '<w:' + e + ' w:val="single" w:sz="4" w:space="0" w:color="C5CFCB"/>').join('') +
+      '</w:tblBorders></w:tblPr></w:style>' +
+      '</w:styles>';
+  },
+
+  pack(bodyXml) {
+    const CT = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+      '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">' +
+      '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>' +
+      '<Default Extension="xml" ContentType="application/xml"/>' +
+      '<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>' +
+      '<Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>' +
+      '</Types>';
+    const RELS = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+      '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+      '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>' +
+      '</Relationships>';
+    const DRELS = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+      '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+      '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>' +
+      '</Relationships>';
+    return ZIP.build([
+      { name: '[Content_Types].xml', data: CT },
+      { name: '_rels/.rels', data: RELS },
+      { name: 'word/_rels/document.xml.rels', data: DRELS },
+      { name: 'word/styles.xml', data: this.styles() },
+      { name: 'word/document.xml', data: this.document(bodyXml) }
+    ]);
+  }
+};
+
+
+/* ═════════════════════════════════════════════════════════════════════
    ACCOUNTS AND SAVED STUDIES
    ---------------------------------------------------------------------
    The same shape as EPI Collect, deliberately: an account holds a
@@ -2071,7 +2886,7 @@ function buildPdf(designAnswers, statAnswers, study) {
    ═════════════════════════════════════════════════════════════════════ */
 
 const State = {
-  phase: 'unlock',       // unlock | create | library | wizard
+  phase: 'unlock',       // unlock | create | library | wizard | proposal
   pickedAccount: null,
   anonymous: false,      // working without an account
   studies: [],
@@ -2079,7 +2894,9 @@ const State = {
   design: [],
   stat: [],
   statOpen: false,
-  showReport: false
+  showReport: false,
+  proposal: null,        // { s1..s17 } — the manuscript proposal, section by section
+  section: 1             // which proposal section is on screen (18 = review)
 };
 
 const $ = (id) => document.getElementById(id);
@@ -2359,6 +3176,13 @@ function renderResult(result, steps) {
           '</div>' +
         '</div>' +
 
+        '<div class="section">' +
+          '<h3>Manuscript proposal</h3>' +
+          '<p class="lede" style="margin-bottom:14px">The seventeen-section proposal, written one section at a time against the instructions of the GLOBAL EPI template, and issued as a Word document. Five of its sections start from the design you just completed rather than from a blank box.</p>' +
+          '<button class="btn" type="button" id="btn-proposal">' +
+            (State.proposal && Object.keys(State.proposal).length ? 'Continue the manuscript proposal' : 'Build the manuscript proposal') + ' →</button>' +
+        '</div>' +
+
         '<div class="navrow">' +
           '<button class="btn ghost" type="button" id="btn-copy">Copy report text</button>' +
           '<button class="btn ghost" type="button" id="btn-toggle-report">' + (State.showReport ? 'Hide' : 'View') + ' report text</button>' +
@@ -2381,11 +3205,15 @@ function wireResult() {
   byId('btn-reset-inline', reset);
   byId('btn-copy', copyReport);
   byId('btn-pdf', () => savePdf(State.design, State.stat.length ? State.stat : [], readSaveForm()));
+  byId('btn-proposal', () => {
+    State.study = { ...(State.study || {}), ...readSaveForm() };
+    openProposal(State.section || 1);
+  });
   byId('btn-save', async () => {
     const err = $('s-err'); err.hidden = true;
     const form = readSaveForm();
     if (!form.name) { err.textContent = 'Give the study a name before saving it.'; err.hidden = false; return; }
-    const saved = await Studies.save({ ...(State.study || {}), ...form, design: [...State.design], stat: [...State.stat] });
+    const saved = await Studies.save({ ...(State.study || {}), ...form, design: [...State.design], stat: [...State.stat], proposal: State.proposal });
     State.study = saved;
     State.studies = await Studies.list();
     render();
@@ -2421,6 +3249,8 @@ function reset() {
   State.stat = [];
   State.statOpen = false;
   State.showReport = false;
+  State.proposal = null;
+  State.section = 1;
   render();
   toast('Questionnaire reset');
 }
@@ -2602,10 +3432,12 @@ function renderLibrary() {
             '<button class="grab" type="button" data-open="' + esc(st.id) + '">' +
               '<strong>' + esc(st.name) + '</strong>' +
               '<span>' + (res ? esc(res.name) + ' · class ' + esc(res.evidenceClass) : 'Incomplete') +
+                (st.proposal ? ' · proposal ' + proposalDone(st) + '/' + PROPOSAL_SECTIONS.length : '') +
                 ' · updated ' + new Date(st.updatedAt).toLocaleDateString() + '</span>' +
             '</button>' +
             '<div class="ctrls">' +
               '<button class="iconbtn" type="button" data-pdf="' + esc(st.id) + '" aria-label="Download the PDF report">PDF</button>' +
+              (st.proposal ? '<button class="iconbtn" type="button" data-docx="' + esc(st.id) + '" aria-label="Download the manuscript proposal as a Word document">DOCX</button>' : '') +
               '<button class="iconbtn del" type="button" data-del="' + esc(st.id) + '" aria-label="Delete this study">✕</button>' +
             '</div>' +
           '</div>';
@@ -2630,12 +3462,20 @@ function renderLibrary() {
     if (!st) return;
     State.study = st; State.design = [...(st.design || [])]; State.stat = [...(st.stat || [])];
     State.statOpen = State.stat.length > 0; State.showReport = false;
+    State.proposal = st.proposal || null; State.section = 1;
     State.phase = 'wizard';
     render();
   });
   $('stage').querySelectorAll('[data-pdf]').forEach((b) => b.onclick = () => {
     const st = State.studies.find((x) => x.id === b.dataset.pdf);
     if (st) savePdf(st.design || [], st.stat || [], st);
+  });
+  $('stage').querySelectorAll('[data-docx]').forEach((b) => b.onclick = () => {
+    const st = State.studies.find((x) => x.id === b.dataset.docx);
+    if (!st) return;
+    State.study = st; State.design = [...(st.design || [])]; State.stat = [...(st.stat || [])];
+    State.proposal = st.proposal || {};
+    saveProposalDocx();
   });
   $('stage').querySelectorAll('[data-del]').forEach((b) => b.onclick = async () => {
     const st = State.studies.find((x) => x.id === b.dataset.del);
@@ -2646,9 +3486,21 @@ function renderLibrary() {
   });
 }
 
+function proposalDone(st) {
+  const dw = Algo.walk(DESIGN_NODES, 'q1', st.design || []);
+  const sw = Algo.walk(STAT_NODES, 's1', st.stat || []);
+  const ctx = {
+    result: dw.finished ? (DESIGN_RESULTS[dw.current] || null) : null,
+    statResult: sw.finished ? (STAT_RESULTS[sw.current] || null) : null,
+    proposal: st.proposal, study: st
+  };
+  return proposalProgress(st.proposal, ctx).done;
+}
+
 function startNewStudy() {
   State.study = null;
   State.design = []; State.stat = []; State.statOpen = false; State.showReport = false;
+  State.proposal = null; State.section = 1;
   State.phase = 'wizard';
   render();
 }
@@ -2695,6 +3547,463 @@ function readSaveForm() {
   };
 }
 
+/* ── The manuscript proposal ─────────────────────────────────────
+   One section on screen at a time, in the template's own order. What
+   the template calls "instructions" is shown as instructions; what it
+   calls a quality checkpoint is shown as a checkpoint. Nothing here
+   decides anything — the section list above holds the rules and this
+   half draws them.
+   ───────────────────────────────────────────────────────────────── */
+
+function proposalCtx() {
+  const dw = Algo.walk(DESIGN_NODES, 'q1', State.design);
+  const sw = Algo.walk(STAT_NODES, 's1', State.stat);
+  return {
+    result: dw.finished ? (DESIGN_RESULTS[dw.current] || null) : null,
+    statResult: sw.finished ? (STAT_RESULTS[sw.current] || null) : null,
+    proposal: State.proposal,
+    study: State.study
+  };
+}
+
+/* The furthest section that may be opened: everything up to and
+   including the first one still carrying a blocking issue. Going back
+   is always allowed; going forward past an incomplete section is not,
+   which is the gate that was asked for. */
+function proposalReach(prog) {
+  for (const sec of PROPOSAL_SECTIONS) {
+    if (prog.status[sec.n].blocking.length) return sec.n;
+  }
+  return PROPOSAL_SECTIONS.length + 1;   // all clear — the review screen too
+}
+
+function openProposal(n) {
+  if (!State.proposal) State.proposal = {};
+  State.phase = 'proposal';
+  State.section = n || 1;
+  render();
+}
+
+/* ── Editors, one per kind of section ─────────────────────────── */
+
+function areaHTML(attrs, value, rows, placeholder) {
+  return '<textarea ' + attrs + ' rows="' + rows + '"' +
+    (placeholder ? ' placeholder="' + esc(placeholder) + '"' : '') + '>' + esc(value || '') + '</textarea>';
+}
+
+function subField(label, attrs, value, rows, placeholder) {
+  return '<div class="subfield"><label>' + esc(label) + '</label>' +
+    (rows ? areaHTML(attrs, value, rows, placeholder)
+          : '<input type="text" ' + attrs + ' value="' + esc(value || '') + '"' +
+            (placeholder ? ' placeholder="' + esc(placeholder) + '"' : '') + ' />') +
+    '</div>';
+}
+
+function rowCardHTML(label, index, inner, removable) {
+  return '<div class="rowcard">' +
+    '<div class="rowhead"><span>' + esc(label) + ' ' + (index + 1) + '</span>' +
+      (removable ? '<button class="btn ghost sm" type="button" data-rm="' + index + '">Remove</button>' : '') +
+    '</div>' + inner + '</div>';
+}
+
+function editorHTML(sec, v) {
+  switch (sec.kind) {
+
+    case 'text':
+    case 'para':
+      return areaHTML('data-f="v" aria-label="' + esc(sec.title) + '"', v, sec.rows || 6, '');
+
+    case 'rq':
+      return subField('Research question', 'data-f="rq"', (v || {}).rq, 3, 'What is the association between…?') +
+             subField('Null hypothesis (H₀)', 'data-f="h0"', (v || {}).h0, 3, '') +
+             subField('Alternative hypothesis (H₁)', 'data-f="h1"', (v || {}).h1, 3, '');
+
+    case 'design':
+      return subField('The design, and how it links the data and mitigates its known limitations', 'data-f="design"', (v || {}).design, 6, '') +
+             subField('Full reference entry for the methodological source', 'data-f="reference"', (v || {}).reference, 2, 'Author, A. A. (Year). Title. Publisher.');
+
+    case 'biblio': {
+      const rows = Array.isArray(v) && v.length ? v : [{ ref: '', a: '', b: '', c: '', d: '' }];
+      return rows.map((r, i) => rowCardHTML('Reference', i,
+        subField('Full reference entry, in your required citation style', 'data-i="' + i + '" data-f="ref"', r.ref, 2, '') +
+        subField('(a) Author(s) and year', 'data-i="' + i + '" data-f="a"', r.a, 2, '') +
+        subField('(b) Design or method of the cited study', 'data-i="' + i + '" data-f="b"', r.b, 2, '') +
+        subField('(c) Main finding(s)', 'data-i="' + i + '" data-f="c"', r.c, 2, '') +
+        subField('(d) Why it matters here — the decision it justifies', 'data-i="' + i + '" data-f="d"', r.d, 2, ''),
+        rows.length > 1)).join('') +
+        '<button class="btn ghost" type="button" data-add="1">Add another reference</button>';
+    }
+
+    case 'datatable': {
+      const rows = Array.isArray(v) && v.length ? v : [{ name: '', label: '', type: '', level: '', code: '', test: '' }];
+      const sel = (i, f, val, opts, label) =>
+        '<div class="subfield"><label>' + esc(label) + '</label><select data-i="' + i + '" data-f="' + f + '">' +
+        ['', ...opts].map((o) => '<option value="' + esc(o) + '"' +
+          (String(val || '') === o ? ' selected' : '') + '>' + esc(o || '—') + '</option>').join('') +
+        '</select></div>';
+      return rows.map((r, i) => rowCardHTML('Variable', i,
+        '<div class="rowgrid">' +
+          subField('Variable name (SPSS or REDCap style)', 'data-i="' + i + '" data-f="name"', r.name, 0, 'GREEN_EXP') +
+          subField('Variable label', 'data-i="' + i + '" data-f="label"', r.label, 0, '') +
+          sel(i, 'type', r.type, ['Independent', 'Dependent', 'Covariate'], 'Type of variable') +
+        '</div>' +
+        '<div class="rowgrid">' +
+          sel(i, 'level', r.level, ['Nominal (Categorical)', 'Ordinal (Categorical)', 'Interval (Continuous)', 'Ratio (Continuous)'], 'Level of measurement') +
+          subField('Code', 'data-i="' + i + '" data-f="code"', r.code, 0, '1= Yes; 2= No') +
+          subField('Statistical test (outcome row)', 'data-i="' + i + '" data-f="test"', r.test, 0, '') +
+        '</div>',
+        rows.length > 1)).join('') +
+        '<button class="btn ghost" type="button" data-add="1">Add another variable</button>';
+    }
+
+    case 'list': {
+      const rows = Array.isArray(v) && v.length ? v : [''];
+      return rows.map((t, i) => rowCardHTML('Limitation', i,
+        areaHTML('data-i="' + i + '" aria-label="Limitation ' + (i + 1) + '"', t, 3,
+          'The limitation, why it is one, and how it is mitigated — or why it cannot be eliminated.'),
+        rows.length > 1)).join('') +
+        '<button class="btn ghost" type="button" data-add="1">Add another limitation</button>';
+    }
+
+    case 'alignment': {
+      const cols = ['Research problem, purpose and framework', 'Research question(s) and design',
+                    'Secondary data sources', 'Data points', 'Data analysis'];
+      const rows = Array.isArray(v) && v.length ? v : [['', '', '', '', '']];
+      return rows.map((r, i) => rowCardHTML('Row', i,
+        cols.map((c, ci) => subField(c, 'data-i="' + i + '" data-c="' + ci + '"', (r || [])[ci], 3, '')).join(''),
+        rows.length > 1)).join('') +
+        '<button class="btn ghost" type="button" data-add="1">Add another row</button>';
+    }
+
+    default:
+      return '';
+  }
+}
+
+/* Reads whatever is on screen back into the shape the checks expect. */
+function readEditor(sec) {
+  const root = $('p-editor');
+  if (!root) return proposalValue(State.proposal, sec);
+  const K = sec.kind;
+
+  if (K === 'text' || K === 'para') {
+    const el = root.querySelector('[data-f="v"]');
+    return el ? el.value : '';
+  }
+  if (K === 'rq' || K === 'design') {
+    const o = {};
+    root.querySelectorAll('[data-f]').forEach((el) => { o[el.dataset.f] = el.value; });
+    return o;
+  }
+  if (K === 'list') {
+    return Array.from(root.querySelectorAll('[data-i]')).map((el) => el.value);
+  }
+  if (K === 'alignment') {
+    const rows = [];
+    root.querySelectorAll('[data-i][data-c]').forEach((el) => {
+      const i = Number(el.dataset.i), c = Number(el.dataset.c);
+      if (!rows[i]) rows[i] = ['', '', '', '', ''];
+      rows[i][c] = el.value;
+    });
+    return rows.map((r) => r || ['', '', '', '', '']);
+  }
+  const rows = [];
+  root.querySelectorAll('[data-i][data-f]').forEach((el) => {
+    const i = Number(el.dataset.i);
+    if (!rows[i]) rows[i] = {};
+    rows[i][el.dataset.f] = el.value;
+  });
+  return rows.map((r) => r || {});
+}
+
+function syncSection() {
+  const sec = sectionByNumber(State.section);
+  if (!sec || State.phase !== 'proposal' || !$('p-editor')) return;
+  State.proposal = State.proposal || {};
+  State.proposal[proposalKey(sec.n)] = readEditor(sec);
+}
+
+/* ── The live checklist ───────────────────────────────────────── */
+
+function checksHTML(res) {
+  if (!res.blocking.length && !res.advisory.length) {
+    return '<div class="pcheck ok"><i>✓</i><span>This section meets the instructions. You can move on.</span></div>';
+  }
+  return res.blocking.map((t) => '<div class="pcheck block"><i>!</i><span>' + esc(t) + '</span></div>').join('') +
+         res.advisory.map((t) => '<div class="pcheck adv"><i>◆</i><span>' + esc(t) + '</span></div>').join('') +
+         (res.blocking.length
+           ? ''
+           : '<div class="pcheck ok"><i>✓</i><span>Nothing blocks this section. The notes above are advisory — a count is not a judgement, so they never stop you moving on.</span></div>');
+}
+
+function refreshChecks() {
+  const sec = sectionByNumber(State.section);
+  if (!sec) return;
+  syncSection();
+  const res = sec.check(proposalValue(State.proposal, sec), proposalCtx());
+  const box = $('p-checks');
+  if (box) box.innerHTML = checksHTML(res);
+  const next = $('p-next');
+  if (next) {
+    next.disabled = res.blocking.length > 0;
+    next.title = res.blocking.length
+      ? 'Finish this section before moving on: ' + res.blocking[0]
+      : '';
+  }
+  const prog = proposalProgress(State.proposal, proposalCtx());
+  renderProposalProgress(prog, State.section);
+  const bar = $('p-chips');
+  if (bar) bar.innerHTML = chipsHTML(prog);
+  wireChips();
+}
+
+function renderProposalProgress(prog, current) {
+  const pct = Math.round((prog.done / prog.total) * 100);
+  $('bar').style.width = pct + '%';
+  $('progress-pct').textContent = pct + '%';
+  $('progress-label').textContent = current > prog.total
+    ? 'Review · ' + prog.done + ' of ' + prog.total + ' sections complete'
+    : 'Section ' + current + ' of ' + prog.total + ' · manuscript proposal';
+}
+
+function chipsHTML(prog) {
+  const reach = proposalReach(prog);
+  return PROPOSAL_SECTIONS.map((sec) => {
+    const done = !prog.status[sec.n].blocking.length;
+    const cls = sec.n === State.section ? 'now' : (done ? 'done' : '');
+    const allowed = sec.n <= reach;
+    return '<button class="pchip ' + cls + '" type="button" data-go="' + sec.n + '"' +
+      (allowed ? '' : ' disabled') +
+      ' title="' + esc(sec.n + '. ' + sec.title + (allowed ? '' : ' — finish section ' + reach + ' first')) + '"' +
+      ' aria-label="Section ' + sec.n + ': ' + esc(sec.title) + '">' + sec.n + '</button>';
+  }).join('');
+}
+
+function wireChips() {
+  document.querySelectorAll('#p-chips [data-go]').forEach((b) => {
+    b.onclick = () => { syncSection(); State.section = Number(b.dataset.go); render(); };
+  });
+}
+
+/* ── One section on screen ────────────────────────────────────── */
+
+function renderProposalSection() {
+  const sec = sectionByNumber(State.section);
+  const ctx = proposalCtx();
+  const v = proposalValue(State.proposal, sec);
+  const res = sec.check(v, ctx);
+  const prog = proposalProgress(State.proposal, ctx);
+  const partName = sec.part === 1 ? 'Part 1 · Overview' : 'Part 2 · Manuscript';
+  const prefillable = typeof sec.prefill === 'function' && sec.prefill(ctx);
+
+  $('stage').className = 'stage';
+  $('stage').innerHTML =
+    '<section class="card">' +
+      '<p class="eyebrow">' + esc(partName) + '</p>' +
+      '<div class="step-head" style="margin-top:8px">' +
+        '<span class="hex">' + sec.n + '</span>' +
+        '<div><p class="stage-name">Section ' + sec.n + ' of ' + prog.total + '</p>' +
+          '<h1 class="question">' + esc(sec.title) + '</h1></div>' +
+      '</div>' +
+
+      '<div class="pbar" id="p-chips">' + chipsHTML(prog) + '</div>' +
+
+      '<div class="pblock guiding">' +
+        sec.guiding.map((g) => '<p>' + esc(g) + '</p>').join('') +
+      '</div>' +
+
+      '<div class="pblock"><h4>Instructions</h4><p>' + esc(sec.instructions) + '</p></div>' +
+
+      (sec.checkpoints && sec.checkpoints.length
+        ? '<div class="pblock"><h4>Quality checkpoint' + (sec.checkpoints.length > 1 ? 's' : '') + '</h4><ul>' +
+          sec.checkpoints.map((c) => '<li>' + esc(c) + '</li>').join('') + '</ul></div>'
+        : '') +
+
+      (sec.example
+        ? '<details class="pexample"><summary>See a worked example</summary>' +
+          '<div class="body">' + esc(sec.example) + '</div></details>'
+        : '') +
+
+      (prefillable
+        ? '<div class="prefillbar"><span>' + esc(sec.prefillNote || 'Available from the design you completed') + '.</span>' +
+          '<button class="btn ghost sm" type="button" id="p-prefill">Fill this section from the design</button></div>'
+        : '') +
+
+      '<div class="peditor" id="p-editor">' + editorHTML(sec, v) + '</div>' +
+
+      '<div class="pchecks" id="p-checks">' + checksHTML(res) + '</div>' +
+
+      '<div class="navrow">' +
+        '<button class="btn ghost" type="button" id="p-back">' + (sec.n === 1 ? 'Back to the design' : 'Previous section') + '</button>' +
+        '<button class="btn" type="button" id="p-next"' + (res.blocking.length ? ' disabled' : '') + '>' +
+          (sec.n === prog.total ? 'Review and download' : 'Next section') + '</button>' +
+        (Accounts.current ? '<button class="btn ghost" type="button" id="p-save">Save draft</button>' : '') +
+        '<button class="btn ghost" type="button" id="p-review">Skip to review</button>' +
+      '</div>' +
+    '</section>';
+
+  renderProposalProgress(prog, sec.n);
+  wireProposalSection(sec);
+}
+
+function wireProposalSection(sec) {
+  const editor = $('p-editor');
+
+  editor.addEventListener('input', refreshChecks);
+  editor.addEventListener('change', refreshChecks);
+
+  editor.querySelectorAll('[data-rm]').forEach((b) => b.onclick = () => {
+    syncSection();
+    const arr = proposalValue(State.proposal, sec);
+    if (Array.isArray(arr)) {
+      arr.splice(Number(b.dataset.rm), 1);
+      State.proposal[proposalKey(sec.n)] = arr;
+    }
+    render();
+  });
+
+  const add = editor.querySelector('[data-add]');
+  if (add) add.onclick = () => {
+    syncSection();
+    const arr = proposalValue(State.proposal, sec);
+    if (Array.isArray(arr)) {
+      arr.push(blankValue(sec)[0]);
+      State.proposal[proposalKey(sec.n)] = arr;
+    }
+    render();
+  };
+
+  const pf = $('p-prefill');
+  if (pf) pf.onclick = () => {
+    syncSection();
+    const filledIn = sec.prefill(proposalCtx());
+    if (!filledIn) { toast('The design has not produced this yet.'); return; }
+    State.proposal[proposalKey(sec.n)] = filledIn;
+    render();
+    toast('Filled from the design — edit it into your own words');
+  };
+
+  $('p-back').onclick = () => {
+    syncSection();
+    if (sec.n === 1) { State.phase = 'wizard'; render(); return; }
+    State.section = sec.n - 1;
+    render();
+  };
+
+  $('p-next').onclick = () => {
+    syncSection();
+    State.section = sec.n + 1;
+    savePropSilently();
+    render();
+  };
+
+  $('p-review').onclick = () => { syncSection(); State.section = PROPOSAL_SECTIONS.length + 1; render(); };
+
+  const save = $('p-save');
+  if (save) save.onclick = () => savePropDraft();
+
+  wireChips();
+}
+
+/* ── The review screen and the Word document ──────────────────── */
+
+function renderProposalReview() {
+  const ctx = proposalCtx();
+  const prog = proposalProgress(State.proposal, ctx);
+  const complete = prog.done === prog.total;
+  const advisories = PROPOSAL_SECTIONS.reduce((n, s) => n + prog.status[s.n].advisory.length, 0);
+
+  $('stage').className = 'stage';
+  $('stage').innerHTML =
+    '<section class="card">' +
+      '<p class="eyebrow">Manuscript proposal</p>' +
+      '<h1 class="question" style="margin:6px 0 10px">' +
+        (complete ? 'All ' + prog.total + ' sections are complete' : prog.done + ' of ' + prog.total + ' sections complete') + '</h1>' +
+      '<p class="lede">' + (complete
+        ? 'The proposal can be issued as a Word document, in the order and headings of the template.'
+        : 'The sections still carrying a blocking issue are marked below. Open any of them to finish it.') +
+        (advisories ? ' There ' + (advisories === 1 ? 'is 1 advisory note' : 'are ' + advisories + ' advisory notes') + ' across the proposal; they never block the document.' : '') +
+      '</p>' +
+
+      '<div class="pbar" id="p-chips" style="margin-top:18px">' + chipsHTML(prog) + '</div>' +
+
+      '<div style="margin-top:16px">' +
+        PROPOSAL_SECTIONS.map((sec) => {
+          const st = prog.status[sec.n];
+          const ok = !st.blocking.length;
+          return '<div class="reviewrow">' +
+            '<span class="num">' + sec.n + '</span>' +
+            '<button class="grab" type="button" data-open="' + sec.n + '" style="text-align:left;background:none;border:0;padding:0;cursor:pointer">' +
+              '<span class="ttl">' + esc(sec.title) + '</span>' +
+              '<span class="sub" style="display:block">' + (ok
+                ? (st.advisory.length ? st.advisory.length + ' advisory note' + (st.advisory.length === 1 ? '' : 's') : 'Complete')
+                : esc(st.blocking[0])) + '</span>' +
+            '</button>' +
+            '<span class="pill ' + (ok ? 'ok' : 'no') + '">' + (ok ? 'Ready' : 'Incomplete') + '</span>' +
+          '</div>';
+        }).join('') +
+      '</div>' +
+
+      '<div class="navrow">' +
+        '<button class="btn" type="button" id="p-docx"' + (complete ? '' : ' disabled title="Finish every section first, or download the draft as it stands."') + '>' +
+          'Download the Word document</button>' +
+        (complete ? '' : '<button class="btn ghost" type="button" id="p-docx-draft">Download the draft as it stands</button>') +
+        (Accounts.current ? '<button class="btn ghost" type="button" id="p-save">Save draft</button>' : '') +
+        '<button class="btn ghost" type="button" id="p-last">Back to section ' + PROPOSAL_SECTIONS.length + '</button>' +
+        '<button class="btn ghost" type="button" id="p-design">Back to the design</button>' +
+      '</div>' +
+      (complete ? '' : '<p class="lede" style="margin-top:12px">A draft downloads with the unfinished sections left blank, so the headings and the order are already in place.</p>') +
+    '</section>';
+
+  renderProposalProgress(prog, PROPOSAL_SECTIONS.length + 1);
+  wireChips();
+  $('stage').querySelectorAll('[data-open]').forEach((b) => b.onclick = () => {
+    State.section = Number(b.dataset.open); render();
+  });
+  const dl = $('p-docx'); if (dl) dl.onclick = () => saveProposalDocx();
+  const dr = $('p-docx-draft'); if (dr) dr.onclick = () => saveProposalDocx();
+  const sv = $('p-save'); if (sv) sv.onclick = () => savePropDraft();
+  $('p-last').onclick = () => { State.section = PROPOSAL_SECTIONS.length; render(); };
+  $('p-design').onclick = () => { State.phase = 'wizard'; render(); };
+}
+
+async function saveProposalDocx() {
+  syncSection();
+  let bytes;
+  try {
+    bytes = buildProposalDocx(State.study, State.proposal, proposalCtx());
+  } catch (e) {
+    toast('The document could not be generated: ' + e.message);
+    return;
+  }
+  const name = 'manuscript-proposal-' + slug(State.study && State.study.name ? State.study.name : 'draft') + '.docx';
+  const r = await download(name, bytes,
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+  if (r.ok) toast('Word document saved');
+  else if (!r.quiet) toast(r.msg);
+}
+
+/* The proposal lives inside the study record, so it is encrypted with
+   everything else and reopens with it. */
+async function savePropDraft() {
+  syncSection();
+  if (!Accounts.current) { toast('Sign in to save this draft.'); return; }
+  if (!State.study || !State.study.name) {
+    toast('Name the study on the design result page first — then the draft saves with it.');
+    return;
+  }
+  State.study = await Studies.save({ ...State.study, design: [...State.design], stat: [...State.stat], proposal: State.proposal });
+  State.studies = await Studies.list();
+  toast('Draft saved');
+}
+
+async function savePropSilently() {
+  if (!Accounts.current || !State.study || !State.study.name) return;
+  try {
+    State.study = await Studies.save({ ...State.study, design: [...State.design], stat: [...State.stat], proposal: State.proposal });
+  } catch (e) { /* a full or blocked store must not stop the wizard */ }
+}
+
 /* ── Header chrome depends on where we are ──────────────────────── */
 function setChrome(inWizard) {
   $('progress-wrap').hidden = !inWizard;
@@ -2706,6 +4015,14 @@ function setChrome(inWizard) {
 function render() {
   if (State.phase === 'unlock' || State.phase === 'create') { renderUnlock(); window.scrollTo(0, 0); return; }
   if (State.phase === 'library') { renderLibrary(); window.scrollTo(0, 0); return; }
+  if (State.phase === 'proposal') {
+    setChrome(true);
+    $('btn-restart').hidden = true;          // starting over belongs to the design, not the proposal
+    if (State.section > PROPOSAL_SECTIONS.length) renderProposalReview();
+    else renderProposalSection();
+    window.scrollTo(0, 0);
+    return;
+  }
 
   setChrome(true);
   const walk = Algo.walk(DESIGN_NODES, 'q1', State.design);
