@@ -1,0 +1,55 @@
+/* =====================================================================
+   GLOBAL EPI LLC — site stylesheet, source file
+   ---------------------------------------------------------------------
+   Compiled to assets/css/site.css with:
+
+       npm run build:css
+
+   The site used to pull Tailwind from the Play CDN and generate its CSS
+   in the browser on every visit. That made every page depend, at run
+   time, on a third-party host: if the CDN was slow, blocked by a
+   network, or down, the page still loaded but arrived with no styling
+   at all. Tailwind's own documentation says the Play CDN is for
+   development, not production. The CSS now ships with the site.
+
+   Anything below that is not a Tailwind directive is here because a
+   utility genuinely cannot express it.
+   ===================================================================== */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ---------------------------------------------------------------
+   Custom layer: only what utilities genuinely cannot express.
+   The site commits to a single light identity by design — every
+   surface and text colour is painted explicitly so the page holds
+   on any host background.
+----------------------------------------------------------------*/
+@layer base {
+  html { scroll-behavior: smooth; }
+  /* Offset anchor targets so the sticky header never covers a heading */
+  section[id] { scroll-margin-top: 5.5rem; }
+  body { @apply bg-white text-gray-700 font-sans antialiased; }
+  ::selection { @apply bg-brand-500 text-white; }
+  :focus-visible { @apply outline-none ring-2 ring-brand-600 ring-offset-2 ring-offset-white rounded-sm; }
+  .on-dark :focus-visible { @apply ring-lime-500 ring-offset-navy-900; }
+}
+
+@layer components {
+  /* Scroll-triggered reveal, driven by IntersectionObserver in main.js */
+  .reveal { opacity: 0; transform: translateY(18px); transition: opacity .7s ease, transform .7s ease; }
+  .reveal.is-visible { opacity: 1; transform: none; }
+
+  /* Uppercase eyebrow label used above every section heading */
+  .eyebrow { @apply text-xs font-semibold uppercase tracking-[0.18em]; }
+
+  /* Hairline that separates a card's header from its body */
+  .rule-teal { @apply w-10 h-px bg-brand-500; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .reveal { opacity: 1; transform: none; transition: none; }
+  *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
+}

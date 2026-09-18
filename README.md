@@ -8,7 +8,7 @@ delivering evidence-based public health services to communities and populations.
 | Layer | Choice |
 |---|---|
 | Structure | Plain HTML5, semantic elements |
-| Styling | Tailwind CSS via Play CDN — no build step |
+| Styling | Tailwind CSS, compiled into `assets/css/site.css` |
 | Behaviour | Vanilla JavaScript, zero dependencies |
 
 ## Files
@@ -26,6 +26,9 @@ assets/*.jpg          Founder portraits, cropped square for a round frame
 assets/favicon.svg    The mark alone, cells clipped to the disc
 assets/og-image.png   Social sharing card, 1200x630
 assets/js/main.js     Shared behaviour for every page
+assets/css/tailwind.css   Stylesheet source — Tailwind directives + the custom layer
+assets/css/site.css       Compiled stylesheet, served to visitors (generated)
+tailwind.config.js    Brand tokens: the palette, the type scale, the content globs
 field-app/            EPI Collect — offline field data collection (pilot)
 study-design/         Research Design Algorithm — study design wizard
 README.md
@@ -358,8 +361,36 @@ regenerating.
 
 ## Local development
 
-No toolchain required. Open `index.html` in a browser, or serve it:
+Open `index.html` in a browser, or serve it:
 
 ```bash
 python3 -m http.server 8000
 ```
+
+### The one build step
+
+The stylesheet is compiled, not fetched at run time. **If you add or change
+a class in any `.html` file or in `assets/js/main.js`, rebuild it:**
+
+```bash
+npm install        # once
+npm run build:css  # after any markup change
+```
+
+`npm run watch:css` rebuilds on save while you work.
+
+Two things are worth knowing about why this is set up the way it is.
+
+The site used to load Tailwind from the Play CDN, which generated the CSS in
+the visitor's browser on every page view. That removed the build step, but it
+made every page depend at run time on a third-party host: if the CDN was
+blocked or down, the page still loaded and arrived with no styling at all.
+Tailwind's own documentation says the Play CDN is not for production.
+
+The cost of compiling is that the CSS only contains the classes Tailwind
+could *see* when it ran. `tailwind.config.js` therefore scans
+`assets/js/main.js` as well as the markup, because `main.js` adds classes
+that appear nowhere in the HTML — the form-error border, the sticky header
+shadow, the active tab, the service-index pill. Leave a source out of
+`content` and its styles are silently absent, which nothing reveals until a
+visitor trips that exact state.
