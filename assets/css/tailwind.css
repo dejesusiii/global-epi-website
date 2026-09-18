@@ -53,3 +53,31 @@
   .reveal { opacity: 1; transform: none; transition: none; }
   *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
 }
+
+/* ---------------------------------------------------------------
+   An invalid field has to read as invalid even while it has focus.
+
+   main.js focuses the first field that failed validation, and that
+   field's own focus:border-brand-600 / focus:ring-brand-600 outrank
+   the error colour — so the form turned every failed field red
+   except the one the visitor was actually looking at, which went
+   green. The green was the site's "you're doing fine" colour, on
+   the field it was complaining about.
+
+   Keyed to aria-invalid, which main.js already sets and clears, so
+   the colour and the accessible state cannot drift apart. Declared
+   outside @layer, and with element+attribute+pseudo specificity, so
+   it settles the tie against the focus utilities on either count.
+----------------------------------------------------------------*/
+input[aria-invalid="true"],
+select[aria-invalid="true"],
+textarea[aria-invalid="true"] {
+  border-color: theme('colors.red.500');
+}
+
+input[aria-invalid="true"]:focus,
+select[aria-invalid="true"]:focus,
+textarea[aria-invalid="true"]:focus {
+  border-color: theme('colors.red.500');
+  --tw-ring-color: theme('colors.red.500');
+}
