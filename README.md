@@ -31,6 +31,7 @@ assets/css/site.css       Compiled stylesheet, served to visitors (generated)
 tailwind.config.js    Brand tokens: the palette, the type scale, the content globs
 field-app/            EPI Collect — offline field data collection (pilot)
 study-design/         Research Design Algorithm — study design wizard
+capacitacion/reduccion-danos/   Course page GE-RD-PUDI-101 with ATH Móvil payment and emailed receipt
 README.md
 ```
 
@@ -190,6 +191,27 @@ becomes true in one edit rather than in fifteen.
 **Scope.** Non-identifying data only. There are no BAAs and no server-side controls,
 so this must not be used for PHI. The app states this on its About screen. The page is
 `noindex` and is deliberately not linked from the marketing site.
+
+## Harm Reduction course (`capacitacion/reduccion-danos/`)
+
+Landing and registration page for the one-day course *Reducción de Daños para Personas
+Usuarias de Drogas Inyectables* (GE-RD-PUDI-101), live at
+<https://globalepillc.com/capacitacion/reduccion-danos/>. A single self-contained page
+with its own images in `assets/`; it shares only the favicon and the social card with
+the marketing site. The source is maintained in `dejesusiii/Capacity-Building-Training`.
+
+Registration ends in a receipt emailed to the participant with a copy to
+`global.epi.consulting@gmail.com`. Two services drive it, both configured in the
+`GE_CONFIG` block at the bottom of the page and both inert while empty (the page then
+shows the receipt on screen to copy by hand):
+
+- **EmailJS** sends the receipt. Needs a Public Key, Service ID and Template ID; the
+  template setup is documented in the course repository's README. Add
+  `globalepillc.com` under *Account → Security → Allowed domains*.
+- **ATH Móvil payment button** (ATH Business *Public Token*, never the Private Token).
+  When configured, a completed payment triggers the receipt automatically with the
+  transaction reference. The confirmation arrives in the visitor's browser, so each
+  receipt should be matched against ATH Business before a seat is confirmed.
 
 ## Research Design Algorithm (`study-design/`)
 
