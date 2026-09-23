@@ -1,0 +1,819 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Curso de un día en reducción de daños para personas usuarias de drogas inyectables (GE-RD-PUDI-101), Global Epi LLC.">
+<link rel="canonical" href="https://globalepillc.com/capacitacion/reduccion-danos/">
+<meta name="theme-color" content="#0C1E36">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://globalepillc.com/capacitacion/reduccion-danos/">
+<meta property="og:title" content="Reducción de Daños para Personas Usuarias de Drogas Inyectables — Global Epi LLC">
+<meta property="og:description" content="Curso de un día, 6.0 horas contacto, práctica entre pares y certificado verificable. $100, IVU incluido.">
+<meta property="og:image" content="https://globalepillc.com/assets/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon-32.png">
+<link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
+<title>Reducción de Daños PUDI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme: light;
+  --navy:#0C1E36; --teal:#06BD95; --teal-dk:#0B7A66; --teal-ac:#125C4E;
+  --lime:#B4C908; --lime-dk:#6B7705; --gray:#A3A3A3;
+  --bg:#F5F8F9; --surface:#FFFFFF; --surface-2:#EAF1F3;
+  --ink:#0F1D2B; --ink-2:#37495B; --muted:#657789;
+  --line:#DBE5EA; --line-2:#BFCED6;
+  --soft-teal:#E1F7F1; --soft-lime:#F3F8D9; --soft-navy:#E6ECF2;
+  --sh-1:0 1px 2px rgba(12,30,54,.06), 0 2px 8px rgba(12,30,54,.06);
+  --sh-2:0 10px 34px rgba(12,30,54,.13);
+  --display:"Source Serif 4", Georgia, "Times New Roman", serif;
+  --sans:"Source Sans 3", "Segoe UI", Helvetica, Arial, sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  --r:12px; --r-sm:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme: dark;
+    --bg:#07121E; --surface:#0E1F31; --surface-2:#15283C;
+    --ink:#E9F1F6; --ink-2:#BACADA; --muted:#8CA1B5;
+    --line:#21374D; --line-2:#2E4963;
+    --soft-teal:#0B3A34; --soft-lime:#2B330F; --soft-navy:#142637;
+    --teal-dk:#3FCBAA; --teal-ac:#5FD8BC; --lime-dk:#C3D93A;
+    --sh-1:0 1px 2px rgba(0,0,0,.4), 0 2px 8px rgba(0,0,0,.3);
+    --sh-2:0 10px 34px rgba(0,0,0,.45);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --bg:#07121E; --surface:#0E1F31; --surface-2:#15283C;
+  --ink:#E9F1F6; --ink-2:#BACADA; --muted:#8CA1B5;
+  --line:#21374D; --line-2:#2E4963;
+  --soft-teal:#0B3A34; --soft-lime:#2B330F; --soft-navy:#142637;
+  --teal-dk:#3FCBAA; --teal-ac:#5FD8BC; --lime-dk:#C3D93A;
+  --sh-1:0 1px 2px rgba(0,0,0,.4), 0 2px 8px rgba(0,0,0,.3);
+  --sh-2:0 10px 34px rgba(0,0,0,.45);
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0; background:var(--bg); color:var(--ink); font-family:var(--sans);
+     font-size:16px; line-height:1.6; -webkit-font-smoothing:antialiased}
+.wrap{max-width:1080px; margin:0 auto; padding-inline:16px}
+h1,h2,h3{font-family:var(--display); font-weight:700; text-wrap:balance; margin:0}
+p{margin:0}
+a{color:var(--teal-dk)}
+:focus-visible{outline:2.5px solid var(--teal); outline-offset:3px; border-radius:4px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:.16em;
+         text-transform:uppercase; font-weight:600}
+
+/* ───── marca ───── */
+.marca{display:inline-block}
+.marca img{display:block; width:190px; height:auto}
+.marca .div{
+  font-family:var(--sans); font-size:9.5px; font-weight:600;
+  letter-spacing:.235em; text-transform:uppercase; color:var(--gray);
+  margin-top:5px; white-space:nowrap;
+}
+@media (max-width:420px){
+  .marca img{width:156px}
+  .marca .div{font-size:8px; letter-spacing:.18em}
+}
+
+/* ───── hero ───── */
+.hero{background:var(--navy); color:#fff; position:relative; overflow:hidden}
+.hero::after{content:""; position:absolute; right:-150px; top:-200px; width:540px; height:540px;
+  border-radius:50%; border:64px solid rgba(6,189,149,.15); pointer-events:none}
+.hero-in{position:relative; z-index:1; display:grid;
+  grid-template-columns:minmax(0,1.5fr) minmax(282px,1fr); gap:44px;
+  align-items:start; padding-block:34px 48px}
+.hero .marca{margin-bottom:38px}
+.hero .eyebrow{color:var(--lime)}
+.hero h1{font-size:clamp(30px,4.5vw,49px); line-height:1.09; margin:12px 0 16px; letter-spacing:-.015em}
+.hero .lede{color:#C3D2E0; font-size:clamp(16px,1.7vw,19px); max-width:56ch}
+.facts{display:flex; flex-wrap:wrap; gap:9px; margin-top:26px}
+.fact{display:inline-flex; align-items:center; gap:7px; background:rgba(255,255,255,.07);
+  border:1px solid rgba(255,255,255,.14); border-radius:999px; padding:6px 14px;
+  font-size:14px; color:#DCE6EF}
+.fact svg{width:15px; height:15px; stroke:var(--teal); fill:none; stroke-width:2}
+.teacher{display:flex; align-items:center; gap:13px; margin-top:30px}
+.teacher .av{width:48px; height:48px; border-radius:50%; flex:0 0 auto; background:#125C4E;
+  color:var(--lime); display:flex; align-items:center; justify-content:center;
+  font-family:var(--display); font-weight:700; font-size:17px}
+.teacher b{display:block; font-size:15px}
+.teacher span{font-size:13.5px; color:#9FB3C6}
+
+.pricebox{background:var(--surface); color:var(--ink); border-radius:var(--r);
+  box-shadow:var(--sh-2); padding:24px; position:sticky; top:20px}
+.pricebox .lbl{font-size:13px; color:var(--muted); font-weight:600}
+.pricebox .amt{font-family:var(--display); font-size:52px; font-weight:700; line-height:1;
+  letter-spacing:-.03em; margin:4px 0 2px}
+.pricebox .amt small{font-size:16px; color:var(--muted); font-weight:600; letter-spacing:0}
+.pricebox .sub{font-size:13.5px; color:var(--muted)}
+.pricebox ul{list-style:none; margin:18px 0 0; padding:0; display:grid; gap:9px}
+.pricebox li{display:flex; gap:9px; font-size:14.5px; color:var(--ink-2); align-items:flex-start}
+.pricebox li svg{width:16px; height:16px; margin-top:4px; flex:0 0 auto;
+  stroke:var(--teal-dk); fill:none; stroke-width:2.4}
+.btn{display:block; width:100%; text-align:center; margin-top:20px; background:var(--teal);
+  color:#062C24; border:1px solid var(--teal); border-radius:var(--r-sm); padding:13px 18px;
+  font:inherit; font-weight:700; font-size:15.5px; cursor:pointer; text-decoration:none;
+  transition:transform .15s ease, box-shadow .2s ease}
+.btn:hover{transform:translateY(-1px); box-shadow:var(--sh-1)}
+@media (max-width:860px){
+  .hero-in{grid-template-columns:1fr; gap:30px; padding-block:28px 38px}
+  .pricebox{position:static}
+  .hero .marca{margin-bottom:24px}
+}
+
+/* ───── secciones ───── */
+section{padding-block:56px}
+.sec-head{max-width:64ch; margin-bottom:30px}
+.sec-head .eyebrow{color:var(--teal-dk)}
+.sec-head h2{font-size:clamp(23px,2.9vw,32px); line-height:1.17; margin:8px 0 10px}
+.sec-head p{color:var(--ink-2)}
+.cards{display:grid; grid-template-columns:repeat(auto-fit,minmax(238px,1fr)); gap:16px}
+.card{background:var(--surface); border:1px solid var(--line); border-radius:var(--r);
+  padding:20px; box-shadow:var(--sh-1)}
+.card h3{font-size:17px; margin-bottom:7px}
+.card p{font-size:14.5px; color:var(--ink-2)}
+
+.agenda{border:1px solid var(--line); border-radius:var(--r); overflow:hidden; background:var(--surface)}
+.mod{display:grid; grid-template-columns:116px 1fr; gap:18px; padding:15px 20px;
+  border-bottom:1px solid var(--line)}
+.mod:last-child{border-bottom:0}
+.mod .t{font-family:var(--mono); font-size:13px; color:var(--teal-dk); font-weight:600; padding-top:2px}
+.mod b{display:block; font-size:15.5px; font-weight:600}
+.mod span{font-size:14px; color:var(--muted)}
+.mod.rest{background:var(--surface-2)}
+.mod.rest b{color:var(--muted); font-weight:500}
+@media (max-width:620px){.mod{grid-template-columns:1fr; gap:3px}}
+
+.incluye{display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:14px}
+.inc{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-sm);
+  padding:16px 18px}
+.inc b{display:block; font-size:15px; margin-bottom:4px}
+.inc span{font-size:14px; color:var(--ink-2)}
+
+/* ───── formulario ───── */
+.form-grid{display:grid; grid-template-columns:minmax(0,1.25fr) minmax(282px,1fr);
+  gap:24px; align-items:start}
+@media (max-width:860px){.form-grid{grid-template-columns:1fr}}
+.panel{background:var(--surface); border:1px solid var(--line); border-radius:var(--r);
+  padding:24px; box-shadow:var(--sh-1)}
+.field{margin-bottom:15px}
+.field label{display:block; font-size:13.5px; font-weight:600; color:var(--ink-2); margin-bottom:6px}
+.field .opt{color:var(--muted); font-weight:400}
+input[type=text], input[type=email], input[type=tel], input[type=date], select, textarea{
+  width:100%; font:inherit; font-size:15px; color:var(--ink); background:var(--bg);
+  border:1.5px solid var(--line-2); border-radius:var(--r-sm); padding:10px 12px}
+textarea{resize:vertical; min-height:74px}
+.two-col{display:grid; grid-template-columns:1fr 1fr; gap:14px}
+@media (max-width:520px){.two-col{grid-template-columns:1fr}}
+.out{margin-top:16px; background:var(--soft-navy); border:1px solid var(--line);
+  border-radius:var(--r-sm); padding:14px 16px}
+.out p{font-size:14px; color:var(--ink-2)}
+#resumen{width:100%; font-family:var(--mono); font-size:12.5px; line-height:1.7;
+  background:var(--surface); border:1px solid var(--line-2); border-radius:var(--r-sm);
+  padding:12px; margin-top:11px; min-height:158px; color:var(--ink)}
+.hint{font-size:13px; color:var(--muted); margin-top:9px}
+.pay-gate{border:1.5px solid var(--teal); border-radius:var(--r-sm); background:var(--soft-teal);
+  padding:16px 16px 4px; margin:4px 0 16px}
+.pay-gate h4{font-size:15px; color:var(--teal-dk); margin:0 0 4px}
+.pay-gate p{font-size:13.5px; color:var(--ink-2); margin:0 0 13px}
+.chk{display:grid; grid-template-columns:20px 1fr; gap:10px; align-items:start; margin-bottom:14px}
+.chk input{width:18px; height:18px; margin-top:2px; accent-color:var(--teal-dk)}
+.chk label{font-size:14px; color:var(--ink); font-weight:600; line-height:1.45}
+.btn[disabled]{opacity:.45; cursor:not-allowed; filter:grayscale(.35)}
+.bloqueo{font-size:13px; color:var(--lime-dk); margin-top:9px; font-weight:600}
+#ath-boton{margin:4px 0 2px}
+.pay-gate .alt-title{font-size:14px; font-weight:700; color:var(--ink); margin:14px 0 4px;
+  padding-top:14px; border-top:1px solid var(--line-2)}
+.pay-gate p.bloqueo{font-size:13px; color:var(--lime-dk); margin:9px 0 0}
+.steps{list-style:none; margin:0; padding:0; display:grid; gap:15px}
+.steps li{display:grid; grid-template-columns:30px 1fr; gap:12px; align-items:start}
+.steps .n{width:28px; height:28px; border-radius:50%; background:var(--teal); color:#062C24;
+  display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px}
+.steps b{display:block; font-size:15px}
+.steps p{font-size:14px; color:var(--ink-2)}
+.dato{font-family:var(--mono); font-size:13px; color:var(--teal-dk); word-break:break-all}
+
+.pago{background:var(--surface); border:1.5px solid var(--teal); border-radius:var(--r);
+  padding:22px; box-shadow:var(--sh-2); text-align:center; margin-top:18px}
+.pago h3{font-size:17px; margin-bottom:4px}
+.pago .qr{width:100%; max-width:212px; height:auto; margin:14px auto 10px; display:block;
+  background:#fff; padding:9px; border-radius:var(--r-sm); border:1px solid var(--line)}
+.pago .num{font-family:var(--mono); font-size:19px; font-weight:600; color:var(--ink);
+  letter-spacing:.02em}
+.pago .ath{width:118px; height:auto; margin:12px auto 0; display:block; opacity:.92}
+.pago p{font-size:13.5px; color:var(--muted); margin-top:6px}
+.btn.sec{background:transparent; color:var(--teal-dk); border-color:var(--teal-dk); margin-top:10px}
+.faq{display:grid; gap:11px}
+.faq details{background:var(--surface); border:1px solid var(--line);
+  border-radius:var(--r-sm); padding:15px 18px}
+.faq summary{font-weight:600; font-size:15.5px; cursor:pointer; list-style:none;
+  display:flex; justify-content:space-between; gap:14px; align-items:center}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+"; font-family:var(--mono); color:var(--teal-dk);
+  font-size:19px; font-weight:600}
+.faq details[open] summary::after{content:"–"}
+.faq p{margin-top:10px; font-size:14.5px; color:var(--ink-2)}
+
+footer{background:var(--navy); color:#9FB3C6; padding-block:32px; font-size:14px}
+footer .wrap{display:flex; flex-wrap:wrap; gap:18px 30px; justify-content:space-between;
+  align-items:flex-end}
+footer b{color:#fff; display:block; font-size:15px}
+footer a{color:var(--teal)}
+footer .code{font-family:var(--mono); font-size:12.5px}
+footer .marca img{width:150px}
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="wrap hero-in">
+    <div>
+      <span class="marca">
+        <img src="assets/logo-global-epi.png" alt="Global Epi">
+        <span class="div">Division of Capacity Building &amp; Training</span>
+      </span>
+      <p class="eyebrow">Curso de Capacitación · Un Día · GE-RD-PUDI-101</p>
+      <h1>Reducción de Daños para Personas Usuarias de Drogas Inyectables</h1>
+      <p class="lede">Aprende a reconocer una sobredosis y revertirla con naloxona, a manejar material de inyección estéril, a cuidar heridas asociadas a xilacina y a conectar a una persona con servicios sin estigma. Seis horas, ocho estaciones de práctica entre pares, certificado.</p>
+      <div class="facts">
+        <span class="fact"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>6.0 Horas Contacto</span>
+        <span class="fact"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7"/></svg>Cupo de 25</span>
+        <span class="fact"><svg viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg>Práctica Entre Pares</span>
+        <span class="fact"><svg viewBox="0 0 24 24"><circle cx="12" cy="9" r="6"/><path d="M8.5 14l-1.5 7 5-3 5 3-1.5-7"/></svg>Certificado Verificable</span>
+      </div>
+      <div class="teacher">
+        <div class="av">LD</div>
+        <div>
+          <b>Dr. Luis G. De Jesús III Vega, MD, PhD, MPH, MSc, HIVPCP</b>
+          <span>Fundador y Director Ejecutivo, Global Epi LLC</span>
+        </div>
+      </div>
+    </div>
+
+    <aside class="pricebox">
+      <p class="lbl">Tarifa Estudiantil</p>
+      <p class="amt">$100 <small>IVU incluido</small></p>
+      <p class="sub">Precio único para estudiantes del área de la salud. Sin cuotas adicionales.</p>
+      <ul>
+        <li><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Manual del participante de 71 páginas</li>
+        <li><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Ocho estaciones de destrezas supervisadas</li>
+        <li><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Práctica de naloxona nasal e intramuscular</li>
+        <li><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Certificado con código de verificación</li>
+        <li><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Directorio de recursos de Puerto Rico</li>
+      </ul>
+      <a class="btn" href="#inscripcion">Reservar mi Asiento</a>
+    </aside>
+  </div>
+</header>
+
+<main>
+<section id="para-quien">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">Para Quién Es</p>
+      <h2>Diseñado para Estudiantes del Área de la Salud</h2>
+      <p>La sobredosis por opioides es la emergencia que más probablemente encontrarás fuera de un hospital, y es la que menos se practica en el salón de clases. Este curso cubre esa brecha con destrezas que puedes usar el mismo día, sin necesidad de licencia profesional.</p>
+    </div>
+    <div class="cards">
+      <div class="card"><h3>Medicina y Enfermería</h3><p>Reconocimiento de sobredosis, respiración de rescate y administración de naloxona antes de llegar a la rotación clínica donde vas a verlo de verdad.</p></div>
+      <div class="card"><h3>Trabajo Social y Consejería</h3><p>Lenguaje centrado en la persona, manejo del estigma y derivación con cierre de ciclo: la parte del trabajo que decide si alguien vuelve o no.</p></div>
+      <div class="card"><h3>Salud Pública y Epidemiología</h3><p>Los datos de sobredosis, VIH y hepatitis C de Puerto Rico, y la evidencia detrás de los programas de servicios de jeringas.</p></div>
+      <div class="card"><h3>Farmacia y Tecnologías Médicas</h3><p>Farmacología de la naloxona, límites frente a la xilacina y reconocimiento de infecciones asociadas a la inyección.</p></div>
+      <div class="card"><h3>Técnicos de Emergencias Médicas</h3><p>La secuencia completa de respuesta prehospitalaria a la sobredosis: evaluación, ventilación, naloxona intranasal, manejo de la abstinencia precipitada y traspaso seguro.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="agenda" style="background:var(--surface-2)">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">La Jornada</p>
+      <h2>Seis Horas Contacto en un Solo Día</h2>
+      <p>Siete módulos y un bloque práctico que no se acorta. El receso de 30 minutos no cuenta como tiempo contacto.</p>
+    </div>
+    <div class="agenda">
+      <div class="mod"><span class="t">8:30 – 8:45</span><div><b>Apertura</b><span>Registro, pre-prueba y acuerdos de convivencia</span></div></div>
+      <div class="mod"><span class="t">8:45 – 9:35</span><div><b>Módulo 1 · Fundamentos y Lenguaje que Dignifica</b><span>Principios de la reducción de daños, estigma como determinante de salud y la Ley 35-2021 de Puerto Rico</span></div></div>
+      <div class="mod"><span class="t">9:35 – 10:15</span><div><b>Módulo 2 · Epidemiología en Puerto Rico</b><span>Datos de sobredosis, VIH y hepatitis C en la isla, y qué trae el suministro: fentanilo y xilacina</span></div></div>
+      <div class="mod"><span class="t">10:15 – 11:35</span><div><b>Módulo 3 · Sobredosis y Naloxona</b><span>Núcleo práctico: reconocer, estimular, llamar, respirar, administrar. Simulación cronometrada en tríos, entre pares</span></div></div>
+      <div class="mod rest"><span class="t">11:35 – 12:05</span><div><b>Receso</b><span>Almuerzo ligero y mesa de insumos</span></div></div>
+      <div class="mod"><span class="t">12:05 – 12:55</span><div><b>Módulo 4 · Material de Inyección y Disposición Segura</b><span>Ensamblaje del kit, qué nunca se comparte y protocolo de pinchazo accidental</span></div></div>
+      <div class="mod"><span class="t">12:55 – 1:35</span><div><b>Módulo 5 · VIH y Hepatitis C</b><span>Vías de transmisión, PrEP, I = I y por qué la hepatitis C se cura en 8 a 12 semanas</span></div></div>
+      <div class="mod"><span class="t">1:35 – 2:15</span><div><b>Módulo 6 · Venas y Heridas por Xilacina</b><span>Cuidado básico con apósito de dos capas y las ocho señales que obligan a derivar el mismo día</span></div></div>
+      <div class="mod"><span class="t">2:15 – 2:45</span><div><b>Módulo 7 · Derivación con Cierre de Ciclo</b><span>Tratamiento con medicamentos, mapa de recursos de Puerto Rico y cuidado del equipo</span></div></div>
+      <div class="mod"><span class="t">2:45 – 3:00</span><div><b>Cierre</b><span>Post-prueba, evaluación y entrega de certificados</span></div></div>
+    </div>
+  </div>
+</section>
+
+<section id="incluye">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">La Inversión</p>
+      <h2>Cien Dólares, Todo Incluido</h2>
+      <p>Una tarifa única, fijada para que un estudiante pueda pagarla sin depender de una beca ni de un reembolso. El IVU de 11.5 % ya está adentro: lo que ves es lo que pagas.</p>
+    </div>
+    <div class="incluye">
+      <div class="inc"><b>Manual de 71 Páginas</b><span>Tuyo para siempre, con el directorio de recursos de la isla</span></div>
+      <div class="inc"><b>Ocho Estaciones Prácticas</b><span>Máximo doce personas por facilitador, con repetición sin penalidad</span></div>
+      <div class="inc"><b>Certificado Verificable</b><span>6.0 horas contacto con código único de verificación</span></div>
+      <div class="inc"><b>Insumos de Práctica</b><span>Dispositivos de naloxona de práctica, barreras de rescate y moulage de heridas</span></div>
+      <div class="inc"><b>Almuerzo Ligero</b><span>Incluido en el receso, sin costo adicional</span></div>
+      <div class="inc"><b>Seguimiento a 90 Días</b><span>Encuesta breve para documentar el uso real de lo aprendido</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="inscripcion" style="background:var(--surface-2)">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">Inscripción</p>
+      <h2>Reserva tu Asiento</h2>
+      <p>Completa tus datos y paga $100.00 por ATH Móvil. En cuanto se confirma el pago, el recibo de inscripción se envía <b>automáticamente a tu correo</b>, con copia a Global Epi LLC. Aquí no se piden datos de tarjeta.</p>
+    </div>
+    <div class="form-grid">
+      <form class="panel" id="form" novalidate>
+        <div class="field">
+          <label for="nombre">Nombre Completo</label>
+          <input type="text" id="nombre" name="nombre" autocomplete="name" placeholder="Nombre y dos apellidos">
+        </div>
+        <div class="two-col">
+          <div class="field">
+            <label for="correo">Correo Electrónico</label>
+            <input type="email" id="correo" name="correo" autocomplete="email" placeholder="tu@correo.com">
+          </div>
+          <div class="field">
+            <label for="telefono">Teléfono</label>
+            <input type="tel" id="telefono" name="telefono" autocomplete="tel" placeholder="(787) 000-0000">
+          </div>
+        </div>
+        <div class="two-col">
+          <div class="field">
+            <label for="institucion">Institución Académica</label>
+            <input type="text" id="institucion" name="institucion" placeholder="Universidad o recinto">
+          </div>
+          <div class="field">
+            <label for="programa">Programa de Estudios</label>
+            <select id="programa" name="programa">
+              <option>Medicina</option>
+              <option>Enfermería</option>
+              <option>Trabajo Social</option>
+              <option>Salud Pública</option>
+              <option>Farmacia</option>
+              <option>Consejería en Adicción</option>
+              <option>Tecnologías Médicas</option>
+              <option>Técnicos de Emergencias Médicas</option>
+              <option>Nutrición</option>
+              <option>Psicología</option>
+              <option>Otro programa del área de la salud</option>
+            </select>
+          </div>
+        </div>
+        <div class="two-col">
+          <div class="field">
+            <label for="ano">Año de Estudios</label>
+            <select id="ano" name="ano">
+              <option>Primer año</option>
+              <option>Segundo año</option>
+              <option>Tercer año</option>
+              <option>Cuarto año o más</option>
+              <option>Internado o residencia</option>
+              <option>Egresado reciente</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="fecha">Jornada que te Interesa</label>
+            <select id="fecha" name="fecha">
+              <option>Próxima jornada disponible</option>
+              <option>Área metropolitana</option>
+              <option>Región central</option>
+              <option>Región este</option>
+              <option>Región oeste</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label for="acomodo">Acomodo Razonable o Necesidad Especial <span class="opt">(opcional)</span></label>
+          <textarea id="acomodo" name="acomodo" placeholder="Movilidad, lectura, intérprete, alimentación u otra necesidad"></textarea>
+        </div>
+        <div class="pay-gate">
+          <h4>Paso Obligatorio: Pago por ATH Móvil</h4>
+          <div id="ath-auto" hidden>
+            <p>Presiona el botón, escribe el teléfono de tu cuenta de ATH Móvil y confirma el pago en la aplicación. Tu recibo se envía solo, a tu correo y a Global Epi LLC.</p>
+            <div id="ath-boton" hidden>
+              <div id="ATHMovil_Checkout_Button_payment"></div>
+            </div>
+            <p class="bloqueo" id="ath-aviso">Completa nombre, correo, teléfono e institución para habilitar el pago.</p>
+          </div>
+          <div id="pago-manual">
+            <p class="alt-title" id="alt-title" hidden>¿Ya pagaste escaneando el código QR?</p>
+            <p id="manual-intro">Escanea el código de al lado o envía $100.00 al <b>939-401-4401</b> con tu nombre completo en la nota. Luego marca la casilla y escribe el número de confirmación.</p>
+            <div class="chk">
+              <input type="checkbox" id="pagado" name="pagado">
+              <label for="pagado">Ya realicé el pago de $100.00 por ATH Móvil.</label>
+            </div>
+            <div class="two-col">
+              <div class="field">
+                <label for="refpago">Número de Confirmación de ATH Móvil</label>
+                <input type="text" id="refpago" name="refpago" placeholder="Ej. 1234567890" inputmode="numeric">
+              </div>
+              <div class="field">
+                <label for="fechapago">Fecha del Pago</label>
+                <input type="date" id="fechapago" name="fechapago">
+              </div>
+            </div>
+          </div>
+        </div>
+        <button type="button" class="btn" id="copiar" disabled>Enviar mi Recibo de Inscripción</button>
+        <p class="bloqueo" id="bloqueo">Marca la casilla del pago y escribe el número de confirmación de ATH Móvil para habilitar el recibo.</p>
+        <div class="out" id="salida" hidden>
+          <p id="estado" role="status"></p>
+          <textarea id="resumen" readonly aria-label="Recibo de inscripción"></textarea>
+          <button type="button" class="btn sec" id="recopiar">Copiar el Recibo</button>
+          <p class="hint" id="salida-hint"></p>
+        </div>
+      </form>
+
+      <aside class="panel">
+        <h3 style="font-size:17px; margin-bottom:16px">Cómo Sigue</h3>
+        <ol class="steps">
+          <li><span class="n">1</span><div><b>Completas tus Datos</b><p>Nombre, correo, teléfono e institución. El correo es donde te llega el recibo.</p></div></li>
+          <li><span class="n">2</span><div><b>Pagas por ATH Móvil</b><p>Con el botón de pago del formulario, o escaneando el código de abajo (<span class="dato">939-401-4401</span>) con tu nombre completo en la nota.</p></div></li>
+          <li><span class="n">3</span><div><b>Recibes tu Recibo por Correo</b><p>Se envía automáticamente a tu correo, con copia a <span class="dato">global.epi.consulting@gmail.com</span>.</p></div></li>
+          <li><span class="n">4</span><div><b>Confirmamos el Asiento</b><p>Verificamos el pago y respondemos en un día laborable con la fecha, el lugar exacto y el recibo sellado.</p></div></li>
+        </ol>
+        <div class="pago">
+          <h3>Pago por ATH Móvil</h3>
+          <p style="margin-top:2px">$100.00 · IVU incluido</p>
+          <img class="qr" src="assets/ath-movil-qr.png" alt="Código QR de ATH Móvil de Global Epi LLC">
+          <p class="num">939-401-4401</p>
+          <img class="ath" src="assets/ath-movil-logo.png" alt="ATH Móvil">
+          <p>Escribe tu nombre completo en la nota del pago para que podamos parearlo con tu inscripción.</p>
+        </div>
+        <p class="hint" style="margin-top:16px">Tus datos se usan únicamente para coordinar la inscripción y emitir el certificado. No preguntamos por consumo de sustancias de ninguna persona participante.</p>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">Preguntas</p>
+      <h2>Preguntas Frecuentes</h2>
+    </div>
+    <div class="faq">
+      <details><summary>¿Necesito estar en año clínico?</summary><p>No. El curso está diseñado para cualquier estudiante del área de la salud, desde primer año. Se enseña lo que una persona sin licencia puede y debe hacer, y dónde está el límite del rol: qué se atiende en el momento y qué se deriva el mismo día.</p></details>
+      <details><summary>¿Es legal que yo administre naloxona?</summary><p>Sí. La Ley 35-2021 de Puerto Rico autoriza expresamente a cualquier persona no profesional que actúe de buena fe en una emergencia, y protege de arresto por posesión simple tanto a quien sufre la sobredosis como a quien pide ayuda. El Módulo 1 cubre el alcance y los límites de esa protección.</p></details>
+      <details><summary>¿Me dan horas contacto acreditadas?</summary><p>Se emite un certificado de aprovechamiento de 6.0 horas contacto de Global Epi LLC con código único de verificación. Si ya eres profesional licenciada, la convalidación depende de tu junta examinadora: consúltalo antes de inscribirte.</p></details>
+      <details><summary>¿Sirve para mi expediente o portafolio?</summary><p>Sí. El certificado documenta seis horas de formación práctica en prevención de sobredosis y reducción de daños, con evaluación de destrezas observada. Es evidencia concreta para una solicitud de residencia, una beca o un portafolio profesional.</p></details>
+      <details><summary>¿Se practica con agujas reales?</summary><p>No. Las estaciones usan dispositivos de naloxona de práctica sin medicamento, barreras de rescate desechables, jeringas simuladas romas y moulage de heridas. Nadie manipula material punzante real ni sustancias.</p></details>
+      <details><summary>¿Cómo es la práctica si no hay maniquíes?</summary><p>Toda la práctica se hace entre pares, en parejas o tríos que se turnan los roles: una persona representa a quien está en sobredosis, otra responde y la tercera observa con lista de cotejo. Se pide permiso antes de cada contacto físico y cualquiera puede pasar el turno sin dar explicaciones. No se insufla aire en la vía aérea de nadie —la ventilación se ejecuta en posición y ritmo, marcando cada insuflación en voz alta— ni se punciona a ninguna persona: el sitio intramuscular se localiza y se señala.</p></details>
+      <details><summary>¿Pueden darlo en mi universidad?</summary><p>Sí. Coordinamos jornadas cerradas para grupos de estudiantes, asociaciones estudiantiles y programas académicos, con precio por grupo en lugar de por persona. Escríbenos con el número de participantes y el recinto.</p></details>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div>
+      <span class="marca">
+        <img src="assets/logo-global-epi.png" alt="Global Epi">
+        <span class="div">Division of Capacity Building &amp; Training</span>
+      </span>
+      <p style="margin-top:14px"><b>GLOBAL EPI LLC</b>Bayamón, Puerto Rico</p>
+      <p style="margin-top:6px">global.epi.consulting@gmail.com · (939) 401-4401 · globalepillc.com</p>
+    </div>
+    <div class="code">GE-RD-PUDI-101 · rev. septiembre 2026</div>
+  </div>
+</footer>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   CONFIGURACIÓN — llena estos valores para activar el envío
+   automático del recibo (ver README.md, sección "Configuración").
+   Si se dejan vacíos, la página funciona como antes: el recibo
+   se genera en pantalla para copiarlo y enviarlo a mano.
+   ═══════════════════════════════════════════════════════════════ */
+var GE_CONFIG = {
+  correoCopia: "global.epi.consulting@gmail.com",
+  // EmailJS (https://www.emailjs.com): Account → Public Key; Email Services → Service ID;
+  // Email Templates → Template ID
+  emailjs: { publicKey: "", serviceId: "", templateId: "" },
+  // ATH Business → Settings → Public Token (nunca pongas aquí el Private Token)
+  athmovil: { publicToken: "" }
+};
+
+// Objeto que lee el botón de pago de ATH Móvil (nombre fijo exigido por su API)
+var ATHM_Checkout = {
+  env: "production",
+  publicToken: GE_CONFIG.athmovil.publicToken,
+  timeout: 600,
+  orderType: "",
+  theme: "btn",
+  lang: "es",
+  total: 100.00,
+  subtotal: 89.69,
+  tax: 10.31,
+  metadata1: "GE-RD-PUDI-101",
+  metadata2: "",
+  items: [{
+    name: "Curso GE-RD-PUDI-101",
+    description: "Reducción de Daños PUDI · 6.0 horas contacto",
+    quantity: "1",
+    price: "89.69",
+    tax: "10.31",
+    metadata: null
+  }],
+  phoneNumber: ""
+};
+
+if (GE_CONFIG.athmovil.publicToken) {
+  document.write('<script src="https://payments.athmovil.com/api/modal/js/athmovil_base.js"><\/script>');
+}
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4.4.1/dist/email.min.js"></script>
+<script>
+(function(){
+  var btn = document.getElementById("copiar");
+  var btn2 = document.getElementById("recopiar");
+  var out = document.getElementById("salida");
+  var box = document.getElementById("resumen");
+  var est = document.getElementById("estado");
+  var hint = document.getElementById("salida-hint");
+  var CORREO = GE_CONFIG.correoCopia;
+  var folio = null;
+  var enviado = false;
+  var enviando = false;
+  var pagoAuto = false;
+
+  var EJ = GE_CONFIG.emailjs;
+  var correoActivo = !!(EJ.publicKey && EJ.serviceId && EJ.templateId && window.emailjs);
+  var athActivo = !!GE_CONFIG.athmovil.publicToken;
+  if (correoActivo) {
+    try { emailjs.init({ publicKey: EJ.publicKey }); } catch(e){ correoActivo = false; }
+  }
+
+  function val(id){ var el = document.getElementById(id); return el ? el.value.trim() : ""; }
+  function correoValido(c){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(c); }
+
+  function nuevoFolio(){
+    var d = new Date();
+    var p = function(n){ return (n < 10 ? "0" : "") + n; };
+    var letras = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789", suf = "";
+    for(var i = 0; i < 4; i++) suf += letras.charAt(Math.floor(Math.random() * letras.length));
+    return "GE-PUDI-" + String(d.getFullYear()).slice(2) + p(d.getMonth() + 1) + p(d.getDate()) + "-" + suf;
+  }
+
+  // pago: { auto: true|false, ref, fecha, diario }
+  function construir(pago){
+    var d = new Date();
+    var lineasPago = pago.auto ? [
+      "Método:        ATH Móvil · Botón de pago en línea",
+      "Referencia:    " + pago.ref,
+      "Transacción:   #" + (pago.diario || "—") + " del día",
+      "Fecha de pago: " + (pago.fecha || "—"),
+      "Estado:        Pago completado en ATH Móvil"
+    ] : [
+      "Método:        ATH Móvil · 939-401-4401",
+      "Confirmación:  " + (pago.ref || "—") + "  (número informado por la persona participante)",
+      "Fecha de pago: " + (pago.fecha || "—"),
+      "Estado:        Pago informado — pendiente de verificación por Global Epi LLC"
+    ];
+    var cierre = pago.auto ? [
+      "Conserva este recibo. Global Epi LLC te escribirá en un día",
+      "laborable con la fecha y el lugar exacto de tu jornada."
+    ] : [
+      "Este documento no constituye comprobante de pago verificado.",
+      "Global Epi LLC verificará el pago con ATH Móvil y te responderá",
+      "con la confirmación del asiento y el recibo sellado."
+    ];
+    return [
+      "════════════════════════════════════════════",
+      "  RECIBO DE INSCRIPCIÓN",
+      "  Global Epi LLC · Division of Capacity Building & Training",
+      "════════════════════════════════════════════",
+      "",
+      "Folio:         " + folio,
+      "Fecha:         " + d.toLocaleDateString("es-PR"),
+      "Curso:         Curso Básico de Reducción de Daños (GE-RD-PUDI-101)",
+      "Duración:      6.0 horas contacto",
+      "",
+      "PARTICIPANTE",
+      "Nombre:        " + (val("nombre") || "—"),
+      "Correo:        " + (val("correo") || "—"),
+      "Teléfono:      " + (val("telefono") || "—"),
+      "Institución:   " + (val("institucion") || "—"),
+      "Programa:      " + val("programa"),
+      "Año:           " + val("ano"),
+      "Jornada:       " + val("fecha"),
+      "Acomodo:       " + (val("acomodo") || "Ninguno"),
+      "",
+      "PAGO",
+      "Tarifa:        $100.00 (IVU de 11.5 % incluido)"
+    ].concat(lineasPago, [
+      "",
+      "════════════════════════════════════════════"
+    ], cierre, [
+      "Dudas: " + CORREO + " · (939) 401-4401",
+      "════════════════════════════════════════════"
+    ]).join("\n");
+  }
+
+  function faltantes(){
+    var f = [];
+    if(!val("nombre")) f.push("nombre");
+    if(!correoValido(val("correo"))) f.push("correo válido");
+    if(!val("telefono")) f.push("teléfono");
+    if(!val("institucion")) f.push("institución");
+    return f;
+  }
+
+  function copiar(texto, alOk, alFallo){
+    try {
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(texto).then(alOk).catch(alFallo);
+        return;
+      }
+    } catch(e){}
+    alFallo();
+  }
+
+  function seleccionar(){
+    try { box.focus(); box.select(); } catch(e){}
+  }
+
+  function estado(texto, ok){
+    est.textContent = texto;
+    est.style.color = ok ? "var(--teal-dk)" : "var(--lime-dk)";
+  }
+
+  function modoManual(){
+    hint.innerHTML = "Envíalo a <b>" + CORREO + "</b> junto con la captura de tu transacción de ATH Móvil. " +
+      "Si el botón de copiar no funciona en tu navegador, selecciona el texto y cópialo a mano.";
+    copiar(box.value, function(){}, seleccionar);
+  }
+
+  function enviarCorreo(texto, pago){
+    enviando = true;
+    btn.disabled = true;
+    estado("Enviando tu recibo a " + val("correo") + " con copia a Global Epi LLC…", true);
+    hint.textContent = "";
+    return emailjs.send(EJ.serviceId, EJ.templateId, {
+      to_email: val("correo"),
+      to_name: val("nombre"),
+      cc_email: CORREO,
+      reply_to: CORREO,
+      subject: "Recibo de inscripción " + folio + " — GE-RD-PUDI-101",
+      folio: folio,
+      metodo_pago: pago.auto ? "ATH Móvil (botón de pago)" : "ATH Móvil (pago informado)",
+      referencia: pago.ref || "",
+      recibo: texto
+    }).then(function(){
+      enviado = true;
+      estado("Recibo " + folio + " enviado a " + val("correo") + " con copia a " + CORREO + ". Revisa tu bandeja de entrada (y la de correo no deseado).", true);
+      hint.textContent = "Guarda este recibo. Si no te llega en unos minutos, escríbenos a " + CORREO + " con tu folio.";
+      btn.textContent = "Recibo Enviado";
+    }).catch(function(){
+      estado("No pudimos enviar el correo automáticamente. Tu recibo " + folio + " está abajo: cópialo y envíalo a mano.", false);
+      modoManual();
+      btn.disabled = pago.auto;
+    }).then(function(){ enviando = false; });
+  }
+
+  function generar(pago){
+    if(enviado || enviando) return;
+    if(!folio) folio = nuevoFolio();
+    var texto = construir(pago);
+    box.value = texto;
+    out.hidden = false;
+    box.scrollIntoView({behavior:"smooth", block:"nearest"});
+
+    if(correoActivo){
+      enviarCorreo(texto, pago);
+    } else {
+      var f = faltantes();
+      if(f.length){
+        estado("Te falta completar: " + f.join(", ") + ". Puedes copiarlo igual, pero sin eso no podemos confirmarte el asiento.", false);
+      } else {
+        estado("Recibo " + folio + " generado. Copiado al portapapeles — envíalo a " + CORREO + " con la captura de ATH Móvil.", true);
+      }
+      modoManual();
+    }
+  }
+
+  // ── Pago manual (código QR): se habilita con la casilla y el número de confirmación
+  var chk = document.getElementById("pagado");
+  var ref = document.getElementById("refpago");
+  var aviso = document.getElementById("bloqueo");
+
+  function pagoListo(){
+    return !!(chk && chk.checked) && val("refpago").length >= 4;
+  }
+
+  function revisarPago(){
+    if(enviado || enviando) return;
+    var ok = pagoListo();
+    var f = correoActivo ? faltantes() : [];
+    btn.disabled = !ok || f.length > 0;
+    if(ok && f.length){
+      aviso.textContent = "Para enviarte el recibo por correo, completa: " + f.join(", ") + ".";
+      aviso.style.color = "var(--lime-dk)";
+    } else if(ok){
+      aviso.textContent = correoActivo
+        ? "Pago informado. Al presionar el botón, el recibo se envía a tu correo con copia a Global Epi LLC."
+        : "Pago informado. Ya puedes generar tu recibo de inscripción.";
+      aviso.style.color = "var(--teal-dk)";
+    } else if(chk && chk.checked){
+      aviso.textContent = "Escribe el número de confirmación que te devolvió ATH Móvil (al menos 4 dígitos).";
+      aviso.style.color = "var(--lime-dk)";
+    } else {
+      aviso.textContent = "Marca la casilla del pago y escribe el número de confirmación de ATH Móvil para habilitar el recibo.";
+      aviso.style.color = "var(--lime-dk)";
+    }
+    if(!ok && !pagoAuto){ out.hidden = true; }
+  }
+
+  if(!correoActivo) btn.textContent = "Generar mi Recibo de Inscripción";
+  chk.addEventListener("change", revisarPago);
+  ref.addEventListener("input", revisarPago);
+
+  btn.addEventListener("click", function(){
+    if(!pagoListo()){ revisarPago(); return; }
+    generar({ auto: false, ref: val("refpago"), fecha: val("fechapago") });
+  });
+  btn2.addEventListener("click", function(){
+    copiar(box.value, function(){ hint.textContent = "Recibo copiado al portapapeles."; }, seleccionar);
+  });
+
+  // ── Pago automático con el botón de ATH Móvil
+  var athAuto = document.getElementById("ath-auto");
+  var athBoton = document.getElementById("ath-boton");
+  var athAviso = document.getElementById("ath-aviso");
+
+  function revisarDatos(){
+    var f = faltantes();
+    // metadata1/2 viajan con el pago y aparecen en ATH Business (máx. 40 caracteres)
+    ATHM_Checkout.metadata1 = ("GE-PUDI " + val("nombre")).slice(0, 40);
+    ATHM_Checkout.metadata2 = val("correo").slice(0, 40);
+    if(athActivo && !enviado && !pagoAuto){
+      athBoton.hidden = f.length > 0;
+      athAviso.textContent = f.length
+        ? "Para habilitar el pago, completa: " + f.join(", ") + "."
+        : "Listo. Al confirmar el pago en ATH Móvil, tu recibo se envía automáticamente.";
+      athAviso.style.color = f.length ? "var(--lime-dk)" : "var(--teal-dk)";
+    }
+    revisarPago();
+  }
+
+  if(athActivo){
+    athAuto.hidden = false;
+    document.getElementById("alt-title").hidden = false;
+    document.getElementById("manual-intro").textContent =
+      "Si enviaste $100.00 al 939-401-4401 desde la aplicación, marca la casilla y escribe el número de confirmación.";
+  }
+  ["nombre", "correo", "telefono", "institucion"].forEach(function(id){
+    document.getElementById(id).addEventListener("input", revisarDatos);
+  });
+  revisarDatos();
+
+  function avisoAth(texto, ok){
+    athAviso.textContent = texto;
+    athAviso.style.color = ok ? "var(--teal-dk)" : "var(--lime-dk)";
+  }
+
+  window.authorizationATHM = async function(){
+    var r;
+    try { r = await authorization(); } catch(e){ r = null; }
+    var d = r && r.status === "success" && r.data;
+    if(d && d.ecommerceStatus === "COMPLETED"){
+      avisoAth("Pago completado en ATH Móvil. Referencia " + d.referenceNumber + ".", true);
+      athBoton.hidden = true;
+      pagoAuto = true;
+      document.getElementById("pago-manual").hidden = true;
+      btn.hidden = true;
+      aviso.hidden = true;
+      generar({ auto: true, ref: d.referenceNumber, fecha: d.transactionDate, diario: d.dailyTransactionId });
+    } else {
+      avisoAth("No pudimos confirmar el pago. Si ATH Móvil te cobró, escríbenos a " + CORREO + " con tu número de confirmación.", false);
+    }
+  };
+  window.cancelATHM = async function(){
+    try { await findPaymentATHM(); } catch(e){}
+    avisoAth("El pago se canceló. No se hizo ningún cargo; puedes intentarlo de nuevo.", false);
+  };
+  window.expiredATHM = async function(){
+    try { await findPaymentATHM(); } catch(e){}
+    avisoAth("El tiempo para confirmar el pago expiró. No se hizo ningún cargo; puedes intentarlo de nuevo.", false);
+  };
+})();
+</script>
+</body>
+</html>
